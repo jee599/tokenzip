@@ -28,7 +28,11 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
     let (cmd_str, filtered) = match subcommand {
         "list" => run_list(base_cmd, &args[1..], verbose)?,
         "outdated" => run_outdated(base_cmd, &args[1..], verbose)?,
-        "install" | "uninstall" | "show" => {
+        "install" => {
+            // Apply pkg_cmd compression for install output
+            run_install(base_cmd, args, verbose)?
+        }
+        "uninstall" | "show" => {
             // Passthrough for write operations
             run_passthrough(base_cmd, args, verbose)?
         }
@@ -109,6 +113,39 @@ fn run_outdated(base_cmd: &str, args: &[String], verbose: u8) -> Result<(String,
     let raw = format!("{}\n{}", stdout, stderr);
 
     let filtered = filter_pip_outdated(&stdout);
+    println!("{}", filtered);
+
+    if !output.status.success() {
+        std::process::exit(output.status.code().unwrap_or(1));
+    }
+
+    Ok((raw, filtered))
+}
+
+fn run_install(base_cmd: &str, args: &[String], verbose: u8) -> Result<(String, String)> {
+    let mut cmd = resolved_command(base_cmd);
+
+    if base_cmd == "uv" {
+        cmd.arg("pip");
+    }
+
+    for arg in args {
+        cmd.arg(arg);
+    }
+
+    if verbose > 0 {
+        eprintln!("Running: {} pip {}", base_cmd, args.join(" "));
+    }
+
+    let output = cmd
+        .output()
+        .with_context(|| format!("Failed to run {} pip {}", base_cmd, args.join(" ")))?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let raw = format!("{}\n{}", stdout, stderr);
+
+    let filtered = crate::pkg_cmd::compress_pkg_log(&raw);
     println!("{}", filtered);
 
     if !output.status.success() {

@@ -114,7 +114,13 @@ pub fn run(args: &[String], verbose: u8, skip_env: bool) -> Result<()> {
     let stderr = String::from_utf8_lossy(&output.stderr);
     let raw = format!("{}\n{}", stdout, stderr);
 
-    let filtered = filter_npm_output(&raw);
+    // Use pkg_cmd compression for install-type commands, regular filter otherwise
+    let is_install = matches!(first_arg, Some("install" | "i" | "ci"));
+    let filtered = if is_install {
+        crate::pkg_cmd::compress_pkg_log(&raw)
+    } else {
+        filter_npm_output(&raw)
+    };
     println!("{}", filtered);
 
     timer.track(
