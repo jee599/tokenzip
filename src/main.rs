@@ -653,6 +653,16 @@ enum Commands {
         since: u64,
     },
 
+    /// Uninstall tokenzip: remove hook, settings.json entry, and optionally the binary/database
+    Uninstall {
+        /// Also remove the SQLite tracking database
+        #[arg(long)]
+        purge: bool,
+    },
+
+    /// Update tokenzip to the latest release from GitHub
+    Update,
+
     /// Rewrite a raw command to its TokenZip equivalent (single source of truth for hooks)
     ///
     /// Exits 0 and prints the rewritten command if supported.
@@ -1648,6 +1658,14 @@ fn main() -> Result<()> {
             }
         }
 
+        Commands::Uninstall { purge } => {
+            init::run_uninstall(purge, cli.verbose)?;
+        }
+
+        Commands::Update => {
+            init::run_update(cli.verbose)?;
+        }
+
         Commands::Wget { url, stdout, args } => {
             if stdout {
                 wget_cmd::run_stdout(&url, &args, cli.verbose)?;
@@ -1997,7 +2015,7 @@ fn main() -> Result<()> {
 
             if args.is_empty() {
                 anyhow::bail!(
-                    "proxy requires a command to execute\nUsage: rtk proxy <command> [args...]"
+                    "proxy requires a command to execute\nUsage: tokenzip proxy <command> [args...]"
                 );
             }
 

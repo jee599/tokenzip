@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use std::fs;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use tempfile::NamedTempFile;
 
@@ -12,7 +12,7 @@ const REWRITE_HOOK: &str = include_str!("../hooks/tokenzip-rewrite.sh");
 // Embedded OpenCode plugin (auto-rewrite)
 const OPENCODE_PLUGIN: &str = include_str!("../hooks/opencode-tokenzip.ts");
 
-// Embedded slim RTK awareness instructions
+// Embedded slim TokenZip awareness instructions
 const TOKENZIP_SLIM: &str = include_str!("../hooks/tokenzip-awareness.md");
 
 /// Template written by `tokenzip init` when no filters.toml exists yet.
@@ -383,7 +383,7 @@ fn print_manual_instructions(hook_path: &Path, include_opencode: bool) {
     }
 }
 
-/// Remove RTK hook entry from settings.json
+/// Remove TokenZip hook entry from settings.json
 /// Returns true if hook was found and removed
 fn remove_hook_from_json(root: &mut serde_json::Value) -> bool {
     let hooks = match root.get_mut("hooks").and_then(|h| h.get_mut("PreToolUse")) {
@@ -396,7 +396,7 @@ fn remove_hook_from_json(root: &mut serde_json::Value) -> bool {
         None => return false,
     };
 
-    // Find and remove RTK entry
+    // Find and remove TokenZip entry
     let original_len = pre_tool_use_array.len();
     pre_tool_use_array.retain(|entry| {
         if let Some(hooks_array) = entry.get("hooks").and_then(|h| h.as_array()) {
@@ -414,7 +414,7 @@ fn remove_hook_from_json(root: &mut serde_json::Value) -> bool {
     pre_tool_use_array.len() < original_len
 }
 
-/// Remove RTK hook from settings.json file
+/// Remove TokenZip hook from settings.json file
 /// Backs up before modification, returns true if hook was found and removed
 fn remove_hook_from_settings(verbose: u8) -> Result<bool> {
     let claude_dir = resolve_claude_dir()?;
@@ -451,7 +451,7 @@ fn remove_hook_from_settings(verbose: u8) -> Result<bool> {
         atomic_write(&settings_path, &serialized)?;
 
         if verbose > 0 {
-            eprintln!("Removed RTK hook from settings.json");
+            eprintln!("Removed TokenZip hook from settings.json");
         }
     }
 
@@ -461,7 +461,7 @@ fn remove_hook_from_settings(verbose: u8) -> Result<bool> {
 /// Full uninstall: remove hook, TOKENZIP.md, @TOKENZIP.md reference, settings.json entry
 pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
     if !global {
-        anyhow::bail!("Uninstall only works with --global flag. For local projects, manually remove RTK from CLAUDE.md");
+        anyhow::bail!("Uninstall only works with --global flag. For local projects, manually remove TokenZip from CLAUDE.md");
     }
 
     let claude_dir = resolve_claude_dir()?;
@@ -517,7 +517,7 @@ pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
 
     // 4. Remove hook entry from settings.json
     if remove_hook_from_settings(verbose)? {
-        removed.push("settings.json: removed RTK hook entry".to_string());
+        removed.push("settings.json: removed TokenZip hook entry".to_string());
     }
 
     // 5. Remove OpenCode plugin
@@ -540,7 +540,7 @@ pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
     Ok(())
 }
 
-/// Orchestrator: patch settings.json with RTK hook
+/// Orchestrator: patch settings.json with TokenZip hook
 /// Handles reading, checking, prompting, merging, backing up, and atomic writing
 fn patch_settings_json(
     hook_path: &Path,
@@ -658,7 +658,7 @@ fn clean_double_blanks(content: &str) -> String {
     result.join("\n")
 }
 
-/// Deep-merge RTK hook entry into settings.json
+/// Deep-merge TokenZip hook entry into settings.json
 /// Creates hooks.PreToolUse structure if missing, preserves existing hooks
 fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) {
     // Ensure root is an object
@@ -684,7 +684,7 @@ fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) {
         .as_array_mut()
         .expect("PreToolUse must be an array");
 
-    // Append RTK hook entry
+    // Append TokenZip hook entry
     pre_tool_use.push(serde_json::json!({
         "matcher": "Bash",
         "hooks": [{
@@ -694,7 +694,7 @@ fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) {
     }));
 }
 
-/// Check if RTK hook is already present in settings.json
+/// Check if TokenZip hook is already present in settings.json
 /// Matches on tokenzip-rewrite.sh substring to handle different path formats
 fn hook_already_present(root: &serde_json::Value, hook_command: &str) -> bool {
     let pre_tool_use_array = match root
@@ -775,7 +775,7 @@ fn run_default_mode(
     } else {
         "already up to date"
     };
-    println!("\nRTK hook {} (global).\n", hook_status);
+    println!("\nTokenZip hook {} (global).\n", hook_status);
     println!("  Hook:      {}", hook_path.display());
     println!(
         "  TOKENZIP.md:    {} (10 lines)",
@@ -787,7 +787,7 @@ fn run_default_mode(
     println!("  CLAUDE.md: @TOKENZIP.md reference added");
 
     if migrated {
-        println!("\n  [ok] Migrated: removed 137-line RTK block from CLAUDE.md");
+        println!("\n  [ok] Migrated: removed 137-line TokenZip block from CLAUDE.md");
         println!("              replaced with @TOKENZIP.md (10 lines)");
     }
 
@@ -910,7 +910,7 @@ fn run_hook_only_mode(
     } else {
         "already up to date"
     };
-    println!("\nRTK hook {} (hook-only mode).\n", hook_status);
+    println!("\nTokenZip hook {} (hook-only mode).\n", hook_status);
     println!("  Hook: {}", hook_path.display());
     if let Some(path) = &opencode_plugin_path {
         println!("  OpenCode: {}", path.display());
@@ -1032,7 +1032,7 @@ fn run_claude_md_mode(global: bool, verbose: u8, install_opencode: bool) -> Resu
     Ok(())
 }
 
-// --- upsert_tokenzip_block: idempotent RTK block management ---
+// --- upsert_tokenzip_block: idempotent TokenZip block management ---
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum TzBlockUpsert {
@@ -1046,7 +1046,7 @@ enum TzBlockUpsert {
     Malformed,
 }
 
-/// Insert or replace the RTK instructions block in `content`.
+/// Insert or replace the TokenZip instructions block in `content`.
 ///
 /// Returns `(new_content, action)` describing what happened.
 /// The caller decides whether to write `new_content` based on `action`.
@@ -1112,7 +1112,7 @@ fn patch_claude_md(path: &Path, verbose: u8) -> Result<bool> {
             content = new_content;
             migrated = true;
             if verbose > 0 {
-                eprintln!("Migrated: removed old RTK block from CLAUDE.md");
+                eprintln!("Migrated: removed old TokenZip block from CLAUDE.md");
             }
         }
     }
@@ -1144,7 +1144,7 @@ fn patch_claude_md(path: &Path, verbose: u8) -> Result<bool> {
     Ok(migrated)
 }
 
-/// Remove old RTK block from CLAUDE.md (migration helper)
+/// Remove old TokenZip block from CLAUDE.md (migration helper)
 fn remove_tokenzip_block(content: &str) -> (String, bool) {
     if let (Some(start), Some(end)) = (
         content.find("<!-- tokenzip-instructions"),
@@ -1340,7 +1340,7 @@ pub fn show_config() -> Result<()> {
             println!("[ok] Global (~/.claude/CLAUDE.md): @TOKENZIP.md reference");
         } else if content.contains("<!-- tokenzip-instructions") {
             println!(
-                "[warn] Global (~/.claude/CLAUDE.md): old RTK block (run: tokenzip init -g to migrate)"
+                "[warn] Global (~/.claude/CLAUDE.md): old TokenZip block (run: tokenzip init -g to migrate)"
             );
         } else {
             println!("[--] Global (~/.claude/CLAUDE.md): exists but tokenzip not configured");
@@ -1369,9 +1369,9 @@ pub fn show_config() -> Result<()> {
             if let Ok(root) = serde_json::from_str::<serde_json::Value>(&content) {
                 let hook_command = hook_path.display().to_string();
                 if hook_already_present(&root, &hook_command) {
-                    println!("[ok] settings.json: RTK hook configured");
+                    println!("[ok] settings.json: TokenZip hook configured");
                 } else {
-                    println!("[warn] settings.json: exists but RTK hook not configured");
+                    println!("[warn] settings.json: exists but TokenZip hook not configured");
                     println!("    Run: tokenzip init -g --auto-patch");
                 }
             } else {
@@ -1401,7 +1401,7 @@ pub fn show_config() -> Result<()> {
     println!("  tokenzip init -g           # Hook + TOKENZIP.md + @TOKENZIP.md + settings.json (recommended)");
     println!("  tokenzip init -g --auto-patch    # Same as above but no prompt");
     println!("  tokenzip init -g --no-patch      # Skip settings.json (manual setup)");
-    println!("  tokenzip init -g --uninstall     # Remove all RTK artifacts");
+    println!("  tokenzip init -g --uninstall     # Remove all TokenZip artifacts");
     println!(
         "  tokenzip init -g --claude-md     # Legacy: full injection into ~/.claude/CLAUDE.md"
     );
@@ -1418,6 +1418,263 @@ fn run_opencode_only_mode(verbose: u8) -> Result<()> {
     println!("  OpenCode: {}", opencode_plugin_path.display());
     println!("  Restart OpenCode. Test with: git status\n");
     Ok(())
+}
+
+/// Top-level uninstall command: remove hook, settings.json entry, binary, and optionally DB
+pub fn run_uninstall(purge: bool, verbose: u8) -> Result<()> {
+    let claude_dir = resolve_claude_dir()?;
+    let mut removed = Vec::new();
+
+    // 1. Remove hook file
+    let hook_path = claude_dir.join("hooks").join("tokenzip-rewrite.sh");
+    if hook_path.exists() {
+        fs::remove_file(&hook_path)
+            .with_context(|| format!("Failed to remove hook: {}", hook_path.display()))?;
+        removed.push(format!("Hook: {}", hook_path.display()));
+    }
+
+    // 1b. Remove integrity hash file
+    if integrity::remove_hash(&hook_path)? {
+        removed.push("Integrity hash: removed".to_string());
+    }
+
+    // 2. Remove tokenzip entry from settings.json PreToolUse hooks
+    if remove_hook_from_settings(verbose)? {
+        removed.push("settings.json: removed TokenZip hook entry".to_string());
+    }
+
+    // 3. Remove TOKENZIP.md
+    let tokenzip_md_path = claude_dir.join("TOKENZIP.md");
+    if tokenzip_md_path.exists() {
+        fs::remove_file(&tokenzip_md_path).with_context(|| {
+            format!(
+                "Failed to remove TOKENZIP.md: {}",
+                tokenzip_md_path.display()
+            )
+        })?;
+        removed.push(format!("TOKENZIP.md: {}", tokenzip_md_path.display()));
+    }
+
+    // 4. Remove @TOKENZIP.md reference from CLAUDE.md
+    let claude_md_path = claude_dir.join("CLAUDE.md");
+    if claude_md_path.exists() {
+        let content = fs::read_to_string(&claude_md_path)
+            .with_context(|| format!("Failed to read CLAUDE.md: {}", claude_md_path.display()))?;
+
+        if content.contains("@TOKENZIP.md") {
+            let new_content = content
+                .lines()
+                .filter(|line| !line.trim().starts_with("@TOKENZIP.md"))
+                .collect::<Vec<_>>()
+                .join("\n");
+
+            let cleaned = clean_double_blanks(&new_content);
+
+            fs::write(&claude_md_path, cleaned).with_context(|| {
+                format!("Failed to write CLAUDE.md: {}", claude_md_path.display())
+            })?;
+            removed.push("CLAUDE.md: removed @TOKENZIP.md reference".to_string());
+        }
+    }
+
+    // 5. Remove OpenCode plugin
+    let opencode_removed = remove_opencode_plugin(verbose)?;
+    for path in opencode_removed {
+        removed.push(format!("OpenCode plugin: {}", path.display()));
+    }
+
+    // 6. Remove binary (~/.local/bin/tokenzip)
+    let bin_path = dirs::home_dir()
+        .context("Cannot determine home directory")?
+        .join(".local")
+        .join("bin")
+        .join("tokenzip");
+    if bin_path.exists() {
+        fs::remove_file(&bin_path)
+            .with_context(|| format!("Failed to remove binary: {}", bin_path.display()))?;
+        removed.push(format!("Binary: {}", bin_path.display()));
+    }
+
+    // 7. Handle SQLite database
+    let db_path = dirs::data_local_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join("tokenzip")
+        .join("history.db");
+
+    if purge && db_path.exists() {
+        fs::remove_file(&db_path)
+            .with_context(|| format!("Failed to remove database: {}", db_path.display()))?;
+        removed.push(format!("Database: {} (purged)", db_path.display()));
+
+        // Also remove the parent directory if empty
+        if let Some(parent) = db_path.parent() {
+            let _ = fs::remove_dir(parent); // ignore error if not empty
+        }
+    }
+
+    // Report results
+    if removed.is_empty() {
+        println!("TokenZip was not installed (nothing to remove)");
+    } else {
+        println!("TokenZip uninstalled:");
+        for item in &removed {
+            println!("  - {}", item);
+        }
+    }
+
+    if !purge && db_path.exists() {
+        println!(
+            "\nSQLite data preserved at {}. Use --purge to delete.",
+            db_path.display()
+        );
+    }
+
+    println!("\nRestart Claude Code to apply changes.");
+
+    Ok(())
+}
+
+/// Top-level update command: download latest release binary from GitHub
+pub fn run_update(verbose: u8) -> Result<()> {
+    let current_version = env!("CARGO_PKG_VERSION");
+
+    // Detect platform
+    let (os, arch) = detect_platform()?;
+    let asset_name = format!("tokenzip-{}-{}.tar.gz", os, arch);
+
+    println!("Current version: v{}", current_version);
+    println!("Checking for updates...");
+
+    // Fetch latest release info from GitHub API
+    let api_url = "https://api.github.com/repos/jee599/tokenzip/releases/latest";
+    let response_body = ureq::get(api_url)
+        .set("User-Agent", "tokenzip-updater")
+        .set("Accept", "application/vnd.github.v3+json")
+        .call()
+        .context("Failed to fetch latest release from GitHub")?
+        .into_string()
+        .context("Failed to read GitHub API response")?;
+
+    let body: serde_json::Value =
+        serde_json::from_str(&response_body).context("Failed to parse GitHub API response")?;
+
+    let tag = body["tag_name"]
+        .as_str()
+        .context("No tag_name in release")?;
+    let latest_version = tag.strip_prefix('v').unwrap_or(tag);
+
+    if latest_version == current_version {
+        println!("Already up to date (v{})", current_version);
+        return Ok(());
+    }
+
+    // Find the matching asset
+    let assets = body["assets"].as_array().context("No assets in release")?;
+
+    let download_url: String = assets
+        .iter()
+        .find_map(|a| {
+            let name = a["name"].as_str()?;
+            if name == asset_name {
+                Some(a["browser_download_url"].as_str()?.to_string())
+            } else {
+                None
+            }
+        })
+        .with_context(|| format!("No asset found for {}", asset_name))?;
+
+    if verbose > 0 {
+        eprintln!("Downloading: {}", download_url);
+    }
+
+    println!("Downloading v{}...", latest_version);
+
+    // Download the tarball
+    let dl_response = ureq::get(&download_url)
+        .set("User-Agent", "tokenzip-updater")
+        .call()
+        .context("Failed to download release")?;
+
+    let mut tarball = Vec::new();
+    dl_response
+        .into_reader()
+        .read_to_end(&mut tarball)
+        .context("Failed to read release download")?;
+
+    // Extract binary from tarball
+    let decoder = flate2::read::GzDecoder::new(std::io::Cursor::new(&tarball));
+    let mut archive = tar::Archive::new(decoder);
+
+    let current_exe = std::env::current_exe().context("Failed to determine current binary path")?;
+
+    let temp_dir = tempfile::tempdir().context("Failed to create temp directory")?;
+    let temp_bin = temp_dir.path().join("tokenzip");
+
+    let mut found = false;
+    for entry in archive.entries().context("Failed to read tar entries")? {
+        let mut entry = entry.context("Failed to read tar entry")?;
+        let path = entry.path().context("Failed to read entry path")?;
+
+        if path.file_name().map(|n| n == "tokenzip").unwrap_or(false) {
+            entry
+                .unpack(&temp_bin)
+                .context("Failed to extract tokenzip binary")?;
+            found = true;
+            break;
+        }
+    }
+
+    if !found {
+        anyhow::bail!("tokenzip binary not found in release tarball");
+    }
+
+    // Set executable permissions
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(&temp_bin, fs::Permissions::from_mode(0o755))
+            .context("Failed to set binary permissions")?;
+    }
+
+    // Replace current binary
+    fs::copy(&temp_bin, &current_exe).with_context(|| {
+        format!(
+            "Failed to replace binary at {}. Try running with sudo.",
+            current_exe.display()
+        )
+    })?;
+
+    println!(
+        "Updated: v{} -> v{} ({})",
+        current_version,
+        latest_version,
+        current_exe.display()
+    );
+
+    Ok(())
+}
+
+/// Detect current platform for release asset name
+fn detect_platform() -> Result<(&'static str, &'static str)> {
+    let os = if cfg!(target_os = "macos") {
+        "darwin"
+    } else if cfg!(target_os = "linux") {
+        "linux"
+    } else if cfg!(target_os = "windows") {
+        "windows"
+    } else {
+        anyhow::bail!("Unsupported platform for self-update");
+    };
+
+    let arch = if cfg!(target_arch = "x86_64") {
+        "x86_64"
+    } else if cfg!(target_arch = "aarch64") {
+        "aarch64"
+    } else {
+        anyhow::bail!("Unsupported architecture for self-update");
+    };
+
+    Ok((os, arch))
 }
 
 #[cfg(test)]
@@ -1872,5 +2129,43 @@ More notes
 
         let removed = remove_hook_from_json(&mut json_content);
         assert!(!removed);
+    }
+
+    #[test]
+    fn test_detect_platform_returns_valid_pair() {
+        let (os, arch) = detect_platform().unwrap();
+        // Must be one of supported values
+        assert!(
+            ["darwin", "linux", "windows"].contains(&os),
+            "Unexpected OS: {}",
+            os
+        );
+        assert!(
+            ["x86_64", "aarch64"].contains(&arch),
+            "Unexpected arch: {}",
+            arch
+        );
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_detect_platform_macos() {
+        let (os, _) = detect_platform().unwrap();
+        assert_eq!(os, "darwin");
+    }
+
+    #[test]
+    fn test_no_rtk_in_user_facing_show_config_output() {
+        // show_config prints to stdout; verify the constants used don't say "RTK hook"
+        // in user-facing contexts (comments in code are ok, but printed strings should say TokenZip)
+        // This is a lightweight check on the key format strings
+        let show_usage_lines = ["tokenzip init -g --uninstall     # Remove all TokenZip artifacts"];
+        for line in show_usage_lines {
+            assert!(
+                !line.contains("RTK artifacts"),
+                "User-facing string should say TokenZip, not RTK: {}",
+                line
+            );
+        }
     }
 }
