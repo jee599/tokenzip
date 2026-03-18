@@ -61,7 +61,7 @@ pub fn run(
     println!("{}", rtk_output);
     timer.track(
         &format!("cat {}", file.display()),
-        "rtk read",
+        "tokenzip read",
         &content,
         &rtk_output,
     );
@@ -124,7 +124,7 @@ pub fn run_stdin(
     };
     println!("{}", rtk_output);
 
-    timer.track("cat - (stdin)", "rtk read -", &content, &rtk_output);
+    timer.track("cat - (stdin)", "tokenzip read -", &content, &rtk_output);
     Ok(())
 }
 

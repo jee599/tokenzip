@@ -436,7 +436,7 @@ fn display_summary(tracker: &Tracker, verbose: u8) -> Result<()> {
     let periods = merge_monthly(cc_monthly, rtk_monthly);
 
     if periods.is_empty() {
-        println!("No data available. Run some rtk commands to start tracking.");
+        println!("No data available. Run some tokenzip commands to start tracking.");
         return Ok(());
     }
 
@@ -591,7 +591,7 @@ fn print_period_table(periods: &[PeriodEconomics], verbose: u8) {
         // Verbose: include legacy metrics
         println!(
             "{:<12} {:>10} {:>10} {:>10} {:>10} {:>12} {:>12}",
-            "Period", "Spent", "Saved", "Savings", "Active$", "Blended$", "RTK Cmds"
+            "Period", "Spent", "Saved", "Savings", "Active$", "Blended$", "TokenZip Cmds"
         );
         println!(
             "{:-<12} {:-<10} {:-<10} {:-<10} {:-<10} {:-<12} {:-<12}",
@@ -630,7 +630,7 @@ fn print_period_table(periods: &[PeriodEconomics], verbose: u8) {
         // Default: single Savings column
         println!(
             "{:<12} {:>10} {:>10} {:>10} {:>12}",
-            "Period", "Spent", "Saved", "Savings", "RTK Cmds"
+            "Period", "Spent", "Saved", "Savings", "TokenZip Cmds"
         );
         println!(
             "{:-<12} {:-<10} {:-<10} {:-<10} {:-<12}",

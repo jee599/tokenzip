@@ -21,7 +21,7 @@ impl RtkStatus {
     }
 }
 
-/// A supported command that RTK already handles.
+/// A supported command that TokenZip already handles.
 #[derive(Debug, Serialize)]
 pub struct SupportedEntry {
     pub command: String,
@@ -72,7 +72,7 @@ impl DiscoverReport {
 pub fn format_text(report: &DiscoverReport, limit: usize, verbose: bool) -> String {
     let mut out = String::with_capacity(2048);
 
-    out.push_str("RTK Discover -- Savings Opportunities\n");
+    out.push_str("TokenZip Discover -- Savings Opportunities\n");
     out.push_str(&"=".repeat(52));
     out.push('\n');
     out.push_str(&format!(
@@ -80,7 +80,7 @@ pub fn format_text(report: &DiscoverReport, limit: usize, verbose: bool) -> Stri
         report.sessions_scanned, report.since_days, report.total_commands
     ));
     out.push_str(&format!(
-        "Already using RTK: {} commands ({}%)\n",
+        "Already using TokenZip: {} commands ({}%)\n",
         report.already_rtk,
         if report.total_commands > 0 {
             report.already_rtk * 100 / report.total_commands
@@ -90,18 +90,18 @@ pub fn format_text(report: &DiscoverReport, limit: usize, verbose: bool) -> Stri
     ));
 
     if report.supported.is_empty() && report.unsupported.is_empty() {
-        out.push_str("\nNo missed savings found. RTK usage looks good!\n");
+        out.push_str("\nNo missed savings found. TokenZip usage looks good!\n");
         return out;
     }
 
     // Missed savings
     if !report.supported.is_empty() {
-        out.push_str("\nMISSED SAVINGS -- Commands RTK already handles\n");
+        out.push_str("\nMISSED SAVINGS -- Commands TokenZip already handles\n");
         out.push_str(&"-".repeat(72));
         out.push('\n');
         out.push_str(&format!(
             "{:<24} {:>5}    {:<18} {:<13} {:>12}\n",
-            "Command", "Count", "RTK Equivalent", "Status", "Est. Savings"
+            "Command", "Count", "TokenZip Equivalent", "Status", "Est. Savings"
         ));
 
         for entry in report.supported.iter().take(limit) {
@@ -148,19 +148,19 @@ pub fn format_text(report: &DiscoverReport, limit: usize, verbose: bool) -> Stri
         out.push_str("-> github.com/rtk-ai/rtk/issues\n");
     }
 
-    // RTK_DISABLED bypass warning
+    // TOKENZIP_DISABLED bypass warning
     if report.rtk_disabled_count > 0 {
         out.push_str(&format!(
-            "\nRTK_DISABLED BYPASS -- {} commands ran without filtering\n",
+            "\nTOKENZIP_DISABLED BYPASS -- {} commands ran without filtering\n",
             report.rtk_disabled_count
         ));
         out.push_str(&"-".repeat(72));
         out.push('\n');
-        out.push_str("These commands used RTK_DISABLED=1 unnecessarily:\n");
+        out.push_str("These commands used TOKENZIP_DISABLED=1 unnecessarily:\n");
         if !report.rtk_disabled_examples.is_empty() {
             out.push_str(&format!("  {}\n", report.rtk_disabled_examples.join(", ")));
         }
-        out.push_str("-> Remove RTK_DISABLED=1 to recover token savings\n");
+        out.push_str("-> Remove TOKENZIP_DISABLED=1 to recover token savings\n");
     }
 
     out.push_str("\n~estimated from tool_result output sizes\n");

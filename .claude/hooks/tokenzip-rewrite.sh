@@ -1,7 +1,7 @@
 #!/bin/bash
 # RTK auto-rewrite hook for Claude Code PreToolUse:Bash
 # Transparently rewrites raw commands to their RTK equivalents.
-# Uses `rtk rewrite` as single source of truth — no duplicate mapping logic here.
+# Uses `tokenzip rewrite` as single source of truth — no duplicate mapping logic here.
 #
 # To add support for new commands, update src/discover/registry.rs (PATTERNS + RULES).
 
@@ -17,7 +17,7 @@ _rtk_audit_log() {
 }
 
 # Guards: skip silently if dependencies missing
-if ! command -v rtk &>/dev/null || ! command -v jq &>/dev/null; then
+if ! command -v tokenzip &>/dev/null || ! command -v jq &>/dev/null; then
   _rtk_audit_log "skip:no_deps" "-"
   exit 0
 fi
@@ -32,15 +32,15 @@ if [ -z "$CMD" ]; then
   exit 0
 fi
 
-# Skip heredocs (rtk rewrite also skips them, but bail early)
+# Skip heredocs (tokenzip rewrite also skips them, but bail early)
 case "$CMD" in
   *'<<'*) _rtk_audit_log "skip:heredoc" "$CMD"; exit 0 ;;
 esac
 
-# Rewrite via rtk — single source of truth for all command mappings.
+# Rewrite via tokenzip — single source of truth for all command mappings.
 # Exit 1 = no RTK equivalent, pass through unchanged.
 # Exit 0 = rewritten command (or already RTK, identical output).
-REWRITTEN=$(rtk rewrite "$CMD" 2>/dev/null) || {
+REWRITTEN=$(tokenzip rewrite "$CMD" 2>/dev/null) || {
   _rtk_audit_log "skip:no_match" "$CMD"
   exit 0
 }

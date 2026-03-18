@@ -23,7 +23,7 @@ pub struct Config {
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct HooksConfig {
     /// Commands to exclude from auto-rewrite (e.g. ["curl", "playwright"]).
-    /// Survives `rtk init -g` re-runs since config.toml is user-owned.
+    /// Survives `tokenzip init -g` re-runs since config.toml is user-owned.
     #[serde(default)]
     pub exclude_commands: Vec<String>,
 }
@@ -166,7 +166,7 @@ impl Config {
 
 fn get_config_path() -> Result<PathBuf> {
     let config_dir = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
-    Ok(config_dir.join("rtk").join("config.toml"))
+    Ok(config_dir.join("tokenzip").join("config.toml"))
 }
 
 pub fn show_config() -> Result<()> {

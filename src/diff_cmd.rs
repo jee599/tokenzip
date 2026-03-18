@@ -26,7 +26,7 @@ pub fn run(file1: &Path, file2: &Path, verbose: u8) -> Result<()> {
         println!("{}", rtk);
         timer.track(
             &format!("diff {} {}", file1.display(), file2.display()),
-            "rtk diff",
+            "tokenzip diff",
             &raw,
             &rtk,
         );
@@ -58,7 +58,7 @@ pub fn run(file1: &Path, file2: &Path, verbose: u8) -> Result<()> {
     print!("{}", rtk);
     timer.track(
         &format!("diff {} {}", file1.display(), file2.display()),
-        "rtk diff",
+        "tokenzip diff",
         &raw,
         &rtk,
     );
@@ -77,7 +77,7 @@ pub fn run_stdin(_verbose: u8) -> Result<()> {
     let condensed = condense_unified_diff(&input);
     println!("{}", condensed);
 
-    timer.track("diff (stdin)", "rtk diff (stdin)", &input, &condensed);
+    timer.track("diff (stdin)", "tokenzip diff (stdin)", &input, &condensed);
 
     Ok(())
 }

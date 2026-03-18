@@ -1,10 +1,10 @@
 #!/bin/bash
-# Test suite for rtk-rewrite.sh
+# Test suite for tokenzip-rewrite.sh
 # Feeds mock JSON through the hook and verifies the rewritten commands.
 #
-# Usage: bash ~/.claude/hooks/test-rtk-rewrite.sh
+# Usage: bash ~/.claude/hooks/test-tokenzip-rewrite.sh
 
-HOOK="${HOOK:-$HOME/.claude/hooks/rtk-rewrite.sh}"
+HOOK="${HOOK:-$HOME/.claude/hooks/tokenzip-rewrite.sh}"
 PASS=0
 FAIL=0
 TOTAL=0
@@ -55,7 +55,7 @@ test_rewrite() {
 }
 
 echo "============================================"
-echo "  RTK Rewrite Hook Test Suite"
+echo "  TokenZip Rewrite Hook Test Suite"
 echo "============================================"
 echo ""
 
@@ -63,59 +63,59 @@ echo ""
 echo "--- Existing patterns (regression) ---"
 test_rewrite "git status" \
   "git status" \
-  "rtk git status"
+  "tokenzip git status"
 
 test_rewrite "git log --oneline -10" \
   "git log --oneline -10" \
-  "rtk git log --oneline -10"
+  "tokenzip git log --oneline -10"
 
 test_rewrite "git diff HEAD" \
   "git diff HEAD" \
-  "rtk git diff HEAD"
+  "tokenzip git diff HEAD"
 
 test_rewrite "git show abc123" \
   "git show abc123" \
-  "rtk git show abc123"
+  "tokenzip git show abc123"
 
 test_rewrite "git add ." \
   "git add ." \
-  "rtk git add ."
+  "tokenzip git add ."
 
 test_rewrite "gh pr list" \
   "gh pr list" \
-  "rtk gh pr list"
+  "tokenzip gh pr list"
 
 test_rewrite "npx playwright test" \
   "npx playwright test" \
-  "rtk playwright test"
+  "tokenzip playwright test"
 
 test_rewrite "ls -la" \
   "ls -la" \
-  "rtk ls -la"
+  "tokenzip ls -la"
 
 test_rewrite "curl -s https://example.com" \
   "curl -s https://example.com" \
-  "rtk curl -s https://example.com"
+  "tokenzip curl -s https://example.com"
 
 test_rewrite "cat package.json" \
   "cat package.json" \
-  "rtk read package.json"
+  "tokenzip read package.json"
 
 test_rewrite "grep -rn pattern src/" \
   "grep -rn pattern src/" \
-  "rtk grep -rn pattern src/"
+  "tokenzip grep -rn pattern src/"
 
 test_rewrite "rg pattern src/" \
   "rg pattern src/" \
-  "rtk grep pattern src/"
+  "tokenzip grep pattern src/"
 
 test_rewrite "cargo test" \
   "cargo test" \
-  "rtk cargo test"
+  "tokenzip cargo test"
 
 test_rewrite "npx prisma migrate" \
   "npx prisma migrate" \
-  "rtk prisma migrate"
+  "tokenzip prisma migrate"
 
 echo ""
 
@@ -159,23 +159,23 @@ echo ""
 echo "--- New patterns ---"
 test_rewrite "npm run test:e2e" \
   "npm run test:e2e" \
-  "rtk npm test:e2e"
+  "tokenzip npm test:e2e"
 
 test_rewrite "npm run build" \
   "npm run build" \
-  "rtk npm build"
+  "tokenzip npm build"
 
 test_rewrite "npm test" \
   "npm test" \
-  "rtk npm test"
+  "tokenzip npm test"
 
 test_rewrite "vue-tsc -b" \
   "vue-tsc -b" \
-  "rtk tsc -b"
+  "tokenzip tsc -b"
 
 test_rewrite "npx vue-tsc --noEmit" \
   "npx vue-tsc --noEmit" \
-  "rtk tsc --noEmit"
+  "tokenzip tsc --noEmit"
 
 test_rewrite "docker compose up -d (NOT rewritten — unsupported by rtk)" \
   "docker compose up -d" \
@@ -183,15 +183,15 @@ test_rewrite "docker compose up -d (NOT rewritten — unsupported by rtk)" \
 
 test_rewrite "docker compose logs postgrest" \
   "docker compose logs postgrest" \
-  "rtk docker compose logs postgrest"
+  "tokenzip docker compose logs postgrest"
 
 test_rewrite "docker compose ps" \
   "docker compose ps" \
-  "rtk docker compose ps"
+  "tokenzip docker compose ps"
 
 test_rewrite "docker compose build" \
   "docker compose build" \
-  "rtk docker compose build"
+  "tokenzip docker compose build"
 
 test_rewrite "docker compose down (NOT rewritten — unsupported by rtk)" \
   "docker compose down" \
@@ -203,11 +203,11 @@ test_rewrite "docker compose -f file.yml up (NOT rewritten — flag before subco
 
 test_rewrite "docker run --rm postgres" \
   "docker run --rm postgres" \
-  "rtk docker run --rm postgres"
+  "tokenzip docker run --rm postgres"
 
 test_rewrite "docker exec -it db psql" \
   "docker exec -it db psql" \
-  "rtk docker exec -it db psql"
+  "tokenzip docker exec -it db psql"
 
 test_rewrite "find (NOT rewritten — different arg format)" \
   "find . -name '*.ts'" \
@@ -223,49 +223,49 @@ test_rewrite "wget (NOT rewritten — different arg format)" \
 
 test_rewrite "gh api repos/owner/repo" \
   "gh api repos/owner/repo" \
-  "rtk gh api repos/owner/repo"
+  "tokenzip gh api repos/owner/repo"
 
 test_rewrite "gh release list" \
   "gh release list" \
-  "rtk gh release list"
+  "tokenzip gh release list"
 
 test_rewrite "kubectl describe pod foo" \
   "kubectl describe pod foo" \
-  "rtk kubectl describe pod foo"
+  "tokenzip kubectl describe pod foo"
 
 test_rewrite "kubectl apply -f deploy.yaml" \
   "kubectl apply -f deploy.yaml" \
-  "rtk kubectl apply -f deploy.yaml"
+  "tokenzip kubectl apply -f deploy.yaml"
 
 echo ""
 
-# ---- SECTION 3b: RTK_DISABLED and redirect fixes (#345, #346) ----
-echo "--- RTK_DISABLED (#345) ---"
-test_rewrite "RTK_DISABLED=1 git status (no rewrite)" \
-  "RTK_DISABLED=1 git status" \
+# ---- SECTION 3b: TOKENZIP_DISABLED and redirect fixes (#345, #346) ----
+echo "--- TOKENZIP_DISABLED (#345) ---"
+test_rewrite "TOKENZIP_DISABLED=1 git status (no rewrite)" \
+  "TOKENZIP_DISABLED=1 git status" \
   ""
 
-test_rewrite "RTK_DISABLED=1 cargo test (no rewrite)" \
-  "RTK_DISABLED=1 cargo test" \
+test_rewrite "TOKENZIP_DISABLED=1 cargo test (no rewrite)" \
+  "TOKENZIP_DISABLED=1 cargo test" \
   ""
 
-test_rewrite "FOO=1 RTK_DISABLED=1 git status (no rewrite)" \
-  "FOO=1 RTK_DISABLED=1 git status" \
+test_rewrite "FOO=1 TOKENZIP_DISABLED=1 git status (no rewrite)" \
+  "FOO=1 TOKENZIP_DISABLED=1 git status" \
   ""
 
 echo ""
 echo "--- Redirect operators (#346) ---"
 test_rewrite "cargo test 2>&1 | head" \
   "cargo test 2>&1 | head" \
-  "rtk cargo test 2>&1 | head"
+  "tokenzip cargo test 2>&1 | head"
 
 test_rewrite "cargo test 2>&1" \
   "cargo test 2>&1" \
-  "rtk cargo test 2>&1"
+  "tokenzip cargo test 2>&1"
 
 test_rewrite "cargo test &>/dev/null" \
   "cargo test &>/dev/null" \
-  "rtk cargo test &>/dev/null"
+  "tokenzip cargo test &>/dev/null"
 
 # Note: the bash hook rewrites only the first command segment (sed-based);
 # full compound rewriting (both sides of &) is handled by `rtk rewrite` (Rust).
@@ -273,7 +273,7 @@ test_rewrite "cargo test &>/dev/null" \
 # a redirect — the hook still rewrites cargo test, no crash.
 test_rewrite "cargo test & git status (bash hook rewrites first segment only)" \
   "cargo test & git status" \
-  "rtk cargo test & git status"
+  "tokenzip cargo test & git status"
 
 echo ""
 
@@ -281,30 +281,30 @@ echo ""
 echo "--- Vitest run dedup ---"
 test_rewrite "vitest (no args)" \
   "vitest" \
-  "rtk vitest run"
+  "tokenzip vitest run"
 
 test_rewrite "vitest run (no double run)" \
   "vitest run" \
-  "rtk vitest run"
+  "tokenzip vitest run"
 
 test_rewrite "vitest run --reporter" \
   "vitest run --reporter=verbose" \
-  "rtk vitest run --reporter=verbose"
+  "tokenzip vitest run --reporter=verbose"
 
 test_rewrite "npx vitest run" \
   "npx vitest run" \
-  "rtk vitest run"
+  "tokenzip vitest run"
 
 test_rewrite "pnpm vitest run --coverage" \
   "pnpm vitest run --coverage" \
-  "rtk vitest run --coverage"
+  "tokenzip vitest run --coverage"
 
 echo ""
 
 # ---- SECTION 5: Should NOT rewrite ----
 echo "--- Should NOT rewrite ---"
 test_rewrite "already rtk" \
-  "rtk git status" \
+  "tokenzip git status" \
   ""
 
 test_rewrite "heredoc" \
@@ -336,7 +336,7 @@ test_rewrite "node (no pattern)" \
 echo ""
 
 # ---- SECTION 6: Audit logging ----
-echo "--- Audit logging (RTK_HOOK_AUDIT=1) ---"
+echo "--- Audit logging (TOKENZIP_HOOK_AUDIT=1) ---"
 
 AUDIT_TMPDIR=$(mktemp -d)
 trap "rm -rf $AUDIT_TMPDIR" EXIT
@@ -352,7 +352,7 @@ test_audit_log() {
 
   local input_json
   input_json=$(jq -n --arg cmd "$input_cmd" '{"tool_name":"Bash","tool_input":{"command":$cmd}}')
-  echo "$input_json" | RTK_HOOK_AUDIT=1 RTK_AUDIT_DIR="$AUDIT_TMPDIR" bash "$HOOK" 2>/dev/null || true
+  echo "$input_json" | TOKENZIP_HOOK_AUDIT=1 TOKENZIP_AUDIT_DIR="$AUDIT_TMPDIR" bash "$HOOK" 2>/dev/null || true
 
   if [ ! -f "$AUDIT_TMPDIR/hook-audit.log" ]; then
     printf "  ${RED}FAIL${RESET} %s (no log file created)\n" "$description"
@@ -381,9 +381,9 @@ test_audit_log "audit: rewrite git status" \
   "git status" \
   "rewrite"
 
-test_audit_log "audit: skip already_rtk" \
-  "rtk git status" \
-  "skip:already_rtk"
+test_audit_log "audit: skip already_tokenzip" \
+  "tokenzip git status" \
+  "skip:already_tokenzip"
 
 test_audit_log "audit: skip heredoc" \
   "cat <<'EOF'
@@ -402,7 +402,7 @@ test_audit_log "audit: rewrite cargo test" \
 # Test log format (4 pipe-separated fields)
 rm -f "$AUDIT_TMPDIR/hook-audit.log"
 input_json=$(jq -n --arg cmd "git status" '{"tool_name":"Bash","tool_input":{"command":$cmd}}')
-echo "$input_json" | RTK_HOOK_AUDIT=1 RTK_AUDIT_DIR="$AUDIT_TMPDIR" bash "$HOOK" 2>/dev/null || true
+echo "$input_json" | TOKENZIP_HOOK_AUDIT=1 TOKENZIP_AUDIT_DIR="$AUDIT_TMPDIR" bash "$HOOK" 2>/dev/null || true
 TOTAL=$((TOTAL + 1))
 log_line=$(cat "$AUDIT_TMPDIR/hook-audit.log" 2>/dev/null || echo "")
 field_count=$(echo "$log_line" | awk -F' \\| ' '{print NF}')
@@ -415,16 +415,16 @@ else
   FAIL=$((FAIL + 1))
 fi
 
-# Test no log when RTK_HOOK_AUDIT is unset
+# Test no log when TOKENZIP_HOOK_AUDIT is unset
 rm -f "$AUDIT_TMPDIR/hook-audit.log"
 input_json=$(jq -n --arg cmd "git status" '{"tool_name":"Bash","tool_input":{"command":$cmd}}')
-echo "$input_json" | RTK_AUDIT_DIR="$AUDIT_TMPDIR" bash "$HOOK" 2>/dev/null || true
+echo "$input_json" | TOKENZIP_AUDIT_DIR="$AUDIT_TMPDIR" bash "$HOOK" 2>/dev/null || true
 TOTAL=$((TOTAL + 1))
 if [ ! -f "$AUDIT_TMPDIR/hook-audit.log" ]; then
-  printf "  ${GREEN}PASS${RESET} audit: no log when RTK_HOOK_AUDIT unset\n"
+  printf "  ${GREEN}PASS${RESET} audit: no log when TOKENZIP_HOOK_AUDIT unset\n"
   PASS=$((PASS + 1))
 else
-  printf "  ${RED}FAIL${RESET} audit: log created when RTK_HOOK_AUDIT unset\n"
+  printf "  ${RED}FAIL${RESET} audit: log created when TOKENZIP_HOOK_AUDIT unset\n"
   FAIL=$((FAIL + 1))
 fi
 

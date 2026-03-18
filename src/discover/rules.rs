@@ -85,7 +85,7 @@ pub const PATTERNS: &[&str] = &[
 
 pub const RULES: &[RtkRule] = &[
     RtkRule {
-        rtk_cmd: "rtk git",
+        rtk_cmd: "tokenzip git",
         rewrite_prefixes: &["git"],
         category: "Git",
         savings_pct: 70.0,
@@ -98,7 +98,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk gh",
+        rtk_cmd: "tokenzip gh",
         rewrite_prefixes: &["gh"],
         category: "GitHub",
         savings_pct: 82.0,
@@ -106,7 +106,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk cargo",
+        rtk_cmd: "tokenzip cargo",
         rewrite_prefixes: &["cargo"],
         category: "Cargo",
         savings_pct: 80.0,
@@ -114,7 +114,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[("fmt", RtkStatus::Passthrough)],
     },
     RtkRule {
-        rtk_cmd: "rtk pnpm",
+        rtk_cmd: "tokenzip pnpm",
         rewrite_prefixes: &["pnpm"],
         category: "PackageManager",
         savings_pct: 80.0,
@@ -122,7 +122,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk npm",
+        rtk_cmd: "tokenzip npm",
         rewrite_prefixes: &["npm"],
         category: "PackageManager",
         savings_pct: 70.0,
@@ -130,7 +130,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk npx",
+        rtk_cmd: "tokenzip npx",
         rewrite_prefixes: &["npx"],
         category: "PackageManager",
         savings_pct: 70.0,
@@ -138,7 +138,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk read",
+        rtk_cmd: "tokenzip read",
         rewrite_prefixes: &["cat", "head", "tail"],
         category: "Files",
         savings_pct: 60.0,
@@ -146,7 +146,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk grep",
+        rtk_cmd: "tokenzip grep",
         rewrite_prefixes: &["rg", "grep"],
         category: "Files",
         savings_pct: 75.0,
@@ -154,7 +154,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk ls",
+        rtk_cmd: "tokenzip ls",
         rewrite_prefixes: &["ls"],
         category: "Files",
         savings_pct: 65.0,
@@ -162,7 +162,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk find",
+        rtk_cmd: "tokenzip find",
         rewrite_prefixes: &["find"],
         category: "Files",
         savings_pct: 70.0,
@@ -171,7 +171,7 @@ pub const RULES: &[RtkRule] = &[
     },
     RtkRule {
         // Longest prefixes first for correct matching
-        rtk_cmd: "rtk tsc",
+        rtk_cmd: "tokenzip tsc",
         rewrite_prefixes: &["pnpm tsc", "npx tsc", "tsc"],
         category: "Build",
         savings_pct: 83.0,
@@ -179,7 +179,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk lint",
+        rtk_cmd: "tokenzip lint",
         rewrite_prefixes: &[
             "npx eslint",
             "pnpm lint",
@@ -194,7 +194,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk prettier",
+        rtk_cmd: "tokenzip prettier",
         rewrite_prefixes: &["npx prettier", "pnpm prettier", "prettier"],
         category: "Build",
         savings_pct: 70.0,
@@ -202,8 +202,8 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        // "next build" is stripped to "rtk next" — the build subcommand is internal
-        rtk_cmd: "rtk next",
+        // "next build" is stripped to "tokenzip next" — the build subcommand is internal
+        rtk_cmd: "tokenzip next",
         rewrite_prefixes: &["npx next build", "pnpm next build", "next build"],
         category: "Build",
         savings_pct: 87.0,
@@ -211,7 +211,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk vitest",
+        rtk_cmd: "tokenzip vitest",
         rewrite_prefixes: &["pnpm vitest", "npx vitest", "vitest", "jest"],
         category: "Tests",
         savings_pct: 99.0,
@@ -219,7 +219,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk playwright",
+        rtk_cmd: "tokenzip playwright",
         rewrite_prefixes: &["npx playwright", "pnpm playwright", "playwright"],
         category: "Tests",
         savings_pct: 94.0,
@@ -227,7 +227,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk prisma",
+        rtk_cmd: "tokenzip prisma",
         rewrite_prefixes: &["npx prisma", "pnpm prisma", "prisma"],
         category: "Build",
         savings_pct: 88.0,
@@ -235,7 +235,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk docker",
+        rtk_cmd: "tokenzip docker",
         rewrite_prefixes: &["docker"],
         category: "Infra",
         savings_pct: 85.0,
@@ -243,7 +243,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk kubectl",
+        rtk_cmd: "tokenzip kubectl",
         rewrite_prefixes: &["kubectl"],
         category: "Infra",
         savings_pct: 85.0,
@@ -251,7 +251,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk tree",
+        rtk_cmd: "tokenzip tree",
         rewrite_prefixes: &["tree"],
         category: "Files",
         savings_pct: 70.0,
@@ -259,7 +259,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk diff",
+        rtk_cmd: "tokenzip diff",
         rewrite_prefixes: &["diff"],
         category: "Files",
         savings_pct: 60.0,
@@ -267,7 +267,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk curl",
+        rtk_cmd: "tokenzip curl",
         rewrite_prefixes: &["curl"],
         category: "Network",
         savings_pct: 70.0,
@@ -275,7 +275,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk wget",
+        rtk_cmd: "tokenzip wget",
         rewrite_prefixes: &["wget"],
         category: "Network",
         savings_pct: 65.0,
@@ -283,7 +283,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk mypy",
+        rtk_cmd: "tokenzip mypy",
         rewrite_prefixes: &["python3 -m mypy", "python -m mypy", "mypy"],
         category: "Build",
         savings_pct: 80.0,
@@ -292,7 +292,7 @@ pub const RULES: &[RtkRule] = &[
     },
     // Python tooling
     RtkRule {
-        rtk_cmd: "rtk ruff",
+        rtk_cmd: "tokenzip ruff",
         rewrite_prefixes: &["ruff"],
         category: "Python",
         savings_pct: 80.0,
@@ -300,7 +300,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk pytest",
+        rtk_cmd: "tokenzip pytest",
         rewrite_prefixes: &["python -m pytest", "pytest"],
         category: "Python",
         savings_pct: 90.0,
@@ -308,7 +308,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk pip",
+        rtk_cmd: "tokenzip pip",
         rewrite_prefixes: &["pip3", "pip", "uv pip"],
         category: "Python",
         savings_pct: 75.0,
@@ -317,7 +317,7 @@ pub const RULES: &[RtkRule] = &[
     },
     // Go tooling
     RtkRule {
-        rtk_cmd: "rtk go",
+        rtk_cmd: "tokenzip go",
         rewrite_prefixes: &["go"],
         category: "Go",
         savings_pct: 85.0,
@@ -325,7 +325,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk golangci-lint",
+        rtk_cmd: "tokenzip golangci-lint",
         rewrite_prefixes: &["golangci-lint", "golangci"],
         category: "Go",
         savings_pct: 85.0,
@@ -334,7 +334,7 @@ pub const RULES: &[RtkRule] = &[
     },
     // AWS CLI
     RtkRule {
-        rtk_cmd: "rtk aws",
+        rtk_cmd: "tokenzip aws",
         rewrite_prefixes: &["aws"],
         category: "Infra",
         savings_pct: 80.0,
@@ -343,7 +343,7 @@ pub const RULES: &[RtkRule] = &[
     },
     // PostgreSQL
     RtkRule {
-        rtk_cmd: "rtk psql",
+        rtk_cmd: "tokenzip psql",
         rewrite_prefixes: &["psql"],
         category: "Infra",
         savings_pct: 75.0,
@@ -352,7 +352,7 @@ pub const RULES: &[RtkRule] = &[
     },
     // TOML-filtered commands
     RtkRule {
-        rtk_cmd: "rtk ansible-playbook",
+        rtk_cmd: "tokenzip ansible-playbook",
         rewrite_prefixes: &["ansible-playbook"],
         category: "Infra",
         savings_pct: 70.0,
@@ -360,7 +360,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk brew",
+        rtk_cmd: "tokenzip brew",
         rewrite_prefixes: &["brew"],
         category: "PackageManager",
         savings_pct: 65.0,
@@ -368,7 +368,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk composer",
+        rtk_cmd: "tokenzip composer",
         rewrite_prefixes: &["composer"],
         category: "PackageManager",
         savings_pct: 65.0,
@@ -376,7 +376,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk df",
+        rtk_cmd: "tokenzip df",
         rewrite_prefixes: &["df"],
         category: "System",
         savings_pct: 60.0,
@@ -384,7 +384,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk dotnet",
+        rtk_cmd: "tokenzip dotnet",
         rewrite_prefixes: &["dotnet"],
         category: "Build",
         savings_pct: 70.0,
@@ -392,7 +392,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk du",
+        rtk_cmd: "tokenzip du",
         rewrite_prefixes: &["du"],
         category: "System",
         savings_pct: 60.0,
@@ -400,7 +400,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk fail2ban-client",
+        rtk_cmd: "tokenzip fail2ban-client",
         rewrite_prefixes: &["fail2ban-client"],
         category: "Infra",
         savings_pct: 60.0,
@@ -408,7 +408,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk gcloud",
+        rtk_cmd: "tokenzip gcloud",
         rewrite_prefixes: &["gcloud"],
         category: "Infra",
         savings_pct: 65.0,
@@ -416,7 +416,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk hadolint",
+        rtk_cmd: "tokenzip hadolint",
         rewrite_prefixes: &["hadolint"],
         category: "Build",
         savings_pct: 65.0,
@@ -424,7 +424,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk helm",
+        rtk_cmd: "tokenzip helm",
         rewrite_prefixes: &["helm"],
         category: "Infra",
         savings_pct: 65.0,
@@ -432,7 +432,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk iptables",
+        rtk_cmd: "tokenzip iptables",
         rewrite_prefixes: &["iptables"],
         category: "Infra",
         savings_pct: 60.0,
@@ -440,7 +440,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk make",
+        rtk_cmd: "tokenzip make",
         rewrite_prefixes: &["make"],
         category: "Build",
         savings_pct: 65.0,
@@ -448,7 +448,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk markdownlint",
+        rtk_cmd: "tokenzip markdownlint",
         rewrite_prefixes: &["markdownlint"],
         category: "Build",
         savings_pct: 65.0,
@@ -456,7 +456,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk mix",
+        rtk_cmd: "tokenzip mix",
         rewrite_prefixes: &["mix"],
         category: "Build",
         savings_pct: 65.0,
@@ -464,7 +464,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk mvn",
+        rtk_cmd: "tokenzip mvn",
         rewrite_prefixes: &["mvn"],
         category: "Build",
         savings_pct: 70.0,
@@ -472,7 +472,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk ping",
+        rtk_cmd: "tokenzip ping",
         rewrite_prefixes: &["ping"],
         category: "Network",
         savings_pct: 60.0,
@@ -480,7 +480,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk pio",
+        rtk_cmd: "tokenzip pio",
         rewrite_prefixes: &["pio"],
         category: "Build",
         savings_pct: 65.0,
@@ -488,7 +488,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk poetry",
+        rtk_cmd: "tokenzip poetry",
         rewrite_prefixes: &["poetry"],
         category: "Python",
         savings_pct: 65.0,
@@ -496,7 +496,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk pre-commit",
+        rtk_cmd: "tokenzip pre-commit",
         rewrite_prefixes: &["pre-commit"],
         category: "Build",
         savings_pct: 65.0,
@@ -504,7 +504,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk ps",
+        rtk_cmd: "tokenzip ps",
         rewrite_prefixes: &["ps"],
         category: "System",
         savings_pct: 60.0,
@@ -512,7 +512,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk quarto",
+        rtk_cmd: "tokenzip quarto",
         rewrite_prefixes: &["quarto"],
         category: "Build",
         savings_pct: 65.0,
@@ -520,7 +520,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk rsync",
+        rtk_cmd: "tokenzip rsync",
         rewrite_prefixes: &["rsync"],
         category: "Network",
         savings_pct: 65.0,
@@ -528,7 +528,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk shellcheck",
+        rtk_cmd: "tokenzip shellcheck",
         rewrite_prefixes: &["shellcheck"],
         category: "Build",
         savings_pct: 65.0,
@@ -536,7 +536,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk shopify",
+        rtk_cmd: "tokenzip shopify",
         rewrite_prefixes: &["shopify"],
         category: "Build",
         savings_pct: 65.0,
@@ -544,7 +544,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk sops",
+        rtk_cmd: "tokenzip sops",
         rewrite_prefixes: &["sops"],
         category: "Infra",
         savings_pct: 60.0,
@@ -552,7 +552,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk swift",
+        rtk_cmd: "tokenzip swift",
         rewrite_prefixes: &["swift"],
         category: "Build",
         savings_pct: 65.0,
@@ -560,7 +560,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk systemctl",
+        rtk_cmd: "tokenzip systemctl",
         rewrite_prefixes: &["systemctl"],
         category: "System",
         savings_pct: 65.0,
@@ -568,7 +568,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk terraform",
+        rtk_cmd: "tokenzip terraform",
         rewrite_prefixes: &["terraform"],
         category: "Infra",
         savings_pct: 70.0,
@@ -576,7 +576,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk tofu",
+        rtk_cmd: "tokenzip tofu",
         rewrite_prefixes: &["tofu"],
         category: "Infra",
         savings_pct: 70.0,
@@ -584,7 +584,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk trunk",
+        rtk_cmd: "tokenzip trunk",
         rewrite_prefixes: &["trunk"],
         category: "Build",
         savings_pct: 65.0,
@@ -592,7 +592,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk uv",
+        rtk_cmd: "tokenzip uv",
         rewrite_prefixes: &["uv"],
         category: "Python",
         savings_pct: 65.0,
@@ -600,7 +600,7 @@ pub const RULES: &[RtkRule] = &[
         subcmd_status: &[],
     },
     RtkRule {
-        rtk_cmd: "rtk yamllint",
+        rtk_cmd: "tokenzip yamllint",
         rewrite_prefixes: &["yamllint"],
         category: "Build",
         savings_pct: 65.0,
@@ -646,7 +646,7 @@ pub const IGNORED_PREFIXES: &[&str] = &[
     "python -c",
     "node -e",
     "ruby -e",
-    "rtk ",
+    "tokenzip ",
     "pwd",
     "bash ",
     "sh ",

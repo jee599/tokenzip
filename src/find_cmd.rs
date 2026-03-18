@@ -84,7 +84,7 @@ fn parse_find_args(args: &[String]) -> Result<FindArgs> {
 
     if has_unsupported_find_flags(args) {
         anyhow::bail!(
-            "rtk find does not support compound predicates or actions (e.g. -not, -exec). Use `find` directly."
+            "tokenzip find does not support compound predicates or actions (e.g. -not, -exec). Use `find` directly."
         );
     }
 
@@ -130,7 +130,7 @@ fn parse_native_find_args(args: &[String]) -> Result<FindArgs> {
                 }
             }
             flag if flag.starts_with('-') => {
-                eprintln!("rtk find: unknown flag '{}', ignored", flag);
+                eprintln!("tokenzip find: unknown flag '{}', ignored", flag);
             }
             _ => {}
         }
@@ -276,7 +276,7 @@ pub fn run(
         println!("{}", msg);
         timer.track(
             &format!("find {} -name '{}'", path, effective_pattern),
-            "rtk find",
+            "tokenzip find",
             &raw_output,
             &msg,
         );
@@ -370,7 +370,7 @@ pub fn run(
     let rtk_output = format!("{}F {}D + {}", total_files, dirs_count, ext_line);
     timer.track(
         &format!("find {} -name '{}'", path, effective_pattern),
-        "rtk find",
+        "tokenzip find",
         &raw_output,
         &rtk_output,
     );

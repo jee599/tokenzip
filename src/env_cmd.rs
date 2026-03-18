@@ -123,7 +123,7 @@ pub fn run(filter: Option<&str>, show_all: bool, verbose: u8) -> Result<()> {
 
     let raw: String = vars.iter().map(|(k, v)| format!("{}={}\n", k, v)).collect();
     let rtk = format!("{} vars -> {} shown", total, shown);
-    timer.track("env", "rtk env", &raw, &rtk);
+    timer.track("env", "tokenzip env", &raw, &rtk);
     Ok(())
 }
 

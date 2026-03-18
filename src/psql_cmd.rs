@@ -57,7 +57,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("psql {}", args.join(" ")),
-        &format!("rtk psql {}", args.join(" ")),
+        &format!("tokenzip psql {}", args.join(" ")),
         &stdout,
         &filtered,
     );

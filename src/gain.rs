@@ -61,7 +61,7 @@ pub fn run(
 
     if summary.total_commands == 0 {
         println!("No tracking data yet.");
-        println!("Run some rtk commands to start tracking savings.");
+        println!("Run some tokenzip commands to start tracking savings.");
         return Ok(());
     }
 
@@ -69,9 +69,9 @@ pub fn run(
     if !daily && !weekly && !monthly && !all {
         // added: scope-aware styled header // changed: merged upstream styled + project scope
         let title = if project_scope.is_some() {
-            "RTK Token Savings (Project Scope)"
+            "TokenZip Token Savings (Project Scope)"
         } else {
-            "RTK Token Savings (Global Scope)"
+            "TokenZip Token Savings (Global Scope)"
         };
         println!("{}", styled(title, true));
         println!("{}", "═".repeat(60));
@@ -109,7 +109,7 @@ pub fn run(
             hook_check::HookStatus::Missing => {
                 eprintln!(
                     "{}",
-                    "[warn] No hook installed — run `rtk init -g` for automatic token savings"
+                    "[warn] No hook installed — run `tokenzip init -g` for automatic token savings"
                         .yellow()
                 );
                 eprintln!();
@@ -117,14 +117,14 @@ pub fn run(
             hook_check::HookStatus::Outdated => {
                 eprintln!(
                     "{}",
-                    "[warn] Hook outdated — run `rtk init -g` to update".yellow()
+                    "[warn] Hook outdated — run `tokenzip init -g` to update".yellow()
                 );
                 eprintln!();
             }
             hook_check::HookStatus::Ok => {}
         }
 
-        // Lightweight RTK_DISABLED bypass check (best-effort, silent on failure)
+        // Lightweight TOKENZIP_DISABLED bypass check (best-effort, silent on failure)
         if let Some(warning) = check_rtk_disabled_bypass() {
             eprintln!("{}", warning.yellow());
             eprintln!();
@@ -618,7 +618,7 @@ fn export_csv(
     Ok(())
 }
 
-/// Lightweight scan of recent Claude Code sessions for RTK_DISABLED= overuse.
+/// Lightweight scan of recent Claude Code sessions for TOKENZIP_DISABLED= overuse.
 /// Returns a warning string if bypass rate exceeds 10%, None otherwise.
 /// Silently returns None on any error (missing dirs, permission issues, etc.).
 fn check_rtk_disabled_bypass() -> Option<String> {
@@ -659,7 +659,7 @@ fn check_rtk_disabled_bypass() -> Option<String> {
     let pct = (bypassed as f64 / total_bash as f64) * 100.0;
     if pct > 10.0 {
         Some(format!(
-            "[warn] {} commands ({:.0}%) used RTK_DISABLED=1 unnecessarily — run `rtk discover` for details",
+            "[warn] {} commands ({:.0}%) used TOKENZIP_DISABLED=1 unnecessarily — run `tokenzip discover` for details",
             bypassed, pct
         ))
     } else {
@@ -678,7 +678,7 @@ fn show_failures(tracker: &Tracker) -> Result<()> {
         return Ok(());
     }
 
-    println!("{}", styled("RTK Parse Failures", true));
+    println!("{}", styled("TokenZip Parse Failures", true));
     println!("{}", "═".repeat(60));
     println!();
 

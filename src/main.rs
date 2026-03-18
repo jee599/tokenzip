@@ -72,10 +72,10 @@ use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 #[command(
-    name = "rtk",
-    version,
-    about = "Rust Token Killer - Minimize LLM token consumption",
-    long_about = "A high-performance CLI proxy designed to filter and summarize system outputs before they reach your LLM context."
+    name = "tokenzip",
+    version = concat!(env!("CARGO_PKG_VERSION"), " (based on rtk 0.30.1)"),
+    about = "TokenZip - Minimize LLM token consumption",
+    long_about = "A high-performance CLI proxy designed to filter and summarize system outputs before they reach your LLM context. Based on RTK (Rust Token Killer) by rtk-ai."
 )]
 struct Cli {
     #[command(subcommand)]
@@ -322,7 +322,7 @@ enum Commands {
         extra_args: Vec<String>,
     },
 
-    /// Initialize rtk instructions in CLAUDE.md
+    /// Initialize tokenzip instructions in CLAUDE.md
     Init {
         /// Add to global ~/.claude/CLAUDE.md instead of local
         #[arg(short, long)]
@@ -413,7 +413,7 @@ enum Commands {
         failures: bool,
     },
 
-    /// Claude Code economics: spending (ccusage) vs savings (rtk) analysis
+    /// Claude Code economics: spending (ccusage) vs savings (tokenzip) analysis
     CcEconomics {
         /// Show detailed daily breakdown
         #[arg(short, long)]
@@ -520,7 +520,7 @@ enum Commands {
         args: Vec<String>,
     },
 
-    /// Discover missed RTK savings from Claude Code history
+    /// Discover missed TokenZip savings from Claude Code history
     Discover {
         /// Filter by project path (substring match)
         #[arg(short, long)]
@@ -539,7 +539,7 @@ enum Commands {
         format: String,
     },
 
-    /// Show RTK adoption across Claude Code sessions
+    /// Show TokenZip adoption across Claude Code sessions
     Session {},
 
     /// Learn CLI corrections from Claude Code error history
@@ -642,7 +642,7 @@ enum Commands {
         args: Vec<String>,
     },
 
-    /// Show hook rewrite audit metrics (requires RTK_HOOK_AUDIT=1)
+    /// Show hook rewrite audit metrics (requires TOKENZIP_HOOK_AUDIT=1)
     #[command(name = "hook-audit")]
     HookAudit {
         /// Show entries from last N days (0 = all time)
@@ -650,16 +650,16 @@ enum Commands {
         since: u64,
     },
 
-    /// Rewrite a raw command to its RTK equivalent (single source of truth for hooks)
+    /// Rewrite a raw command to its TokenZip equivalent (single source of truth for hooks)
     ///
     /// Exits 0 and prints the rewritten command if supported.
-    /// Exits 1 with no output if the command has no RTK equivalent.
+    /// Exits 1 with no output if the command has no TokenZip equivalent.
     ///
     /// Used by Claude Code, Gemini CLI, and other LLM hooks:
-    ///   REWRITTEN=$(rtk rewrite "$CMD") || exit 0
+    ///   REWRITTEN=$(tokenzip rewrite "$CMD") || exit 0
     Rewrite {
         /// Raw command to rewrite (e.g. "git status", "cargo test && git push")
-        /// Accepts multiple args: `rtk rewrite ls -al` is equivalent to `rtk rewrite "ls -al"`
+        /// Accepts multiple args: `tokenzip rewrite ls -al` is equivalent to `tokenzip rewrite "ls -al"`
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         args: Vec<String>,
     },
@@ -1026,13 +1026,13 @@ const RTK_META_COMMANDS: &[&str] = &[
 fn run_fallback(parse_error: clap::Error) -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
 
-    // No args → show Clap's error (user ran just "rtk" with bad syntax)
+    // No args → show Clap's error (user ran just "tokenzip" with bad syntax)
     if args.is_empty() {
         parse_error.exit();
     }
 
     // RTK meta-commands should never fall back to raw execution.
-    // e.g. `rtk gain --badtypo` should show Clap's error, not try to run `gain` from $PATH.
+    // e.g. `tokenzip gain --badtypo` should show Clap's error, not try to run `gain` from $PATH.
     if RTK_META_COMMANDS.contains(&args[0].as_str()) {
         parse_error.exit();
     }
@@ -1089,7 +1089,7 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
 
                 timer.track(
                     &raw_command,
-                    &format!("rtk:toml {}", raw_command),
+                    &format!("tokenzip:toml {}", raw_command),
                     &stdout_raw,
                     &filtered,
                 );
@@ -1117,7 +1117,7 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
 
         match status {
             Ok(s) => {
-                timer.track_passthrough(&raw_command, &format!("rtk fallback: {}", raw_command));
+                timer.track_passthrough(&raw_command, &format!("tokenzip fallback: {}", raw_command));
 
                 tracking::record_parse_failure_silent(&raw_command, &error_message, true);
 
@@ -1879,7 +1879,7 @@ fn main() -> Result<()> {
                                 let args_str = args.join(" ");
                                 timer.track_passthrough(
                                     &format!("npx {}", args_str),
-                                    &format!("rtk npx {} (passthrough)", args_str),
+                                    &format!("tokenzip npx {} (passthrough)", args_str),
                                 );
                                 if !status.success() {
                                     std::process::exit(status.code().unwrap_or(1));
@@ -1892,7 +1892,7 @@ fn main() -> Result<()> {
                             .arg("prisma")
                             .status()
                             .context("Failed to run npx prisma")?;
-                        timer.track_passthrough("npx prisma", "rtk npx prisma (passthrough)");
+                        timer.track_passthrough("npx prisma", "tokenzip npx prisma (passthrough)");
                         if !status.success() {
                             std::process::exit(status.code().unwrap_or(1));
                         }
@@ -2092,7 +2092,7 @@ fn main() -> Result<()> {
             // Track usage (input = output since no filtering)
             timer.track(
                 &format!("{} {}", cmd_name, cmd_args.join(" ")),
-                &format!("rtk proxy {} {}", cmd_name, cmd_args.join(" ")),
+                &format!("tokenzip proxy {} {}", cmd_name, cmd_args.join(" ")),
                 &full_output,
                 &full_output,
             );
@@ -2190,7 +2190,7 @@ mod tests {
 
     #[test]
     fn test_git_commit_single_message() {
-        let cli = Cli::try_parse_from(["rtk", "git", "commit", "-m", "fix: typo"]).unwrap();
+        let cli = Cli::try_parse_from(["tokenzip", "git", "commit", "-m", "fix: typo"]).unwrap();
         match cli.command {
             Commands::Git {
                 command: GitCommands::Commit { args },
@@ -2205,7 +2205,7 @@ mod tests {
     #[test]
     fn test_git_commit_multiple_messages() {
         let cli = Cli::try_parse_from([
-            "rtk",
+            "tokenzip",
             "git",
             "commit",
             "-m",
@@ -2231,7 +2231,7 @@ mod tests {
     // #327: git commit -am "msg" was rejected by Clap
     #[test]
     fn test_git_commit_am_flag() {
-        let cli = Cli::try_parse_from(["rtk", "git", "commit", "-am", "quick fix"]).unwrap();
+        let cli = Cli::try_parse_from(["tokenzip", "git", "commit", "-am", "quick fix"]).unwrap();
         match cli.command {
             Commands::Git {
                 command: GitCommands::Commit { args },
@@ -2246,7 +2246,7 @@ mod tests {
     #[test]
     fn test_git_commit_amend() {
         let cli =
-            Cli::try_parse_from(["rtk", "git", "commit", "--amend", "-m", "new msg"]).unwrap();
+            Cli::try_parse_from(["tokenzip", "git", "commit", "--amend", "-m", "new msg"]).unwrap();
         match cli.command {
             Commands::Git {
                 command: GitCommands::Commit { args },
@@ -2261,7 +2261,7 @@ mod tests {
     #[test]
     fn test_git_global_options_parsing() {
         let cli =
-            Cli::try_parse_from(["rtk", "git", "--no-pager", "--no-optional-locks", "status"])
+            Cli::try_parse_from(["tokenzip", "git", "--no-pager", "--no-optional-locks", "status"])
                 .unwrap();
         match cli.command {
             Commands::Git {
@@ -2283,7 +2283,7 @@ mod tests {
     #[test]
     fn test_git_commit_long_flag_multiple() {
         let cli = Cli::try_parse_from([
-            "rtk",
+            "tokenzip",
             "git",
             "commit",
             "--message",
@@ -2317,13 +2317,13 @@ mod tests {
 
     #[test]
     fn test_try_parse_valid_git_status() {
-        let result = Cli::try_parse_from(["rtk", "git", "status"]);
+        let result = Cli::try_parse_from(["tokenzip", "git", "status"]);
         assert!(result.is_ok(), "git status should parse successfully");
     }
 
     #[test]
     fn test_try_parse_help_is_display_help() {
-        match Cli::try_parse_from(["rtk", "--help"]) {
+        match Cli::try_parse_from(["tokenzip", "--help"]) {
             Err(e) => assert_eq!(e.kind(), ErrorKind::DisplayHelp),
             Ok(_) => panic!("Expected DisplayHelp error"),
         }
@@ -2331,7 +2331,7 @@ mod tests {
 
     #[test]
     fn test_try_parse_version_is_display_version() {
-        match Cli::try_parse_from(["rtk", "--version"]) {
+        match Cli::try_parse_from(["tokenzip", "--version"]) {
             Err(e) => assert_eq!(e.kind(), ErrorKind::DisplayVersion),
             Ok(_) => panic!("Expected DisplayVersion error"),
         }
@@ -2339,7 +2339,7 @@ mod tests {
 
     #[test]
     fn test_try_parse_unknown_subcommand_is_error() {
-        match Cli::try_parse_from(["rtk", "nonexistent-command"]) {
+        match Cli::try_parse_from(["tokenzip", "nonexistent-command"]) {
             Err(e) => assert!(!matches!(
                 e.kind(),
                 ErrorKind::DisplayHelp | ErrorKind::DisplayVersion
@@ -2350,7 +2350,7 @@ mod tests {
 
     #[test]
     fn test_try_parse_git_with_dash_c_succeeds() {
-        let result = Cli::try_parse_from(["rtk", "git", "-C", "/path", "status"]);
+        let result = Cli::try_parse_from(["tokenzip", "git", "-C", "/path", "status"]);
         assert!(
             result.is_ok(),
             "git -C /path status should parse successfully"
@@ -2367,7 +2367,7 @@ mod tests {
 
     #[test]
     fn test_gain_failures_flag_parses() {
-        let result = Cli::try_parse_from(["rtk", "gain", "--failures"]);
+        let result = Cli::try_parse_from(["tokenzip", "gain", "--failures"]);
         assert!(result.is_ok());
         if let Ok(cli) = result {
             match cli.command {
@@ -2379,7 +2379,7 @@ mod tests {
 
     #[test]
     fn test_gain_failures_short_flag_parses() {
-        let result = Cli::try_parse_from(["rtk", "gain", "-F"]);
+        let result = Cli::try_parse_from(["tokenzip", "gain", "-F"]);
         assert!(result.is_ok());
         if let Ok(cli) = result {
             match cli.command {
@@ -2397,7 +2397,7 @@ mod tests {
             if matches!(*cmd, "proxy" | "rewrite" | "session") {
                 continue; // these use trailing_var_arg (accept any args by design)
             }
-            let result = Cli::try_parse_from(["rtk", cmd, "--nonexistent-flag-xyz"]);
+            let result = Cli::try_parse_from(["tokenzip", cmd, "--nonexistent-flag-xyz"]);
             assert!(
                 result.is_err(),
                 "Meta-command '{}' with bad flag should fail to parse",
@@ -2410,14 +2410,14 @@ mod tests {
     fn test_meta_command_list_is_complete() {
         // Verify all meta-commands are in the guard list by checking they parse with valid syntax
         let meta_cmds_that_parse = [
-            vec!["rtk", "gain"],
-            vec!["rtk", "discover"],
-            vec!["rtk", "learn"],
-            vec!["rtk", "init"],
-            vec!["rtk", "config"],
-            vec!["rtk", "proxy", "echo", "hi"],
-            vec!["rtk", "hook-audit"],
-            vec!["rtk", "cc-economics"],
+            vec!["tokenzip", "gain"],
+            vec!["tokenzip", "discover"],
+            vec!["tokenzip", "learn"],
+            vec!["tokenzip", "init"],
+            vec!["tokenzip", "config"],
+            vec!["tokenzip", "proxy", "echo", "hi"],
+            vec!["tokenzip", "hook-audit"],
+            vec!["tokenzip", "cc-economics"],
         ];
         for args in &meta_cmds_that_parse {
             let result = Cli::try_parse_from(args.iter());
@@ -2466,22 +2466,22 @@ mod tests {
 
     #[test]
     fn test_rewrite_clap_multi_args() {
-        // This is the bug KuSh reported: `rtk rewrite ls -al` failed because
+        // This is the bug KuSh reported: `tokenzip rewrite ls -al` failed because
         // Clap rejected `-al` as an unknown flag. With trailing_var_arg + allow_hyphen_values,
         // multiple args are accepted and joined into a single command string.
         let cases = vec![
-            vec!["rtk", "rewrite", "ls", "-al"],
-            vec!["rtk", "rewrite", "git", "status"],
-            vec!["rtk", "rewrite", "npm", "exec"],
-            vec!["rtk", "rewrite", "cargo", "test"],
-            vec!["rtk", "rewrite", "du", "-sh", "."],
-            vec!["rtk", "rewrite", "head", "-50", "file.txt"],
+            vec!["tokenzip", "rewrite", "ls", "-al"],
+            vec!["tokenzip", "rewrite", "git", "status"],
+            vec!["tokenzip", "rewrite", "npm", "exec"],
+            vec!["tokenzip", "rewrite", "cargo", "test"],
+            vec!["tokenzip", "rewrite", "du", "-sh", "."],
+            vec!["tokenzip", "rewrite", "head", "-50", "file.txt"],
         ];
         for args in &cases {
             let result = Cli::try_parse_from(args.iter());
             assert!(
                 result.is_ok(),
-                "rtk rewrite {:?} should parse (was failing before trailing_var_arg fix)",
+                "tokenzip rewrite {:?} should parse (was failing before trailing_var_arg fix)",
                 &args[2..]
             );
             if let Ok(cli) = result {
@@ -2497,8 +2497,8 @@ mod tests {
 
     #[test]
     fn test_rewrite_clap_quoted_single_arg() {
-        // Quoted form: `rtk rewrite "git status"` — single arg containing spaces
-        let result = Cli::try_parse_from(["rtk", "rewrite", "git status"]);
+        // Quoted form: `tokenzip rewrite "git status"` — single arg containing spaces
+        let result = Cli::try_parse_from(["tokenzip", "rewrite", "git status"]);
         assert!(result.is_ok());
         if let Ok(cli) = result {
             match cli.command {

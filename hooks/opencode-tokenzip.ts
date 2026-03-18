@@ -1,17 +1,17 @@
 import type { Plugin } from "@opencode-ai/plugin"
 
-// RTK OpenCode plugin — rewrites commands to use rtk for token savings.
-// Requires: rtk >= 0.23.0 in PATH.
+// TokenZip OpenCode plugin — rewrites commands to use rtk for token savings.
+// Requires: tokenzip >= 0.1.0 in PATH.
 //
-// This is a thin delegating plugin: all rewrite logic lives in `rtk rewrite`,
+// This is a thin delegating plugin: all rewrite logic lives in `tokenzip rewrite`,
 // which is the single source of truth (src/discover/registry.rs).
 // To add or change rewrite rules, edit the Rust registry — not this file.
 
-export const RtkOpenCodePlugin: Plugin = async ({ $ }) => {
+export const TokenZipOpenCodePlugin: Plugin = async ({ $ }) => {
   try {
-    await $`which rtk`.quiet()
+    await $`which tokenzip`.quiet()
   } catch {
-    console.warn("[rtk] rtk binary not found in PATH — plugin disabled")
+    console.warn("[tokenzip] tokenzip binary not found in PATH — plugin disabled")
     return {}
   }
 
@@ -26,13 +26,13 @@ export const RtkOpenCodePlugin: Plugin = async ({ $ }) => {
       if (typeof command !== "string" || !command) return
 
       try {
-        const result = await $`rtk rewrite ${command}`.quiet().nothrow()
+        const result = await $`tokenzip rewrite ${command}`.quiet().nothrow()
         const rewritten = String(result.stdout).trim()
         if (rewritten && rewritten !== command) {
           ;(args as Record<string, unknown>).command = rewritten
         }
       } catch {
-        // rtk rewrite failed — pass through unchanged
+        // tokenzip rewrite failed — pass through unchanged
       }
     },
   }

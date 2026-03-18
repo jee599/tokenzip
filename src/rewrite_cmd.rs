@@ -1,6 +1,6 @@
 use crate::discover::registry;
 
-/// Run the `rtk rewrite` command.
+/// Run the `tokenzip rewrite` command.
 ///
 /// Prints the RTK-rewritten command to stdout and exits 0.
 /// Exits 1 (without output) if the command has no RTK equivalent.
@@ -43,8 +43,8 @@ mod tests {
     #[test]
     fn test_run_already_rtk_returns_some() {
         assert_eq!(
-            registry::rewrite_command("rtk git status", &[]),
-            Some("rtk git status".into())
+            registry::rewrite_command("tokenzip git status", &[]),
+            Some("tokenzip git status".into())
         );
     }
 }

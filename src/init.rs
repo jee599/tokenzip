@@ -7,15 +7,15 @@ use tempfile::NamedTempFile;
 use crate::integrity;
 
 // Embedded hook script (guards before set -euo pipefail)
-const REWRITE_HOOK: &str = include_str!("../hooks/rtk-rewrite.sh");
+const REWRITE_HOOK: &str = include_str!("../hooks/tokenzip-rewrite.sh");
 
 // Embedded OpenCode plugin (auto-rewrite)
-const OPENCODE_PLUGIN: &str = include_str!("../hooks/opencode-rtk.ts");
+const OPENCODE_PLUGIN: &str = include_str!("../hooks/opencode-tokenzip.ts");
 
 // Embedded slim RTK awareness instructions
-const RTK_SLIM: &str = include_str!("../hooks/rtk-awareness.md");
+const TOKENZIP_SLIM: &str = include_str!("../hooks/tokenzip-awareness.md");
 
-/// Template written by `rtk init` when no filters.toml exists yet.
+/// Template written by `tokenzip init` when no filters.toml exists yet.
 const FILTERS_TEMPLATE: &str = r#"# Project-local RTK filters — commit this file with your repo.
 # Filters here override user-global and built-in filters.
 # Docs: https://github.com/rtk-ai/rtk#custom-filters
@@ -31,9 +31,9 @@ schema_version = 1
 # on_empty = "my-tool: ok"
 "#;
 
-/// Template for user-global filters (~/.config/rtk/filters.toml).
+/// Template for user-global filters (~/.config/tokenzip/filters.toml).
 const FILTERS_GLOBAL_TEMPLATE: &str = r#"# User-global RTK filters — apply to all your projects.
-# Project-local .rtk/filters.toml takes precedence over these.
+# Project-local .tokenzip/filters.toml takes precedence over these.
 # Docs: https://github.com/rtk-ai/rtk#custom-filters
 schema_version = 1
 
@@ -64,122 +64,122 @@ pub enum PatchResult {
 }
 
 // Legacy full instructions for backward compatibility (--claude-md mode)
-const RTK_INSTRUCTIONS: &str = r##"<!-- rtk-instructions v2 -->
-# RTK (Rust Token Killer) - Token-Optimized Commands
+const TOKENZIP_INSTRUCTIONS: &str = r##"<!-- tokenzip-instructions v2 -->
+# TokenZip - Token-Optimized Commands (based on RTK)
 
 ## Golden Rule
 
-**Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This means RTK is always safe to use.
+**Always prefix commands with `tokenzip`**. If TokenZip has a dedicated filter, it uses it. If not, it passes through unchanged. This means TokenZip is always safe to use.
 
-**Important**: Even in command chains with `&&`, use `rtk`:
+**Important**: Even in command chains with `&&`, use `tokenzip`:
 ```bash
 # ❌ Wrong
 git add . && git commit -m "msg" && git push
 
 # ✅ Correct
-rtk git add . && rtk git commit -m "msg" && rtk git push
+tokenzip git add . && tokenzip git commit -m "msg" && tokenzip git push
 ```
 
-## RTK Commands by Workflow
+## TokenZip Commands by Workflow
 
 ### Build & Compile (80-90% savings)
 ```bash
-rtk cargo build         # Cargo build output
-rtk cargo check         # Cargo check output
-rtk cargo clippy        # Clippy warnings grouped by file (80%)
-rtk tsc                 # TypeScript errors grouped by file/code (83%)
-rtk lint                # ESLint/Biome violations grouped (84%)
-rtk prettier --check    # Files needing format only (70%)
-rtk next build          # Next.js build with route metrics (87%)
+tokenzip cargo build         # Cargo build output
+tokenzip cargo check         # Cargo check output
+tokenzip cargo clippy        # Clippy warnings grouped by file (80%)
+tokenzip tsc                 # TypeScript errors grouped by file/code (83%)
+tokenzip lint                # ESLint/Biome violations grouped (84%)
+tokenzip prettier --check    # Files needing format only (70%)
+tokenzip next build          # Next.js build with route metrics (87%)
 ```
 
 ### Test (90-99% savings)
 ```bash
-rtk cargo test          # Cargo test failures only (90%)
-rtk vitest run          # Vitest failures only (99.5%)
-rtk playwright test     # Playwright failures only (94%)
-rtk test <cmd>          # Generic test wrapper - failures only
+tokenzip cargo test          # Cargo test failures only (90%)
+tokenzip vitest run          # Vitest failures only (99.5%)
+tokenzip playwright test     # Playwright failures only (94%)
+tokenzip test <cmd>          # Generic test wrapper - failures only
 ```
 
 ### Git (59-80% savings)
 ```bash
-rtk git status          # Compact status
-rtk git log             # Compact log (works with all git flags)
-rtk git diff            # Compact diff (80%)
-rtk git show            # Compact show (80%)
-rtk git add             # Ultra-compact confirmations (59%)
-rtk git commit          # Ultra-compact confirmations (59%)
-rtk git push            # Ultra-compact confirmations
-rtk git pull            # Ultra-compact confirmations
-rtk git branch          # Compact branch list
-rtk git fetch           # Compact fetch
-rtk git stash           # Compact stash
-rtk git worktree        # Compact worktree
+tokenzip git status          # Compact status
+tokenzip git log             # Compact log (works with all git flags)
+tokenzip git diff            # Compact diff (80%)
+tokenzip git show            # Compact show (80%)
+tokenzip git add             # Ultra-compact confirmations (59%)
+tokenzip git commit          # Ultra-compact confirmations (59%)
+tokenzip git push            # Ultra-compact confirmations
+tokenzip git pull            # Ultra-compact confirmations
+tokenzip git branch          # Compact branch list
+tokenzip git fetch           # Compact fetch
+tokenzip git stash           # Compact stash
+tokenzip git worktree        # Compact worktree
 ```
 
 Note: Git passthrough works for ALL subcommands, even those not explicitly listed.
 
 ### GitHub (26-87% savings)
 ```bash
-rtk gh pr view <num>    # Compact PR view (87%)
-rtk gh pr checks        # Compact PR checks (79%)
-rtk gh run list         # Compact workflow runs (82%)
-rtk gh issue list       # Compact issue list (80%)
-rtk gh api              # Compact API responses (26%)
+tokenzip gh pr view <num>    # Compact PR view (87%)
+tokenzip gh pr checks        # Compact PR checks (79%)
+tokenzip gh run list         # Compact workflow runs (82%)
+tokenzip gh issue list       # Compact issue list (80%)
+tokenzip gh api              # Compact API responses (26%)
 ```
 
 ### JavaScript/TypeScript Tooling (70-90% savings)
 ```bash
-rtk pnpm list           # Compact dependency tree (70%)
-rtk pnpm outdated       # Compact outdated packages (80%)
-rtk pnpm install        # Compact install output (90%)
-rtk npm run <script>    # Compact npm script output
-rtk npx <cmd>           # Compact npx command output
-rtk prisma              # Prisma without ASCII art (88%)
+tokenzip pnpm list           # Compact dependency tree (70%)
+tokenzip pnpm outdated       # Compact outdated packages (80%)
+tokenzip pnpm install        # Compact install output (90%)
+tokenzip npm run <script>    # Compact npm script output
+tokenzip npx <cmd>           # Compact npx command output
+tokenzip prisma              # Prisma without ASCII art (88%)
 ```
 
 ### Files & Search (60-75% savings)
 ```bash
-rtk ls <path>           # Tree format, compact (65%)
-rtk read <file>         # Code reading with filtering (60%)
-rtk grep <pattern>      # Search grouped by file (75%)
-rtk find <pattern>      # Find grouped by directory (70%)
+tokenzip ls <path>           # Tree format, compact (65%)
+tokenzip read <file>         # Code reading with filtering (60%)
+tokenzip grep <pattern>      # Search grouped by file (75%)
+tokenzip find <pattern>      # Find grouped by directory (70%)
 ```
 
 ### Analysis & Debug (70-90% savings)
 ```bash
-rtk err <cmd>           # Filter errors only from any command
-rtk log <file>          # Deduplicated logs with counts
-rtk json <file>         # JSON structure without values
-rtk deps                # Dependency overview
-rtk env                 # Environment variables compact
-rtk summary <cmd>       # Smart summary of command output
-rtk diff                # Ultra-compact diffs
+tokenzip err <cmd>           # Filter errors only from any command
+tokenzip log <file>          # Deduplicated logs with counts
+tokenzip json <file>         # JSON structure without values
+tokenzip deps                # Dependency overview
+tokenzip env                 # Environment variables compact
+tokenzip summary <cmd>       # Smart summary of command output
+tokenzip diff                # Ultra-compact diffs
 ```
 
 ### Infrastructure (85% savings)
 ```bash
-rtk docker ps           # Compact container list
-rtk docker images       # Compact image list
-rtk docker logs <c>     # Deduplicated logs
-rtk kubectl get         # Compact resource list
-rtk kubectl logs        # Deduplicated pod logs
+tokenzip docker ps           # Compact container list
+tokenzip docker images       # Compact image list
+tokenzip docker logs <c>     # Deduplicated logs
+tokenzip kubectl get         # Compact resource list
+tokenzip kubectl logs        # Deduplicated pod logs
 ```
 
 ### Network (65-70% savings)
 ```bash
-rtk curl <url>          # Compact HTTP responses (70%)
-rtk wget <url>          # Compact download output (65%)
+tokenzip curl <url>          # Compact HTTP responses (70%)
+tokenzip wget <url>          # Compact download output (65%)
 ```
 
 ### Meta Commands
 ```bash
-rtk gain                # View token savings statistics
-rtk gain --history      # View command history with savings
-rtk discover            # Analyze Claude Code sessions for missed RTK usage
-rtk proxy <cmd>         # Run command without filtering (for debugging)
-rtk init                # Add RTK instructions to CLAUDE.md
-rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
+tokenzip gain                # View token savings statistics
+tokenzip gain --history      # View command history with savings
+tokenzip discover            # Analyze Claude Code sessions for missed TokenZip usage
+tokenzip proxy <cmd>         # Run command without filtering (for debugging)
+tokenzip init                # Add TokenZip instructions to CLAUDE.md
+tokenzip init --global       # Add TokenZip to ~/.claude/CLAUDE.md
 ```
 
 ## Token Savings Overview
@@ -196,10 +196,10 @@ rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
 | Network | curl, wget | 65-70% |
 
 Overall average: **60-90% token reduction** on common development operations.
-<!-- /rtk-instructions -->
+<!-- /tokenzip-instructions -->
 "##;
 
-/// Main entry point for `rtk init`
+/// Main entry point for `tokenzip init`
 pub fn run(
     global: bool,
     install_claude: bool,
@@ -210,7 +210,7 @@ pub fn run(
     verbose: u8,
 ) -> Result<()> {
     if install_opencode && !global {
-        anyhow::bail!("OpenCode plugin is global-only. Use: rtk init -g --opencode");
+        anyhow::bail!("OpenCode plugin is global-only. Use: tokenzip init -g --opencode");
     }
 
     // Mode selection
@@ -231,7 +231,7 @@ fn prepare_hook_paths() -> Result<(PathBuf, PathBuf)> {
     let hook_dir = claude_dir.join("hooks");
     fs::create_dir_all(&hook_dir)
         .with_context(|| format!("Failed to create hook directory: {}", hook_dir.display()))?;
-    let hook_path = hook_dir.join("rtk-rewrite.sh");
+    let hook_path = hook_dir.join("tokenzip-rewrite.sh");
     Ok((hook_dir, hook_path))
 }
 
@@ -402,7 +402,7 @@ fn remove_hook_from_json(root: &mut serde_json::Value) -> bool {
         if let Some(hooks_array) = entry.get("hooks").and_then(|h| h.as_array()) {
             for hook in hooks_array {
                 if let Some(command) = hook.get("command").and_then(|c| c.as_str()) {
-                    if command.contains("rtk-rewrite.sh") {
+                    if command.contains("tokenzip-rewrite.sh") {
                         return false; // Remove this entry
                     }
                 }
@@ -458,7 +458,7 @@ fn remove_hook_from_settings(verbose: u8) -> Result<bool> {
     Ok(removed)
 }
 
-/// Full uninstall: remove hook, RTK.md, @RTK.md reference, settings.json entry
+/// Full uninstall: remove hook, TOKENZIP.md, @TOKENZIP.md reference, settings.json entry
 pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
     if !global {
         anyhow::bail!("Uninstall only works with --global flag. For local projects, manually remove RTK from CLAUDE.md");
@@ -468,7 +468,7 @@ pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
     let mut removed = Vec::new();
 
     // 1. Remove hook file
-    let hook_path = claude_dir.join("hooks").join("rtk-rewrite.sh");
+    let hook_path = claude_dir.join("hooks").join("tokenzip-rewrite.sh");
     if hook_path.exists() {
         fs::remove_file(&hook_path)
             .with_context(|| format!("Failed to remove hook: {}", hook_path.display()))?;
@@ -480,24 +480,24 @@ pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
         removed.push("Integrity hash: removed".to_string());
     }
 
-    // 2. Remove RTK.md
-    let rtk_md_path = claude_dir.join("RTK.md");
-    if rtk_md_path.exists() {
-        fs::remove_file(&rtk_md_path)
-            .with_context(|| format!("Failed to remove RTK.md: {}", rtk_md_path.display()))?;
-        removed.push(format!("RTK.md: {}", rtk_md_path.display()));
+    // 2. Remove TOKENZIP.md
+    let tokenzip_md_path = claude_dir.join("TOKENZIP.md");
+    if tokenzip_md_path.exists() {
+        fs::remove_file(&tokenzip_md_path)
+            .with_context(|| format!("Failed to remove TOKENZIP.md: {}", tokenzip_md_path.display()))?;
+        removed.push(format!("TOKENZIP.md: {}", tokenzip_md_path.display()));
     }
 
-    // 3. Remove @RTK.md reference from CLAUDE.md
+    // 3. Remove @TOKENZIP.md reference from CLAUDE.md
     let claude_md_path = claude_dir.join("CLAUDE.md");
     if claude_md_path.exists() {
         let content = fs::read_to_string(&claude_md_path)
             .with_context(|| format!("Failed to read CLAUDE.md: {}", claude_md_path.display()))?;
 
-        if content.contains("@RTK.md") {
+        if content.contains("@TOKENZIP.md") {
             let new_content = content
                 .lines()
-                .filter(|line| !line.trim().starts_with("@RTK.md"))
+                .filter(|line| !line.trim().starts_with("@TOKENZIP.md"))
                 .collect::<Vec<_>>()
                 .join("\n");
 
@@ -507,7 +507,7 @@ pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
             fs::write(&claude_md_path, cleaned).with_context(|| {
                 format!("Failed to write CLAUDE.md: {}", claude_md_path.display())
             })?;
-            removed.push("CLAUDE.md: removed @RTK.md reference".to_string());
+            removed.push("CLAUDE.md: removed @TOKENZIP.md reference".to_string());
         }
     }
 
@@ -524,9 +524,9 @@ pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
 
     // Report results
     if removed.is_empty() {
-        println!("RTK was not installed (nothing to remove)");
+        println!("TokenZip was not installed (nothing to remove)");
     } else {
-        println!("RTK uninstalled:");
+        println!("TokenZip uninstalled:");
         for item in removed {
             println!("  - {}", item);
         }
@@ -625,7 +625,7 @@ fn patch_settings_json(
 }
 
 /// Clean up consecutive blank lines (collapse 3+ to 2)
-/// Used when removing @RTK.md line from CLAUDE.md
+/// Used when removing @TOKENZIP.md line from CLAUDE.md
 fn clean_double_blanks(content: &str) -> String {
     let lines: Vec<&str> = content.lines().collect();
     let mut result = Vec::new();
@@ -691,7 +691,7 @@ fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) {
 }
 
 /// Check if RTK hook is already present in settings.json
-/// Matches on rtk-rewrite.sh substring to handle different path formats
+/// Matches on tokenzip-rewrite.sh substring to handle different path formats
 fn hook_already_present(root: &serde_json::Value, hook_command: &str) -> bool {
     let pre_tool_use_array = match root
         .get("hooks")
@@ -708,13 +708,13 @@ fn hook_already_present(root: &serde_json::Value, hook_command: &str) -> bool {
         .flatten()
         .filter_map(|hook| hook.get("command")?.as_str())
         .any(|cmd| {
-            // Exact match OR both contain rtk-rewrite.sh
+            // Exact match OR both contain tokenzip-rewrite.sh
             cmd == hook_command
-                || (cmd.contains("rtk-rewrite.sh") && hook_command.contains("rtk-rewrite.sh"))
+                || (cmd.contains("tokenzip-rewrite.sh") && hook_command.contains("tokenzip-rewrite.sh"))
         })
 }
 
-/// Default mode: hook + slim RTK.md + @RTK.md reference
+/// Default mode: hook + slim TOKENZIP.md + @TOKENZIP.md reference
 #[cfg(not(unix))]
 fn run_default_mode(
     _global: bool,
@@ -743,15 +743,15 @@ fn run_default_mode(
     }
 
     let claude_dir = resolve_claude_dir()?;
-    let rtk_md_path = claude_dir.join("RTK.md");
+    let tokenzip_md_path = claude_dir.join("TOKENZIP.md");
     let claude_md_path = claude_dir.join("CLAUDE.md");
 
     // 1. Prepare hook directory and install hook
     let (_hook_dir, hook_path) = prepare_hook_paths()?;
     let hook_changed = ensure_hook_installed(&hook_path, verbose)?;
 
-    // 2. Write RTK.md
-    write_if_changed(&rtk_md_path, RTK_SLIM, "RTK.md", verbose)?;
+    // 2. Write TOKENZIP.md
+    write_if_changed(&tokenzip_md_path, TOKENZIP_SLIM, "TOKENZIP.md", verbose)?;
 
     let opencode_plugin_path = if install_opencode {
         let path = prepare_opencode_plugin_path()?;
@@ -761,7 +761,7 @@ fn run_default_mode(
         None
     };
 
-    // 3. Patch CLAUDE.md (add @RTK.md, migrate if needed)
+    // 3. Patch CLAUDE.md (add @TOKENZIP.md, migrate if needed)
     let migrated = patch_claude_md(&claude_md_path, verbose)?;
 
     // 4. Print success message
@@ -772,15 +772,15 @@ fn run_default_mode(
     };
     println!("\nRTK hook {} (global).\n", hook_status);
     println!("  Hook:      {}", hook_path.display());
-    println!("  RTK.md:    {} (10 lines)", rtk_md_path.display());
+    println!("  TOKENZIP.md:    {} (10 lines)", tokenzip_md_path.display());
     if let Some(path) = &opencode_plugin_path {
         println!("  OpenCode:  {}", path.display());
     }
-    println!("  CLAUDE.md: @RTK.md reference added");
+    println!("  CLAUDE.md: @TOKENZIP.md reference added");
 
     if migrated {
         println!("\n  [ok] Migrated: removed 137-line RTK block from CLAUDE.md");
-        println!("              replaced with @RTK.md (10 lines)");
+        println!("              replaced with @TOKENZIP.md (10 lines)");
     }
 
     // 5. Patch settings.json
@@ -804,7 +804,7 @@ fn run_default_mode(
         }
     }
 
-    // 6. Generate user-global filters template (~/.config/rtk/filters.toml)
+    // 6. Generate user-global filters template (~/.config/tokenzip/filters.toml)
     generate_global_filters_template(verbose)?;
 
     println!(); // Final newline
@@ -812,20 +812,20 @@ fn run_default_mode(
     Ok(())
 }
 
-/// Generate .rtk/filters.toml template in the current directory if not present.
+/// Generate .tokenzip/filters.toml template in the current directory if not present.
 fn generate_project_filters_template(verbose: u8) -> Result<()> {
-    let rtk_dir = std::path::Path::new(".rtk");
-    let path = rtk_dir.join("filters.toml");
+    let tz_dir = std::path::Path::new(".tokenzip");
+    let path = tz_dir.join("filters.toml");
 
     if path.exists() {
         if verbose > 0 {
-            eprintln!(".rtk/filters.toml already exists, skipping template");
+            eprintln!(".tokenzip/filters.toml already exists, skipping template");
         }
         return Ok(());
     }
 
-    fs::create_dir_all(rtk_dir)
-        .with_context(|| format!("Failed to create directory: {}", rtk_dir.display()))?;
+    fs::create_dir_all(tz_dir)
+        .with_context(|| format!("Failed to create directory: {}", tz_dir.display()))?;
     fs::write(&path, FILTERS_TEMPLATE)
         .with_context(|| format!("Failed to write {}", path.display()))?;
 
@@ -836,11 +836,11 @@ fn generate_project_filters_template(verbose: u8) -> Result<()> {
     Ok(())
 }
 
-/// Generate ~/.config/rtk/filters.toml template if not present.
+/// Generate ~/.config/tokenzip/filters.toml template if not present.
 fn generate_global_filters_template(verbose: u8) -> Result<()> {
     let config_dir = dirs::config_dir().unwrap_or_else(|| std::path::PathBuf::from(".config"));
-    let rtk_dir = config_dir.join("rtk");
-    let path = rtk_dir.join("filters.toml");
+    let tz_dir = config_dir.join("tokenzip");
+    let path = tz_dir.join("filters.toml");
 
     if path.exists() {
         if verbose > 0 {
@@ -849,8 +849,8 @@ fn generate_global_filters_template(verbose: u8) -> Result<()> {
         return Ok(());
     }
 
-    fs::create_dir_all(&rtk_dir)
-        .with_context(|| format!("Failed to create directory: {}", rtk_dir.display()))?;
+    fs::create_dir_all(&tz_dir)
+        .with_context(|| format!("Failed to create directory: {}", tz_dir.display()))?;
     fs::write(&path, FILTERS_GLOBAL_TEMPLATE)
         .with_context(|| format!("Failed to write {}", path.display()))?;
 
@@ -861,7 +861,7 @@ fn generate_global_filters_template(verbose: u8) -> Result<()> {
     Ok(())
 }
 
-/// Hook-only mode: just the hook, no RTK.md
+/// Hook-only mode: just the hook, no TOKENZIP.md
 #[cfg(not(unix))]
 fn run_hook_only_mode(
     _global: bool,
@@ -908,7 +908,7 @@ fn run_hook_only_mode(
         println!("  OpenCode: {}", path.display());
     }
     println!(
-        "  Note: No RTK.md created. Claude won't know about meta commands (gain, discover, proxy)."
+        "  Note: No TOKENZIP.md created. Claude won't know about meta commands (gain, discover, proxy)."
     );
 
     // Patch settings.json
@@ -952,56 +952,56 @@ fn run_claude_md_mode(global: bool, verbose: u8, install_opencode: bool) -> Resu
     }
 
     if verbose > 0 {
-        eprintln!("Writing rtk instructions to: {}", path.display());
+        eprintln!("Writing tokenzip instructions to: {}", path.display());
     }
 
     if path.exists() {
         let existing = fs::read_to_string(&path)?;
-        // upsert_rtk_block handles all 4 cases: add, update, unchanged, malformed
-        let (new_content, action) = upsert_rtk_block(&existing, RTK_INSTRUCTIONS);
+        // upsert_tokenzip_block handles all 4 cases: add, update, unchanged, malformed
+        let (new_content, action) = upsert_tokenzip_block(&existing, TOKENZIP_INSTRUCTIONS);
 
         match action {
-            RtkBlockUpsert::Added => {
+            TzBlockUpsert::Added => {
                 fs::write(&path, new_content)?;
-                println!("[ok] Added rtk instructions to existing {}", path.display());
+                println!("[ok] Added tokenzip instructions to existing {}", path.display());
             }
-            RtkBlockUpsert::Updated => {
+            TzBlockUpsert::Updated => {
                 fs::write(&path, new_content)?;
-                println!("[ok] Updated rtk instructions in {}", path.display());
+                println!("[ok] Updated tokenzip instructions in {}", path.display());
             }
-            RtkBlockUpsert::Unchanged => {
+            TzBlockUpsert::Unchanged => {
                 println!(
-                    "[ok] {} already contains up-to-date rtk instructions",
+                    "[ok] {} already contains up-to-date tokenzip instructions",
                     path.display()
                 );
                 return Ok(());
             }
-            RtkBlockUpsert::Malformed => {
+            TzBlockUpsert::Malformed => {
                 eprintln!(
-                    "[warn] Warning: Found '<!-- rtk-instructions' without closing marker in {}",
+                    "[warn] Warning: Found '<!-- tokenzip-instructions' without closing marker in {}",
                     path.display()
                 );
 
                 if let Some((line_num, _)) = existing
                     .lines()
                     .enumerate()
-                    .find(|(_, line)| line.contains("<!-- rtk-instructions"))
+                    .find(|(_, line)| line.contains("<!-- tokenzip-instructions"))
                 {
                     eprintln!("    Location: line {}", line_num + 1);
                 }
 
                 eprintln!("    Action: Manually remove the incomplete block, then re-run:");
                 if global {
-                    eprintln!("            rtk init -g --claude-md");
+                    eprintln!("            tokenzip init -g --claude-md");
                 } else {
-                    eprintln!("            rtk init --claude-md");
+                    eprintln!("            tokenzip init --claude-md");
                 }
                 return Ok(());
             }
         }
     } else {
-        fs::write(&path, RTK_INSTRUCTIONS)?;
-        println!("[ok] Created {} with rtk instructions", path.display());
+        fs::write(&path, TOKENZIP_INSTRUCTIONS)?;
+        println!("[ok] Created {} with tokenzip instructions", path.display());
     }
 
     if global {
@@ -1013,18 +1013,18 @@ fn run_claude_md_mode(global: bool, verbose: u8, install_opencode: bool) -> Resu
                 opencode_plugin_path.display()
             );
         }
-        println!("   Claude Code will now use rtk in all sessions");
+        println!("   Claude Code will now use tokenzip in all sessions");
     } else {
-        println!("   Claude Code will use rtk in this project");
+        println!("   Claude Code will use tokenzip in this project");
     }
 
     Ok(())
 }
 
-// --- upsert_rtk_block: idempotent RTK block management ---
+// --- upsert_tokenzip_block: idempotent RTK block management ---
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-enum RtkBlockUpsert {
+enum TzBlockUpsert {
     /// No existing block found — appended new block
     Added,
     /// Existing block found with different content — replaced
@@ -1039,9 +1039,9 @@ enum RtkBlockUpsert {
 ///
 /// Returns `(new_content, action)` describing what happened.
 /// The caller decides whether to write `new_content` based on `action`.
-fn upsert_rtk_block(content: &str, block: &str) -> (String, RtkBlockUpsert) {
-    let start_marker = "<!-- rtk-instructions";
-    let end_marker = "<!-- /rtk-instructions -->";
+fn upsert_tokenzip_block(content: &str, block: &str) -> (String, TzBlockUpsert) {
+    let start_marker = "<!-- tokenzip-instructions";
+    let end_marker = "<!-- /tokenzip-instructions -->";
 
     if let Some(start) = content.find(start_marker) {
         if let Some(relative_end) = content[start..].find(end_marker) {
@@ -1051,7 +1051,7 @@ fn upsert_rtk_block(content: &str, block: &str) -> (String, RtkBlockUpsert) {
             let desired_block = block.trim();
 
             if current_block == desired_block {
-                return (content.to_string(), RtkBlockUpsert::Unchanged);
+                return (content.to_string(), TzBlockUpsert::Unchanged);
             }
 
             // Replace stale block with desired block
@@ -1065,26 +1065,26 @@ fn upsert_rtk_block(content: &str, block: &str) -> (String, RtkBlockUpsert) {
                 (false, false) => format!("{before}\n\n{desired_block}\n\n{after}"),
             };
 
-            return (result, RtkBlockUpsert::Updated);
+            return (result, TzBlockUpsert::Updated);
         }
 
         // Opening marker without closing marker — malformed
-        return (content.to_string(), RtkBlockUpsert::Malformed);
+        return (content.to_string(), TzBlockUpsert::Malformed);
     }
 
     // No existing block — append
     let trimmed = content.trim();
     if trimmed.is_empty() {
-        (block.to_string(), RtkBlockUpsert::Added)
+        (block.to_string(), TzBlockUpsert::Added)
     } else {
         (
             format!("{trimmed}\n\n{}", block.trim()),
-            RtkBlockUpsert::Added,
+            TzBlockUpsert::Added,
         )
     }
 }
 
-/// Patch CLAUDE.md: add @RTK.md, migrate if old block exists
+/// Patch CLAUDE.md: add @TOKENZIP.md, migrate if old block exists
 fn patch_claude_md(path: &Path, verbose: u8) -> Result<bool> {
     let mut content = if path.exists() {
         fs::read_to_string(path)?
@@ -1095,8 +1095,8 @@ fn patch_claude_md(path: &Path, verbose: u8) -> Result<bool> {
     let mut migrated = false;
 
     // Check for old block and migrate
-    if content.contains("<!-- rtk-instructions") {
-        let (new_content, did_migrate) = remove_rtk_block(&content);
+    if content.contains("<!-- tokenzip-instructions") {
+        let (new_content, did_migrate) = remove_tokenzip_block(&content);
         if did_migrate {
             content = new_content;
             migrated = true;
@@ -1106,10 +1106,10 @@ fn patch_claude_md(path: &Path, verbose: u8) -> Result<bool> {
         }
     }
 
-    // Check if @RTK.md already present
-    if content.contains("@RTK.md") {
+    // Check if @TOKENZIP.md already present
+    if content.contains("@TOKENZIP.md") {
         if verbose > 0 {
-            eprintln!("@RTK.md reference already present in CLAUDE.md");
+            eprintln!("@TOKENZIP.md reference already present in CLAUDE.md");
         }
         if migrated {
             fs::write(path, content)?;
@@ -1117,29 +1117,29 @@ fn patch_claude_md(path: &Path, verbose: u8) -> Result<bool> {
         return Ok(migrated);
     }
 
-    // Add @RTK.md
+    // Add @TOKENZIP.md
     let new_content = if content.is_empty() {
-        "@RTK.md\n".to_string()
+        "@TOKENZIP.md\n".to_string()
     } else {
-        format!("{}\n\n@RTK.md\n", content.trim())
+        format!("{}\n\n@TOKENZIP.md\n", content.trim())
     };
 
     fs::write(path, new_content)?;
 
     if verbose > 0 {
-        eprintln!("Added @RTK.md reference to CLAUDE.md");
+        eprintln!("Added @TOKENZIP.md reference to CLAUDE.md");
     }
 
     Ok(migrated)
 }
 
 /// Remove old RTK block from CLAUDE.md (migration helper)
-fn remove_rtk_block(content: &str) -> (String, bool) {
+fn remove_tokenzip_block(content: &str) -> (String, bool) {
     if let (Some(start), Some(end)) = (
-        content.find("<!-- rtk-instructions"),
-        content.find("<!-- /rtk-instructions -->"),
+        content.find("<!-- tokenzip-instructions"),
+        content.find("<!-- /tokenzip-instructions -->"),
     ) {
-        let end_pos = end + "<!-- /rtk-instructions -->".len();
+        let end_pos = end + "<!-- /tokenzip-instructions -->".len();
         let before = content[..start].trim_end();
         let after = content[end_pos..].trim_start();
 
@@ -1150,21 +1150,21 @@ fn remove_rtk_block(content: &str) -> (String, bool) {
         };
 
         (result, true) // migrated
-    } else if content.contains("<!-- rtk-instructions") {
-        eprintln!("[warn] Warning: Found '<!-- rtk-instructions' without closing marker.");
+    } else if content.contains("<!-- tokenzip-instructions") {
+        eprintln!("[warn] Warning: Found '<!-- tokenzip-instructions' without closing marker.");
         eprintln!("    This can happen if CLAUDE.md was manually edited.");
 
         // Find line number
         if let Some((line_num, _)) = content
             .lines()
             .enumerate()
-            .find(|(_, line)| line.contains("<!-- rtk-instructions"))
+            .find(|(_, line)| line.contains("<!-- tokenzip-instructions"))
         {
             eprintln!("    Location: line {}", line_num + 1);
         }
 
         eprintln!("    Action: Manually remove the incomplete block, then re-run:");
-        eprintln!("            rtk init -g");
+        eprintln!("            tokenzip init -g");
         (content.to_string(), false)
     } else {
         (content.to_string(), false)
@@ -1187,9 +1187,9 @@ fn resolve_opencode_dir() -> Result<PathBuf> {
         .context("Cannot determine home directory. Is $HOME set?")
 }
 
-/// Return OpenCode plugin path: ~/.config/opencode/plugins/rtk.ts
+/// Return OpenCode plugin path: ~/.config/opencode/plugins/tokenzip.ts
 fn opencode_plugin_path(opencode_dir: &Path) -> PathBuf {
-    opencode_dir.join("plugins").join("rtk.ts")
+    opencode_dir.join("plugins").join("tokenzip.ts")
 }
 
 /// Prepare OpenCode plugin directory and return install path
@@ -1230,15 +1230,15 @@ fn remove_opencode_plugin(verbose: u8) -> Result<Vec<PathBuf>> {
     Ok(removed)
 }
 
-/// Show current rtk configuration
+/// Show current tokenzip configuration
 pub fn show_config() -> Result<()> {
     let claude_dir = resolve_claude_dir()?;
-    let hook_path = claude_dir.join("hooks").join("rtk-rewrite.sh");
-    let rtk_md_path = claude_dir.join("RTK.md");
+    let hook_path = claude_dir.join("hooks").join("tokenzip-rewrite.sh");
+    let tokenzip_md_path = claude_dir.join("TOKENZIP.md");
     let global_claude_md = claude_dir.join("CLAUDE.md");
     let local_claude_md = PathBuf::from("CLAUDE.md");
 
-    println!("rtk Configuration:\n");
+    println!("tokenzip Configuration:\n");
 
     // Check hook
     if hook_path.exists() {
@@ -1251,8 +1251,8 @@ pub fn show_config() -> Result<()> {
 
             let hook_content = fs::read_to_string(&hook_path)?;
             let has_guards =
-                hook_content.contains("command -v rtk") && hook_content.contains("command -v jq");
-            let is_thin_delegator = hook_content.contains("rtk rewrite");
+                hook_content.contains("command -v tokenzip") && hook_content.contains("command -v jq");
+            let is_thin_delegator = hook_content.contains("tokenzip rewrite");
             let hook_version = crate::hook_check::parse_hook_version(&hook_content);
 
             if !is_executable {
@@ -1266,7 +1266,7 @@ pub fn show_config() -> Result<()> {
                     hook_path.display()
                 );
                 println!(
-                    "   → Run `rtk init --global` to upgrade to the single source of truth hook"
+                    "   → Run `tokenzip init --global` to upgrade to the single source of truth hook"
                 );
             } else if is_executable && has_guards {
                 println!(
@@ -1290,11 +1290,11 @@ pub fn show_config() -> Result<()> {
         println!("[--] Hook: not found");
     }
 
-    // Check RTK.md
-    if rtk_md_path.exists() {
-        println!("[ok] RTK.md: {} (slim mode)", rtk_md_path.display());
+    // Check TOKENZIP.md
+    if tokenzip_md_path.exists() {
+        println!("[ok] TOKENZIP.md: {} (slim mode)", tokenzip_md_path.display());
     } else {
-        println!("[--] RTK.md: not found");
+        println!("[--] TOKENZIP.md: not found");
     }
 
     // Check hook integrity
@@ -1303,10 +1303,10 @@ pub fn show_config() -> Result<()> {
             println!("[ok] Integrity: hook hash verified");
         }
         Ok(integrity::IntegrityStatus::Tampered { .. }) => {
-            println!("[FAIL] Integrity: hook modified outside rtk init (run: rtk verify)");
+            println!("[FAIL] Integrity: hook modified outside tokenzip init (run: tokenzip verify)");
         }
         Ok(integrity::IntegrityStatus::NoBaseline) => {
-            println!("[warn] Integrity: no baseline hash (run: rtk init -g to establish)");
+            println!("[warn] Integrity: no baseline hash (run: tokenzip init -g to establish)");
         }
         Ok(integrity::IntegrityStatus::NotInstalled)
         | Ok(integrity::IntegrityStatus::OrphanedHash) => {
@@ -1320,14 +1320,14 @@ pub fn show_config() -> Result<()> {
     // Check global CLAUDE.md
     if global_claude_md.exists() {
         let content = fs::read_to_string(&global_claude_md)?;
-        if content.contains("@RTK.md") {
-            println!("[ok] Global (~/.claude/CLAUDE.md): @RTK.md reference");
-        } else if content.contains("<!-- rtk-instructions") {
+        if content.contains("@TOKENZIP.md") {
+            println!("[ok] Global (~/.claude/CLAUDE.md): @TOKENZIP.md reference");
+        } else if content.contains("<!-- tokenzip-instructions") {
             println!(
-                "[warn] Global (~/.claude/CLAUDE.md): old RTK block (run: rtk init -g to migrate)"
+                "[warn] Global (~/.claude/CLAUDE.md): old RTK block (run: tokenzip init -g to migrate)"
             );
         } else {
-            println!("[--] Global (~/.claude/CLAUDE.md): exists but rtk not configured");
+            println!("[--] Global (~/.claude/CLAUDE.md): exists but tokenzip not configured");
         }
     } else {
         println!("[--] Global (~/.claude/CLAUDE.md): not found");
@@ -1336,10 +1336,10 @@ pub fn show_config() -> Result<()> {
     // Check local CLAUDE.md
     if local_claude_md.exists() {
         let content = fs::read_to_string(&local_claude_md)?;
-        if content.contains("rtk") {
-            println!("[ok] Local (./CLAUDE.md): rtk enabled");
+        if content.contains("tokenzip") {
+            println!("[ok] Local (./CLAUDE.md): tokenzip enabled");
         } else {
-            println!("[--] Local (./CLAUDE.md): exists but rtk not configured");
+            println!("[--] Local (./CLAUDE.md): exists but tokenzip not configured");
         }
     } else {
         println!("[--] Local (./CLAUDE.md): not found");
@@ -1356,7 +1356,7 @@ pub fn show_config() -> Result<()> {
                     println!("[ok] settings.json: RTK hook configured");
                 } else {
                     println!("[warn] settings.json: exists but RTK hook not configured");
-                    println!("    Run: rtk init -g --auto-patch");
+                    println!("    Run: tokenzip init -g --auto-patch");
                 }
             } else {
                 println!("[warn] settings.json: exists but invalid JSON");
@@ -1381,14 +1381,14 @@ pub fn show_config() -> Result<()> {
     }
 
     println!("\nUsage:");
-    println!("  rtk init              # Full injection into local CLAUDE.md");
-    println!("  rtk init -g           # Hook + RTK.md + @RTK.md + settings.json (recommended)");
-    println!("  rtk init -g --auto-patch    # Same as above but no prompt");
-    println!("  rtk init -g --no-patch      # Skip settings.json (manual setup)");
-    println!("  rtk init -g --uninstall     # Remove all RTK artifacts");
-    println!("  rtk init -g --claude-md     # Legacy: full injection into ~/.claude/CLAUDE.md");
-    println!("  rtk init -g --hook-only     # Hook only, no RTK.md");
-    println!("  rtk init -g --opencode      # OpenCode plugin only");
+    println!("  tokenzip init              # Full injection into local CLAUDE.md");
+    println!("  tokenzip init -g           # Hook + TOKENZIP.md + @TOKENZIP.md + settings.json (recommended)");
+    println!("  tokenzip init -g --auto-patch    # Same as above but no prompt");
+    println!("  tokenzip init -g --no-patch      # Skip settings.json (manual setup)");
+    println!("  tokenzip init -g --uninstall     # Remove all RTK artifacts");
+    println!("  tokenzip init -g --claude-md     # Legacy: full injection into ~/.claude/CLAUDE.md");
+    println!("  tokenzip init -g --hook-only     # Hook only, no TOKENZIP.md");
+    println!("  tokenzip init -g --opencode      # OpenCode plugin only");
 
     Ok(())
 }
@@ -1410,25 +1410,25 @@ mod tests {
     #[test]
     fn test_init_mentions_all_top_level_commands() {
         for cmd in [
-            "rtk cargo",
-            "rtk gh",
-            "rtk vitest",
-            "rtk tsc",
-            "rtk lint",
-            "rtk prettier",
-            "rtk next",
-            "rtk playwright",
-            "rtk prisma",
-            "rtk pnpm",
-            "rtk npm",
-            "rtk curl",
-            "rtk git",
-            "rtk docker",
-            "rtk kubectl",
+            "tokenzip cargo",
+            "tokenzip gh",
+            "tokenzip vitest",
+            "tokenzip tsc",
+            "tokenzip lint",
+            "tokenzip prettier",
+            "tokenzip next",
+            "tokenzip playwright",
+            "tokenzip prisma",
+            "tokenzip pnpm",
+            "tokenzip npm",
+            "tokenzip curl",
+            "tokenzip git",
+            "tokenzip docker",
+            "tokenzip kubectl",
         ] {
             assert!(
-                RTK_INSTRUCTIONS.contains(cmd),
-                "Missing {cmd} in RTK_INSTRUCTIONS"
+                TOKENZIP_INSTRUCTIONS.contains(cmd),
+                "Missing {cmd} in TOKENZIP_INSTRUCTIONS"
             );
         }
     }
@@ -1436,22 +1436,22 @@ mod tests {
     #[test]
     fn test_init_has_version_marker() {
         assert!(
-            RTK_INSTRUCTIONS.contains("<!-- rtk-instructions"),
-            "RTK_INSTRUCTIONS must have version marker for idempotency"
+            TOKENZIP_INSTRUCTIONS.contains("<!-- tokenzip-instructions"),
+            "TOKENZIP_INSTRUCTIONS must have version marker for idempotency"
         );
     }
 
     #[test]
     fn test_hook_has_guards() {
-        assert!(REWRITE_HOOK.contains("command -v rtk"));
+        assert!(REWRITE_HOOK.contains("command -v tokenzip"));
         assert!(REWRITE_HOOK.contains("command -v jq"));
-        // Guards (rtk/jq availability checks) must appear before the actual delegation call.
+        // Guards (tokenzip/jq availability checks) must appear before the actual delegation call.
         // The thin delegating hook no longer uses set -euo pipefail.
         let jq_pos = REWRITE_HOOK.find("command -v jq").unwrap();
-        let rtk_delegate_pos = REWRITE_HOOK.find("rtk rewrite \"$CMD\"").unwrap();
+        let tz_delegate_pos = REWRITE_HOOK.find("tokenzip rewrite \"$CMD\"").unwrap();
         assert!(
-            jq_pos < rtk_delegate_pos,
-            "Guards must appear before rtk rewrite delegation"
+            jq_pos < tz_delegate_pos,
+            "Guards must appear before tokenzip rewrite delegation"
         );
     }
 
@@ -1459,13 +1459,13 @@ mod tests {
     fn test_migration_removes_old_block() {
         let input = r#"# My Config
 
-<!-- rtk-instructions v2 -->
+<!-- tokenzip-instructions v2 -->
 OLD RTK STUFF
-<!-- /rtk-instructions -->
+<!-- /tokenzip-instructions -->
 
 More content"#;
 
-        let (result, migrated) = remove_rtk_block(input);
+        let (result, migrated) = remove_tokenzip_block(input);
         assert!(migrated);
         assert!(!result.contains("OLD RTK STUFF"));
         assert!(result.contains("# My Config"));
@@ -1508,27 +1508,27 @@ More content"#;
 
     #[test]
     fn test_migration_warns_on_missing_end_marker() {
-        let input = "<!-- rtk-instructions v2 -->\nOLD STUFF\nNo end marker";
-        let (result, migrated) = remove_rtk_block(input);
+        let input = "<!-- tokenzip-instructions v2 -->\nOLD STUFF\nNo end marker";
+        let (result, migrated) = remove_tokenzip_block(input);
         assert!(!migrated);
         assert_eq!(result, input);
     }
 
     #[test]
     #[cfg(unix)]
-    fn test_default_mode_creates_hook_and_rtk_md() {
+    fn test_default_mode_creates_hook_and_tokenzip_md() {
         let temp = TempDir::new().unwrap();
-        let hook_path = temp.path().join("rtk-rewrite.sh");
-        let rtk_md_path = temp.path().join("RTK.md");
+        let hook_path = temp.path().join("tokenzip-rewrite.sh");
+        let tokenzip_md_path = temp.path().join("TOKENZIP.md");
 
         fs::write(&hook_path, REWRITE_HOOK).unwrap();
-        fs::write(&rtk_md_path, RTK_SLIM).unwrap();
+        fs::write(&tokenzip_md_path, TOKENZIP_SLIM).unwrap();
 
         use std::os::unix::fs::PermissionsExt;
         fs::set_permissions(&hook_path, fs::Permissions::from_mode(0o755)).unwrap();
 
         assert!(hook_path.exists());
-        assert!(rtk_md_path.exists());
+        assert!(tokenzip_md_path.exists());
 
         let metadata = fs::metadata(&hook_path).unwrap();
         assert!(metadata.permissions().mode() & 0o111 != 0);
@@ -1536,59 +1536,59 @@ More content"#;
 
     #[test]
     fn test_claude_md_mode_creates_full_injection() {
-        // Just verify RTK_INSTRUCTIONS constant has the right content
-        assert!(RTK_INSTRUCTIONS.contains("<!-- rtk-instructions"));
-        assert!(RTK_INSTRUCTIONS.contains("rtk cargo test"));
-        assert!(RTK_INSTRUCTIONS.contains("<!-- /rtk-instructions -->"));
-        assert!(RTK_INSTRUCTIONS.len() > 4000);
+        // Just verify TOKENZIP_INSTRUCTIONS constant has the right content
+        assert!(TOKENZIP_INSTRUCTIONS.contains("<!-- tokenzip-instructions"));
+        assert!(TOKENZIP_INSTRUCTIONS.contains("tokenzip cargo test"));
+        assert!(TOKENZIP_INSTRUCTIONS.contains("<!-- /tokenzip-instructions -->"));
+        assert!(TOKENZIP_INSTRUCTIONS.len() > 4000);
     }
 
-    // --- upsert_rtk_block tests ---
+    // --- upsert_tokenzip_block tests ---
 
     #[test]
-    fn test_upsert_rtk_block_appends_when_missing() {
+    fn test_upsert_tokenzip_block_appends_when_missing() {
         let input = "# Team instructions";
-        let (content, action) = upsert_rtk_block(input, RTK_INSTRUCTIONS);
-        assert_eq!(action, RtkBlockUpsert::Added);
+        let (content, action) = upsert_tokenzip_block(input, TOKENZIP_INSTRUCTIONS);
+        assert_eq!(action, TzBlockUpsert::Added);
         assert!(content.contains("# Team instructions"));
-        assert!(content.contains("<!-- rtk-instructions"));
+        assert!(content.contains("<!-- tokenzip-instructions"));
     }
 
     #[test]
-    fn test_upsert_rtk_block_updates_stale_block() {
+    fn test_upsert_tokenzip_block_updates_stale_block() {
         let input = r#"# Team instructions
 
-<!-- rtk-instructions v1 -->
+<!-- tokenzip-instructions v1 -->
 OLD RTK CONTENT
-<!-- /rtk-instructions -->
+<!-- /tokenzip-instructions -->
 
 More notes
 "#;
 
-        let (content, action) = upsert_rtk_block(input, RTK_INSTRUCTIONS);
-        assert_eq!(action, RtkBlockUpsert::Updated);
+        let (content, action) = upsert_tokenzip_block(input, TOKENZIP_INSTRUCTIONS);
+        assert_eq!(action, TzBlockUpsert::Updated);
         assert!(!content.contains("OLD RTK CONTENT"));
-        assert!(content.contains("rtk cargo test")); // from current RTK_INSTRUCTIONS
+        assert!(content.contains("tokenzip cargo test")); // from current TOKENZIP_INSTRUCTIONS
         assert!(content.contains("# Team instructions"));
         assert!(content.contains("More notes"));
     }
 
     #[test]
-    fn test_upsert_rtk_block_noop_when_already_current() {
+    fn test_upsert_tokenzip_block_noop_when_already_current() {
         let input = format!(
             "# Team instructions\n\n{}\n\nMore notes\n",
-            RTK_INSTRUCTIONS
+            TOKENZIP_INSTRUCTIONS
         );
-        let (content, action) = upsert_rtk_block(&input, RTK_INSTRUCTIONS);
-        assert_eq!(action, RtkBlockUpsert::Unchanged);
+        let (content, action) = upsert_tokenzip_block(&input, TOKENZIP_INSTRUCTIONS);
+        assert_eq!(action, TzBlockUpsert::Unchanged);
         assert_eq!(content, input);
     }
 
     #[test]
-    fn test_upsert_rtk_block_detects_malformed_block() {
-        let input = "<!-- rtk-instructions v2 -->\npartial";
-        let (content, action) = upsert_rtk_block(input, RTK_INSTRUCTIONS);
-        assert_eq!(action, RtkBlockUpsert::Malformed);
+    fn test_upsert_tokenzip_block_detects_malformed_block() {
+        let input = "<!-- tokenzip-instructions v2 -->\npartial";
+        let (content, action) = upsert_tokenzip_block(input, TOKENZIP_INSTRUCTIONS);
+        assert_eq!(action, TzBlockUpsert::Malformed);
         assert_eq!(content, input);
     }
 
@@ -1597,10 +1597,10 @@ More notes
         let temp = TempDir::new().unwrap();
         let claude_md = temp.path().join("CLAUDE.md");
 
-        fs::write(&claude_md, "# My stuff\n\n@RTK.md\n").unwrap();
+        fs::write(&claude_md, "# My stuff\n\n@TOKENZIP.md\n").unwrap();
 
         let content = fs::read_to_string(&claude_md).unwrap();
-        let count = content.matches("@RTK.md").count();
+        let count = content.matches("@TOKENZIP.md").count();
         assert_eq!(count, 1);
     }
 
@@ -1610,10 +1610,10 @@ More notes
         let temp = TempDir::new().unwrap();
         let claude_md = temp.path().join("CLAUDE.md");
 
-        fs::write(&claude_md, RTK_INSTRUCTIONS).unwrap();
+        fs::write(&claude_md, TOKENZIP_INSTRUCTIONS).unwrap();
         let content = fs::read_to_string(&claude_md).unwrap();
 
-        assert!(content.contains("<!-- rtk-instructions"));
+        assert!(content.contains("<!-- tokenzip-instructions"));
     }
 
     // Tests for hook_already_present()
@@ -1625,13 +1625,13 @@ More notes
                     "matcher": "Bash",
                     "hooks": [{
                         "type": "command",
-                        "command": "/Users/test/.claude/hooks/rtk-rewrite.sh"
+                        "command": "/Users/test/.claude/hooks/tokenzip-rewrite.sh"
                     }]
                 }]
             }
         });
 
-        let hook_command = "/Users/test/.claude/hooks/rtk-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
         assert!(hook_already_present(&json_content, hook_command));
     }
 
@@ -1643,21 +1643,21 @@ More notes
                     "matcher": "Bash",
                     "hooks": [{
                         "type": "command",
-                        "command": "/home/user/.claude/hooks/rtk-rewrite.sh"
+                        "command": "/home/user/.claude/hooks/tokenzip-rewrite.sh"
                     }]
                 }]
             }
         });
 
-        let hook_command = "~/.claude/hooks/rtk-rewrite.sh";
-        // Should match on rtk-rewrite.sh substring
+        let hook_command = "~/.claude/hooks/tokenzip-rewrite.sh";
+        // Should match on tokenzip-rewrite.sh substring
         assert!(hook_already_present(&json_content, hook_command));
     }
 
     #[test]
     fn test_hook_not_present_empty() {
         let json_content = serde_json::json!({});
-        let hook_command = "/Users/test/.claude/hooks/rtk-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
         assert!(!hook_already_present(&json_content, hook_command));
     }
 
@@ -1675,7 +1675,7 @@ More notes
             }
         });
 
-        let hook_command = "/Users/test/.claude/hooks/rtk-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
         assert!(!hook_already_present(&json_content, hook_command));
     }
 
@@ -1683,7 +1683,7 @@ More notes
     #[test]
     fn test_insert_hook_entry_empty_root() {
         let mut json_content = serde_json::json!({});
-        let hook_command = "/Users/test/.claude/hooks/rtk-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
 
         insert_hook_entry(&mut json_content, hook_command);
 
@@ -1716,7 +1716,7 @@ More notes
             }
         });
 
-        let hook_command = "/Users/test/.claude/hooks/rtk-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
         insert_hook_entry(&mut json_content, hook_command);
 
         let pre_tool_use = json_content["hooks"]["PreToolUse"].as_array().unwrap();
@@ -1739,7 +1739,7 @@ More notes
             "model": "claude-sonnet-4"
         });
 
-        let hook_command = "/Users/test/.claude/hooks/rtk-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
         insert_hook_entry(&mut json_content, hook_command);
 
         // Should preserve all other keys
@@ -1819,7 +1819,7 @@ More notes
                         "matcher": "Bash",
                         "hooks": [{
                             "type": "command",
-                            "command": "/Users/test/.claude/hooks/rtk-rewrite.sh"
+                            "command": "/Users/test/.claude/hooks/tokenzip-rewrite.sh"
                         }]
                     }
                 ]

@@ -102,7 +102,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("ruff {}", args.join(" ")),
-        &format!("rtk ruff {}", args.join(" ")),
+        &format!("tokenzip ruff {}", args.join(" ")),
         &raw,
         &filtered,
     );

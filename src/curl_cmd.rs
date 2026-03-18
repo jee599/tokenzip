@@ -38,7 +38,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("curl {}", args.join(" ")),
-        &format!("rtk curl {}", args.join(" ")),
+        &format!("tokenzip curl {}", args.join(" ")),
         &raw,
         &filtered,
     );

@@ -58,7 +58,7 @@ pub fn run_err(command: &str, verbose: u8) -> Result<()> {
     } else {
         println!("{}", rtk);
     }
-    timer.track(command, "rtk run-err", &raw, &rtk);
+    timer.track(command, "tokenzip run-err", &raw, &rtk);
     Ok(())
 }
 
@@ -99,7 +99,7 @@ pub fn run_test(command: &str, verbose: u8) -> Result<()> {
     } else {
         println!("{}", summary);
     }
-    timer.track(command, "rtk run-test", &raw, &summary);
+    timer.track(command, "tokenzip run-test", &raw, &summary);
     Ok(())
 }
 

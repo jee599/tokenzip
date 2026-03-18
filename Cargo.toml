@@ -1,12 +1,12 @@
 [package]
-name = "rtk"
-version = "0.30.1"
+name = "tokenzip"
+version = "0.1.0"
 edition = "2021"
-authors = ["Patrick Szymkowiak"]
-description = "Rust Token Killer - High-performance CLI proxy to minimize LLM token consumption"
+authors = ["Jidong Lee"]
+description = "TokenZip - High-performance CLI proxy to minimize LLM token consumption (based on rtk)"
 license = "MIT"
-homepage = "https://www.rtk-ai.app"
-repository = "https://github.com/rtk-ai/rtk"
+homepage = "https://github.com/jee599/tokenzip"
+repository = "https://github.com/jee599/tokenzip"
 readme = "README.md"
 keywords = ["cli", "llm", "token", "filter", "productivity"]
 categories = ["command-line-utilities", "development-tools"]
@@ -33,6 +33,7 @@ hostname = "0.4"
 flate2 = "1.0"
 quick-xml = "0.37"
 which = "8"
+scraper = "0.21"
 
 [build-dependencies]
 toml = "0.8"
@@ -48,18 +49,18 @@ strip = true
 
 # cargo-deb configuration
 [package.metadata.deb]
-maintainer = "Patrick Szymkowiak"
-copyright = "2024 Patrick Szymkowiak"
+maintainer = "Jidong Lee"
+copyright = "2026 Jidong Lee"
 license-file = ["LICENSE", "0"]
-extended-description = "rtk filters and compresses command outputs before they reach your LLM context, saving 60-90% of tokens."
+extended-description = "tokenzip filters and compresses command outputs before they reach your LLM context, saving 60-90% of tokens."
 section = "utility"
 priority = "optional"
 assets = [
-    ["target/release/rtk", "usr/bin/", "755"],
+    ["target/release/tokenzip", "usr/bin/", "755"],
 ]
 
 # cargo-generate-rpm configuration
 [package.metadata.generate-rpm]
 assets = [
-    { source = "target/release/rtk", dest = "/usr/bin/rtk", mode = "755" },
+    { source = "target/release/tokenzip", dest = "/usr/bin/tokenzip", mode = "755" },
 ]

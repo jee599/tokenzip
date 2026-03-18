@@ -85,14 +85,14 @@ pub fn run(args: &[String], verbose: u8, skip_env: bool) -> Result<()> {
         .unwrap_or(false);
 
     let effective_args = if is_run_explicit {
-        // "rtk npm run build" → "npm run build"
+        // "tokenzip npm run build" → "npm run build"
         cmd.arg("run");
         &args[1..]
     } else if is_npm_subcommand {
-        // "rtk npm install express" → "npm install express"
+        // "tokenzip npm install express" → "npm install express"
         args
     } else {
-        // "rtk npm build" → "npm run build" (assume script name)
+        // "tokenzip npm build" → "npm run build" (assume script name)
         cmd.arg("run");
         args
     };
@@ -119,7 +119,7 @@ pub fn run(args: &[String], verbose: u8, skip_env: bool) -> Result<()> {
 
     timer.track(
         &format!("npm {}", args.join(" ")),
-        &format!("rtk npm {}", args.join(" ")),
+        &format!("tokenzip npm {}", args.join(" ")),
         &raw,
         &filtered,
     );
