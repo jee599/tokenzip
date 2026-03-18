@@ -28,7 +28,7 @@ pub fn run_err(command: &str, verbose: u8) -> Result<()> {
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
-    let raw = format!("{}\n{}", stdout, stderr);
+    let raw = crate::ansi_filter::filter_ansi(&format!("{}\n{}", stdout, stderr));
     let filtered = filter_errors(&raw);
     let mut rtk = String::new();
 
@@ -87,7 +87,7 @@ pub fn run_test(command: &str, verbose: u8) -> Result<()> {
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
-    let raw = format!("{}\n{}", stdout, stderr);
+    let raw = crate::ansi_filter::filter_ansi(&format!("{}\n{}", stdout, stderr));
 
     let exit_code = output
         .status

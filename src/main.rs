@@ -1,3 +1,4 @@
+mod ansi_filter;
 mod aws_cmd;
 mod binlog;
 mod cargo_cmd;
@@ -1085,7 +1086,8 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
 
         match result {
             Ok(output) => {
-                let stdout_raw = String::from_utf8_lossy(&output.stdout);
+                let stdout_raw_bytes = String::from_utf8_lossy(&output.stdout);
+                let stdout_raw = crate::ansi_filter::filter_ansi(&stdout_raw_bytes);
 
                 // Tee raw output BEFORE filtering on failure — lets LLM re-read if needed
                 let tee_hint = if !output.status.success() {
