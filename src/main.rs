@@ -7,6 +7,7 @@ mod cc_economics;
 mod ccusage;
 mod config;
 mod container;
+mod docker_cmd;
 mod curl_cmd;
 mod deps;
 mod diff_cmd;
