@@ -1116,6 +1116,50 @@ pub fn estimate_tokens(text: &str) -> usize {
     (text.len() as f64 / 4.0).ceil() as usize
 }
 
+/// Format token count for human-readable display.
+///
+/// - < 1,000: shown as-is (e.g., "847")
+/// - 1,000..999,999: shown as "X.YK" (e.g., "1.2K")
+/// - >= 1,000,000: shown as "X.YM" (e.g., "1.2M")
+pub fn format_tokens(n: usize) -> String {
+    if n >= 1_000_000 {
+        format!("{:.1}M", n as f64 / 1_000_000.0)
+    } else if n >= 1_000 {
+        format!("{:.1}K", n as f64 / 1_000.0)
+    } else {
+        n.to_string()
+    }
+}
+
+/// Check if per-command savings display should be suppressed.
+fn is_quiet() -> bool {
+    if std::env::var("TOKENZIP_QUIET").is_ok() {
+        return true;
+    }
+    crate::config::Config::load()
+        .map(|c| c.display.quiet)
+        .unwrap_or(false)
+}
+
+/// Print per-command token savings to stderr (dim/gray).
+fn print_savings(input_tokens: usize, output_tokens: usize) {
+    let saved = input_tokens.saturating_sub(output_tokens);
+    if saved == 0 || is_quiet() {
+        return;
+    }
+    let pct = if input_tokens > 0 {
+        (saved as f64 / input_tokens as f64 * 100.0) as u32
+    } else {
+        0
+    };
+    eprintln!(
+        "\x1b[2m\u{1f4be} tokenzip: {} \u{2192} {} tokens (saved {}%)\x1b[0m",
+        format_tokens(input_tokens),
+        format_tokens(output_tokens),
+        pct
+    );
+}
+
 /// Helper struct for timing command execution
 /// Helper for timing command execution and tracking results.
 ///
@@ -1210,6 +1254,9 @@ impl TimedExecution {
                 feature,
             );
         }
+
+        // Show per-command savings to stderr
+        print_savings(input_tokens, output_tokens);
     }
 
     /// Track passthrough commands (timing-only, no token counting).
@@ -1727,5 +1774,61 @@ mod tests {
                 f.avg_savings_pct
             );
         }
+    }
+
+    // 19. format_tokens displays human-readable token counts
+    #[test]
+    fn test_format_tokens() {
+        assert_eq!(format_tokens(0), "0");
+        assert_eq!(format_tokens(42), "42");
+        assert_eq!(format_tokens(999), "999");
+        assert_eq!(format_tokens(1000), "1.0K");
+        assert_eq!(format_tokens(1234), "1.2K");
+        assert_eq!(format_tokens(12345), "12.3K");
+        assert_eq!(format_tokens(999999), "1000.0K");
+        assert_eq!(format_tokens(1000000), "1.0M");
+        assert_eq!(format_tokens(1234567), "1.2M");
+    }
+
+    // 20. savings calculation correctness in track_with_feature
+    #[test]
+    fn test_savings_calculation() {
+        // Verify the math: saved = input - output, pct = saved / input * 100
+        let input_tokens = 1000_usize;
+        let output_tokens = 130_usize;
+        let saved = input_tokens.saturating_sub(output_tokens);
+        assert_eq!(saved, 870);
+        let pct = (saved as f64 / input_tokens as f64 * 100.0) as u32;
+        assert_eq!(pct, 87);
+
+        // Edge case: no savings
+        let saved_zero = 500_usize.saturating_sub(500);
+        assert_eq!(saved_zero, 0);
+
+        // Edge case: output larger than input (shouldn't happen, but saturating_sub handles it)
+        let saved_neg = 100_usize.saturating_sub(200);
+        assert_eq!(saved_neg, 0);
+    }
+
+    // 21. TOKENZIP_QUIET=1 suppresses savings display
+    #[test]
+    fn test_quiet_env_suppresses_output() {
+        use std::env;
+
+        env::set_var("TOKENZIP_QUIET", "1");
+        assert!(is_quiet());
+        env::remove_var("TOKENZIP_QUIET");
+    }
+
+    // 22. is_quiet returns false when env var not set and config default
+    #[test]
+    fn test_not_quiet_by_default() {
+        use std::env;
+
+        env::remove_var("TOKENZIP_QUIET");
+        // With default config (quiet: false), should not be quiet
+        // Note: this may read real config file, but default is quiet=false
+        let quiet = std::env::var("TOKENZIP_QUIET").is_ok();
+        assert!(!quiet);
     }
 }

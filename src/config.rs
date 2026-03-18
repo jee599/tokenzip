@@ -51,6 +51,9 @@ pub struct DisplayConfig {
     pub colors: bool,
     pub emoji: bool,
     pub max_width: usize,
+    /// Suppress per-command savings display to stderr
+    #[serde(default)]
+    pub quiet: bool,
 }
 
 impl Default for DisplayConfig {
@@ -59,6 +62,7 @@ impl Default for DisplayConfig {
             colors: true,
             emoji: true,
             max_width: 120,
+            quiet: false,
         }
     }
 }
