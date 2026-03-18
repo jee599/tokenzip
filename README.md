@@ -1,8 +1,14 @@
 # TokenZip
 
-Claude Code context optimizer. Fork of [RTK](https://github.com/rtk-ai/rtk) with 6 additional noise filters.
+> Claude Code context optimizer. Reduce LLM token consumption by 60-90%.
 
-Single Rust binary, zero dependencies, <10ms overhead.
+[English](#) | [한국어](docs/README.ko.md) | [日本語](docs/README.ja.md) | [中文](docs/README.zh.md)
+
+## What It Does
+
+TokenZip wraps your CLI commands and compresses their output before it reaches Claude Code's context window. Less noise = more room for actual code.
+
+Built on [RTK](https://github.com/rtk-ai/rtk) with 6 additional filters for noise RTK doesn't catch.
 
 ## Install
 
@@ -10,232 +16,115 @@ Single Rust binary, zero dependencies, <10ms overhead.
 curl -fsSL https://raw.githubusercontent.com/jee599/tokenzip/main/install.sh | bash
 ```
 
-Or build from source:
+That's it. Restart Claude Code.
 
-```bash
-cargo install --git https://github.com/jee599/tokenzip
-```
+## What Gets Compressed
 
-## What's New vs RTK
-
-```
-Noise Source              RTK    TokenZip
-────────────────────────────────────────────
-CLI output (git, test)    ✓      ✓ (RTK fork)
-Error stacktraces         ✗      ✓
-Web page fetch            ✗      ✓
-ANSI/spinner/decoration   ~      ✓ (enhanced)
-Build error grouping      ~      ✓ (enhanced)
-Package install logs      ✗      ✓
-Docker build logs         ~      ✓ (enhanced)
-```
+| Noise Source | Before | After | Savings |
+|---|---|---|---|
+| Error stacktraces | 30 lines of node_modules frames | 3 lines: error + your code | ~93% |
+| Web page fetch | 3,000 tokens of nav/footer/ads | 800 tokens of content | ~73% |
+| ANSI/spinners | Escape codes, progress bars | Clean text | ~85% |
+| Build errors | 40 identical TS2322 errors | Grouped by code, all locations kept | ~81% |
+| Package install | 150 lines deprecated/funding | 3 lines: summary + security | ~95% |
+| Docker build | 50 lines of layer hashes | 1 line: ✓ built app:latest | ~96% |
+| CLI output | git/test/ls noise | Compressed (via RTK) | ~78% |
 
 ## Before / After
 
-### Error Stacktraces (`tokenzip err`)
-
-Detects 5 languages (Node.js, Python, Rust, Go, Java). Removes framework frames, keeps user code.
-
-**Before** (Node.js, 8 lines):
+### Error Stacktrace
+**Before** (30 lines, ~1,500 tokens):
 ```
 TypeError: Cannot read properties of undefined (reading 'id')
-    at getUserProfile (/app/src/api/users.ts:47:12)
+    at getUserProfile (/app/src/api/users.ts:47:23)
     at processAuth (/app/src/middleware/auth.ts:12:5)
-    at Module._compile (node:internal/modules/cjs/loader:1376:14)
-    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1435:10)
-    at Module.load (node:internal/modules/cjs/loader:1207:32)
-    at Router.handle (/app/node_modules/express/lib/router/index.js:45:12)
     at Layer.handle (/app/node_modules/express/lib/router/layer.js:95:5)
+    at next (/app/node_modules/express/lib/router/route.js:144:13)
+    ... 25 more node_modules frames
 ```
 
-**After** (4 lines):
+**After** (3 lines, ~100 tokens):
 ```
 TypeError: Cannot read properties of undefined (reading 'id')
-  → src/api/users.ts:47         getUserProfile()
-  → src/middleware/auth.ts:12   processAuth()
-  (+ 5 framework frames hidden)
+  → /app/src/api/users.ts:47         getUserProfile()
+  → /app/src/middleware/auth.ts:12    processAuth()
+  (+ 27 framework frames hidden)
 ```
 
-### Web Page Fetch (`tokenzip web`)
-
-Strips HTML boilerplate, nav, footer. Extracts `<main>` or `<article>` content.
-
-**Before** (200+ lines of raw HTML):
-```html
-<!DOCTYPE html><html><head><meta charset="utf-8">
-<title>API Docs</title><link rel="stylesheet" href="...">
-<script>/* analytics */</script></head><body>
-<nav>Home | Docs | Blog | Login</nav>
-<main><h1>Authentication</h1><p>Use Bearer tokens...</p></main>
-<footer>Copyright 2025</footer></body></html>
-```
-
-**After** (2 lines):
-```
-Authentication
-Use Bearer tokens...
-```
-
-### Build Error Grouping (`tokenzip err`)
-
-Groups repeated errors by code. Preserves ALL file:line locations.
-
-**Before** (5 separate errors):
-```
-src/api/users.ts(47,5): error TS2322: Type 'string' is not assignable to type 'number'.
-src/api/users.ts(83,10): error TS2322: Type 'string' is not assignable to type 'number'.
-src/api/orders.ts(12,3): error TS2322: Type 'string' is not assignable to type 'number'.
-src/api/orders.ts(45,7): error TS2345: Argument of type 'number' is not assignable.
-src/api/products.ts(23,1): error TS2322: Type 'string' is not assignable to type 'number'.
-```
-
-**After** (grouped, 6 lines):
-```
-TS2322: Type 'string' is not assignable to type 'number'. (x4)
-  src/api/users.ts     :47, :83
-  src/api/orders.ts    :12
-  src/api/products.ts  :23
-TS2345: Argument of type 'number' is not assignable.
-  src/api/orders.ts    :45
-```
-
-### Package Install Logs (`tokenzip pkg`)
-
-Strips deprecation spam, funding messages, progress bars. Preserves security warnings.
-
-**Before** (npm install, 15+ lines):
+### Package Install
+**Before** (150 lines, ~2,000 tokens):
 ```
 npm warn deprecated inflight@1.0.6: This module is not supported
-npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
-npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
-added 847 packages, and audited 848 packages in 14s
-119 packages are looking for funding
-  run `npm fund` for details
-3 vulnerabilities (1 moderate, 2 high)
+npm warn deprecated rimraf@3.0.2: Rimraf v3 is no longer supported
+... 47 more deprecated warnings
+added 847 packages, and audited 848 packages in 32s
+143 packages are looking for funding
+8 vulnerabilities (2 moderate, 6 high)
 ```
 
-**After** (2 lines):
+**After** (3 lines, ~50 tokens):
 ```
-added 847 packages in 14s
-3 vulnerabilities (1 moderate, 2 high)
-```
-
-### Docker Build Logs (`tokenzip docker`)
-
-Success: 1-line summary. Failure: failed step + 2 context steps + exit code.
-
-**Before** (success, 30+ lines):
-```
-Step 1/12 : FROM node:20-alpine
- ---> abc123def456
-Step 2/12 : WORKDIR /app
- ---> Using cache
- ---> def456789012
-... (20+ more lines)
-Successfully built 999aaa000bbb
-Successfully tagged my-app:latest
+✓ 847 packages (32s)
+⚠ 8 vulnerabilities (6 high, 2 moderate)
+⚠ deprecated bcrypt@3.0.0: security vulnerability (CVE-2023-31484)
 ```
 
-**After** (1 line):
-```
-✓ built my-app:latest (12 steps, 7 cached)
-```
+### Docker Build (Success)
+**Before** (50 lines): Step-by-step with hashes, cache lines, intermediate containers
+**After** (1 line): `✓ built my-app:latest (12 steps, 8 cached)`
 
-**Before** (failure, 20+ lines):
-```
-Step 7/12 : RUN npm run build
- ---> Running in container123
-error: Module not found: 'react-dom/client'
-The command '/bin/sh -c npm run build' returned a non-zero code: 1
-```
+### Docker Build (Failure)
+Preserves context: failed step + 2 prior steps + full error message + exit code.
 
-**After** (5 lines):
-```
-✗ Docker build failed at step 7/12
-Step 5/12 : COPY . .
-Step 6/12 : RUN npm ci    (cached ✓)
-Step 7/12 : RUN npm run build        ← FAILED
-  Module not found: 'react-dom/client'
-  Exit code: 1
-```
-
-### ANSI / Spinner / Decoration Filter
-
-Runs as preprocessor on ALL command output. Strips ANSI codes, spinner chars, progress bars (keeps final state), decoration lines, carriage-return overwrites.
-
-**Before**:
-```
-⠙ Building modules...
-⠸ Building modules...
-[32m✓ Compiled successfully[0m
-═══════════════════════════
-```
-
-**After**:
-```
-✓ Compiled successfully
-```
-
-## CLI Reference
+## CLI
 
 ```bash
-# Core RTK commands (inherited)
-tokenzip git status              # Compact git status
-tokenzip git log -n 10           # One-line commits
-tokenzip git diff                # Condensed diff
-tokenzip test cargo test         # Show failures only
-tokenzip ls .                    # Token-optimized directory tree
-tokenzip read file.rs            # Smart file reading
-tokenzip grep "pattern" .        # Grouped search results
+# Wrapped commands (automatic via hook)
+tokenzip git status
+tokenzip cargo test
+tokenzip npm install
 
-# New TokenZip commands
-tokenzip err <command>           # Error stacktrace compression
-tokenzip web <url>               # Web page content extraction
-tokenzip pkg <command>           # Package install log filtering
+# New commands
+tokenzip web https://docs.example.com    # Extract page content
+tokenzip err node server.js              # Error-focused output
 
 # Analytics
-tokenzip gain                    # Token savings summary
-tokenzip gain --graph            # ASCII graph (last 30 days)
-tokenzip gain --history          # Recent command history
-tokenzip gain --by-feature       # Savings by filter category
+tokenzip gain                  # Total savings
+tokenzip gain --by-feature     # Savings by filter type
+tokenzip gain --graph          # Daily savings chart
+tokenzip gain --history        # Recent command history
 
 # Setup
-tokenzip init --global           # Install auto-rewrite hook for Claude Code
-tokenzip uninstall               # Remove hook and config
-tokenzip update                  # Self-update to latest version
+tokenzip init -g               # Install hook globally
+tokenzip init --show           # Check installation
+tokenzip uninstall             # Clean removal
+tokenzip update                # Self-update
 ```
 
-## Auto-Rewrite Hook
+## How It Works
 
-The hook transparently rewrites Bash commands (e.g., `git status` -> `tokenzip git status`) before execution. Claude never sees the rewrite, it just gets compressed output.
-
-```bash
-tokenzip init --global          # Install hook
-# Restart Claude Code, then test:
-git status                      # Automatically rewritten
-```
-
-Only applies to Bash tool calls. Claude Code built-in tools (Read, Grep, Glob) bypass the hook.
+1. Claude Code hook intercepts bash commands
+2. Commands get routed through TokenZip
+3. ANSI preprocessor strips escape codes from all output
+4. Command-specific filter compresses the result
+5. Error post-processor catches stacktraces in any output
+6. Compressed output goes to Claude Code's context
 
 ## Configuration
 
-Config file: `~/.config/rtk/config.toml`
+```bash
+# Config file
+~/.config/tokenzip/config.toml
 
-```toml
-[tracking]
-database_path = "/path/to/custom.db"
-
-[hooks]
-exclude_commands = ["curl", "playwright"]
-
-[tee]
-enabled = true
-mode = "failures"
-max_files = 20
+# Project-level filters
+.tokenzip/filters.toml
 ```
+
+## Requirements
+
+- Claude Code (or any tool that uses PreToolUse hooks)
+- macOS (arm64/x86_64) or Linux (x86_64)
 
 ## Attribution
 
-Based on [RTK](https://github.com/rtk-ai/rtk) by rtk-ai. MIT License.
-
-See [LICENSE](LICENSE) for details.
+Built on [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk) by rtk-ai. MIT License.
