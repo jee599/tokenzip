@@ -368,7 +368,10 @@ mod tests {
 
         // Step 1: Strip ANSI
         let ansi_cleaned = filter_ansi(input);
-        assert!(!ansi_cleaned.contains("\x1b["), "ANSI codes must be stripped");
+        assert!(
+            !ansi_cleaned.contains("\x1b["),
+            "ANSI codes must be stripped"
+        );
 
         // Step 2: Compress errors
         let result = compress_errors(&ansi_cleaned);
@@ -379,8 +382,14 @@ mod tests {
         assert!(result.contains("src/api/users.ts:47"));
         assert!(result.contains("src/middleware/auth.ts:12"));
         // Verify framework frames removed
-        assert!(!result.contains("node:internal"), "node:internal should be removed");
-        assert!(!result.contains("node_modules"), "node_modules should be removed");
+        assert!(
+            !result.contains("node:internal"),
+            "node:internal should be removed"
+        );
+        assert!(
+            !result.contains("node_modules"),
+            "node_modules should be removed"
+        );
         // Verify hidden count shown
         assert!(result.contains("framework frames hidden"));
     }
@@ -410,17 +419,36 @@ mod tests {
 
         // Step 1: Strip ANSI + progress bars
         let ansi_cleaned = filter_ansi(input);
-        assert!(!ansi_cleaned.contains("\x1b["), "ANSI codes must be stripped");
-        assert!(!ansi_cleaned.contains("40%"), "Intermediate progress should be stripped");
+        assert!(
+            !ansi_cleaned.contains("\x1b["),
+            "ANSI codes must be stripped"
+        );
+        assert!(
+            !ansi_cleaned.contains("40%"),
+            "Intermediate progress should be stripped"
+        );
 
         // Step 2: Compress docker log
         let result = compress_docker_log(&ansi_cleaned);
 
         // Should be a successful build summary
-        assert!(result.contains("myapp:latest"), "Should contain image tag: {}", result);
-        assert!(result.contains("5 steps"), "Should contain step count: {}", result);
+        assert!(
+            result.contains("myapp:latest"),
+            "Should contain image tag: {}",
+            result
+        );
+        assert!(
+            result.contains("5 steps"),
+            "Should contain step count: {}",
+            result
+        );
         // Should be compact (1 line for success)
-        assert_eq!(result.lines().count(), 1, "Success should be 1 line: {}", result);
+        assert_eq!(
+            result.lines().count(),
+            1,
+            "Success should be 1 line: {}",
+            result
+        );
     }
 
     // 18. ANSI → Build pipeline: tsc errors with ANSI colors
@@ -435,7 +463,10 @@ mod tests {
 
         // Step 1: Strip ANSI
         let ansi_cleaned = filter_ansi(input);
-        assert!(!ansi_cleaned.contains("\x1b["), "ANSI codes must be stripped");
+        assert!(
+            !ansi_cleaned.contains("\x1b["),
+            "ANSI codes must be stripped"
+        );
 
         // Step 2: Group build errors
         let result = group_build_errors(&ansi_cleaned);
@@ -449,7 +480,11 @@ mod tests {
         assert!(result.contains(":12"), "Line 12 must be preserved");
         assert!(result.contains(":23"), "Line 23 must be preserved");
         // Grouping count shown
-        assert!(result.contains("(x3)"), "TS2322 should appear 3 times: {}", result);
+        assert!(
+            result.contains("(x3)"),
+            "TS2322 should appear 3 times: {}",
+            result
+        );
     }
 
     // 19. ANSI → Pkg pipeline: npm install with ANSI colors
@@ -457,7 +492,8 @@ mod tests {
     fn test_pipeline_ansi_then_pkg_compress() {
         use crate::pkg_cmd::compress_pkg_log;
 
-        let input = "\x1b[33mnpm warn deprecated\x1b[0m rimraf@3.0.2: Rimraf versions prior to v4\n\
+        let input =
+            "\x1b[33mnpm warn deprecated\x1b[0m rimraf@3.0.2: Rimraf versions prior to v4\n\
             \x1b[33mnpm warn deprecated\x1b[0m inflight@1.0.6: This module is not supported\n\
             ⠋ Installing packages...\n\
             ⠙ Installing packages...\n\
@@ -471,20 +507,40 @@ mod tests {
 
         // Step 1: Strip ANSI + spinners + decorations
         let ansi_cleaned = filter_ansi(input);
-        assert!(!ansi_cleaned.contains("\x1b["), "ANSI codes must be stripped");
+        assert!(
+            !ansi_cleaned.contains("\x1b["),
+            "ANSI codes must be stripped"
+        );
         assert!(!ansi_cleaned.contains("⠋"), "Spinners should be stripped");
-        assert!(!ansi_cleaned.contains("═══"), "Decorations should be stripped");
+        assert!(
+            !ansi_cleaned.contains("═══"),
+            "Decorations should be stripped"
+        );
 
         // Step 2: Compress pkg log
         let result = compress_pkg_log(&ansi_cleaned);
 
         // Summary should be present
-        assert!(result.contains("847 packages"), "Package count should be preserved: {}", result);
+        assert!(
+            result.contains("847 packages"),
+            "Package count should be preserved: {}",
+            result
+        );
         // Deprecated warnings removed
-        assert!(!result.contains("rimraf@3.0.2"), "Non-security deprecated should be removed");
+        assert!(
+            !result.contains("rimraf@3.0.2"),
+            "Non-security deprecated should be removed"
+        );
         // Funding removed
-        assert!(!result.contains("looking for funding"), "Funding should be removed");
+        assert!(
+            !result.contains("looking for funding"),
+            "Funding should be removed"
+        );
         // Vulnerability warning preserved
-        assert!(result.contains("vulnerabilities"), "Vulnerability summary should be preserved: {}", result);
+        assert!(
+            result.contains("vulnerabilities"),
+            "Vulnerability summary should be preserved: {}",
+            result
+        );
     }
 }

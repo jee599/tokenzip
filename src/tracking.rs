@@ -1706,16 +1706,17 @@ mod tests {
             pkg.saved_tokens
         );
 
-        // Verify ordering: sorted by saved_tokens descending
-        let pkg_idx = features.iter().position(|f| f.feature == "pkg").unwrap();
-        let error_idx = features
-            .iter()
-            .position(|f| f.feature == "error")
-            .unwrap();
-        assert!(
-            pkg_idx < error_idx,
-            "pkg (more saved) should appear before error in by-feature results"
-        );
+        // Verify ordering: results sorted by saved_tokens descending
+        for w in features.windows(2) {
+            assert!(
+                w[0].saved_tokens >= w[1].saved_tokens,
+                "Features should be sorted descending by saved_tokens: {} ({}) >= {} ({})",
+                w[0].feature,
+                w[0].saved_tokens,
+                w[1].feature,
+                w[1].saved_tokens
+            );
+        }
 
         // Verify avg_savings_pct is reasonable (between 0 and 100)
         for f in &features {
