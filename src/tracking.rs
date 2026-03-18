@@ -102,6 +102,10 @@ pub struct CommandRecord {
     pub timestamp: DateTime<Utc>,
     /// RTK command that was executed (e.g., "tokenzip ls")
     pub rtk_cmd: String,
+    /// Input tokens (raw command output size)
+    pub input_tokens: usize,
+    /// Output tokens (filtered command output size)
+    pub output_tokens: usize,
     /// Number of tokens saved (input - output)
     pub saved_tokens: usize,
     /// Savings percentage ((saved / input) * 100)
@@ -950,34 +954,33 @@ impl Tracker {
         self.get_recent_filtered(limit, None) // delegate to filtered variant
     }
 
-    /// Get recent command history filtered by project path. // added
+    /// Get recent command history filtered by project path.
     pub fn get_recent_filtered(
         &self,
         limit: usize,
         project_path: Option<&str>,
     ) -> Result<Vec<CommandRecord>> {
-        let (project_exact, project_glob) = project_filter_params(project_path); // added
+        let (project_exact, project_glob) = project_filter_params(project_path);
         let mut stmt = self.conn.prepare(
-            "SELECT timestamp, rtk_cmd, saved_tokens, savings_pct
+            "SELECT timestamp, rtk_cmd, input_tokens, output_tokens, saved_tokens, savings_pct
              FROM commands
              WHERE (?1 IS NULL OR project_path = ?1 OR project_path GLOB ?2)
              ORDER BY timestamp DESC
-             LIMIT ?3", // added: project filter
+             LIMIT ?3",
         )?;
 
-        let rows = stmt.query_map(
-            params![project_exact, project_glob, limit as i64], // added: project params
-            |row| {
-                Ok(CommandRecord {
-                    timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(0)?)
-                        .map(|dt| dt.with_timezone(&Utc))
-                        .unwrap_or_else(|_| Utc::now()),
-                    rtk_cmd: row.get(1)?,
-                    saved_tokens: row.get::<_, i64>(2)? as usize,
-                    savings_pct: row.get(3)?,
-                })
-            },
-        )?;
+        let rows = stmt.query_map(params![project_exact, project_glob, limit as i64], |row| {
+            Ok(CommandRecord {
+                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(0)?)
+                    .map(|dt| dt.with_timezone(&Utc))
+                    .unwrap_or_else(|_| Utc::now()),
+                rtk_cmd: row.get(1)?,
+                input_tokens: row.get::<_, i64>(2)? as usize,
+                output_tokens: row.get::<_, i64>(3)? as usize,
+                saved_tokens: row.get::<_, i64>(4)? as usize,
+                savings_pct: row.get(5)?,
+            })
+        })?;
 
         Ok(rows.collect::<Result<Vec<_>, _>>()?)
     }

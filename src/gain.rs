@@ -31,6 +31,51 @@ pub fn run(
         return show_failures(&tracker);
     }
 
+    // Standalone --graph: ASCII bar chart of daily savings (last 30 days)
+    if graph && !history && !by_feature && !daily && !weekly && !monthly && !all && !quota {
+        let summary = tracker
+            .get_summary_filtered(project_scope.as_deref())
+            .context("Failed to load token savings summary from database")?;
+        if summary.by_day.is_empty() {
+            println!("No daily data yet.");
+            return Ok(());
+        }
+        println!("{}", styled("Daily Savings (last 30 days)", true));
+        println!("{}", "─".repeat(60));
+        print_ascii_graph_full(&summary.by_day);
+        return Ok(());
+    }
+
+    // Standalone --history: recent commands with input/output/saved details
+    if history && !graph && !by_feature && !daily && !weekly && !monthly && !all && !quota {
+        let recent = tracker.get_recent_filtered(20, project_scope.as_deref())?;
+        if recent.is_empty() {
+            println!("No command history yet.");
+            return Ok(());
+        }
+        println!("{}", styled("Recent Commands", true));
+        println!("{}", "─".repeat(72));
+        println!(
+            "{:<20} {:<16} {:>8} {:>8} {:>6}",
+            "Timestamp", "Command", "Input", "Output", "Saved%"
+        );
+        println!("{}", "─".repeat(72));
+        for rec in &recent {
+            let time = rec.timestamp.format("%Y-%m-%d %H:%M:%S");
+            let cmd_short = truncate_for_column(&rec.rtk_cmd, 16);
+            println!(
+                "{:<20} {:<16} {:>8} {:>8} {:>5.0}%",
+                time,
+                cmd_short,
+                format_tokens(rec.input_tokens),
+                format_tokens(rec.output_tokens),
+                rec.savings_pct
+            );
+        }
+        println!("{}", "─".repeat(72));
+        return Ok(());
+    }
+
     // Handle export formats
     match format {
         "json" => {
@@ -244,41 +289,35 @@ pub fn run(
         }
 
         if graph && !summary.by_day.is_empty() {
-            println!("{}", styled("Daily Savings (last 30 days)", true)); // added: styled header
-            println!("──────────────────────────────────────────────────────────");
-            print_ascii_graph(&summary.by_day);
+            println!("{}", styled("Daily Savings (last 30 days)", true));
+            println!("{}", "─".repeat(60));
+            print_ascii_graph_full(&summary.by_day);
             println!();
         }
 
         if history {
-            let recent = tracker.get_recent_filtered(10, project_scope.as_deref())?; // changed: filtered
+            let recent = tracker.get_recent_filtered(10, project_scope.as_deref())?;
             if !recent.is_empty() {
-                println!("{}", styled("Recent Commands", true)); // added: styled header
-                println!("──────────────────────────────────────────────────────────");
-                for rec in recent {
-                    let time = rec.timestamp.format("%m-%d %H:%M");
-                    let cmd_short = if rec.rtk_cmd.len() > 25 {
-                        format!("{}...", &rec.rtk_cmd[..22])
-                    } else {
-                        rec.rtk_cmd.clone()
-                    };
-                    // added: tier indicators by savings level
-                    let sign = if rec.savings_pct >= 70.0 {
-                        "▲"
-                    } else if rec.savings_pct >= 30.0 {
-                        "■"
-                    } else {
-                        "•"
-                    };
+                println!("{}", styled("Recent Commands", true));
+                println!("{}", "─".repeat(72));
+                println!(
+                    "{:<20} {:<16} {:>8} {:>8} {:>6}",
+                    "Timestamp", "Command", "Input", "Output", "Saved%"
+                );
+                println!("{}", "─".repeat(72));
+                for rec in &recent {
+                    let time = rec.timestamp.format("%Y-%m-%d %H:%M:%S");
+                    let cmd_short = truncate_for_column(&rec.rtk_cmd, 16);
                     println!(
-                        "{} {} {:<25} -{:.0}% ({})",
+                        "{:<20} {:<16} {:>8} {:>8} {:>5.0}%",
                         time,
-                        sign,
                         cmd_short,
-                        rec.savings_pct,
-                        format_tokens(rec.saved_tokens)
+                        format_tokens(rec.input_tokens),
+                        format_tokens(rec.output_tokens),
+                        rec.savings_pct
                     );
                 }
+                println!("{}", "─".repeat(72));
                 println!();
             }
         }
@@ -469,16 +508,17 @@ fn feature_label(feature: &str) -> &str {
     }
 }
 
-fn print_ascii_graph(data: &[(String, usize)]) {
+/// ASCII bar chart with full date (YYYY-MM-DD) and compact format.
+fn print_ascii_graph_full(data: &[(String, usize)]) {
     if data.is_empty() {
         return;
     }
 
     let max_val = data.iter().map(|(_, v)| *v).max().unwrap_or(1);
-    let width = 40;
+    let width = 30;
 
     for (date, value) in data {
-        let date_short = if date.len() >= 10 { &date[5..10] } else { date };
+        let date_display = if date.len() >= 10 { &date[..10] } else { date };
 
         let bar_len = if max_val > 0 {
             ((*value as f64 / max_val as f64) * width as f64) as usize
@@ -487,15 +527,8 @@ fn print_ascii_graph(data: &[(String, usize)]) {
         };
 
         let bar: String = "█".repeat(bar_len);
-        let spaces: String = " ".repeat(width - bar_len);
 
-        println!(
-            "{} │{}{} {}",
-            date_short,
-            bar,
-            spaces,
-            format_tokens(*value)
-        );
+        println!("{} {} {}", date_display, bar, format_tokens(*value));
     }
 }
 
@@ -763,4 +796,50 @@ fn show_failures(tracker: &Tracker) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_print_ascii_graph_full_format() {
+        let data = vec![
+            ("2026-03-17".to_string(), 8000usize),
+            ("2026-03-18".to_string(), 12000usize),
+        ];
+        print_ascii_graph_full(&data);
+    }
+
+    #[test]
+    fn test_print_ascii_graph_full_empty() {
+        let data: Vec<(String, usize)> = vec![];
+        print_ascii_graph_full(&data);
+    }
+
+    #[test]
+    fn test_feature_label_known() {
+        assert_eq!(feature_label("cli"), "cli (RTK)");
+        assert_eq!(feature_label("error"), "error");
+        assert_eq!(feature_label("docker"), "docker");
+    }
+
+    #[test]
+    fn test_feature_label_unknown() {
+        assert_eq!(feature_label("custom"), "custom");
+    }
+
+    #[test]
+    fn test_truncate_for_column_short() {
+        let result = truncate_for_column("git status", 16);
+        assert_eq!(result.len(), 16);
+        assert!(result.starts_with("git status"));
+    }
+
+    #[test]
+    fn test_truncate_for_column_long() {
+        let result = truncate_for_column("tokenzip cargo build --release", 16);
+        assert!(result.ends_with("..."));
+        assert!(result.len() <= 16);
+    }
 }

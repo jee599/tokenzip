@@ -2427,6 +2427,54 @@ mod tests {
     }
 
     #[test]
+    fn test_gain_graph_flag_parses() {
+        let result = Cli::try_parse_from(["tokenzip", "gain", "--graph"]);
+        assert!(result.is_ok());
+        if let Ok(cli) = result {
+            match cli.command {
+                Commands::Gain { graph, .. } => assert!(graph),
+                _ => panic!("Expected Gain command"),
+            }
+        }
+    }
+
+    #[test]
+    fn test_gain_graph_short_flag_parses() {
+        let result = Cli::try_parse_from(["tokenzip", "gain", "-g"]);
+        assert!(result.is_ok());
+        if let Ok(cli) = result {
+            match cli.command {
+                Commands::Gain { graph, .. } => assert!(graph),
+                _ => panic!("Expected Gain command"),
+            }
+        }
+    }
+
+    #[test]
+    fn test_gain_history_flag_parses() {
+        let result = Cli::try_parse_from(["tokenzip", "gain", "--history"]);
+        assert!(result.is_ok());
+        if let Ok(cli) = result {
+            match cli.command {
+                Commands::Gain { history, .. } => assert!(history),
+                _ => panic!("Expected Gain command"),
+            }
+        }
+    }
+
+    #[test]
+    fn test_gain_history_short_flag_parses() {
+        let result = Cli::try_parse_from(["tokenzip", "gain", "-H"]);
+        assert!(result.is_ok());
+        if let Ok(cli) = result {
+            match cli.command {
+                Commands::Gain { history, .. } => assert!(history),
+                _ => panic!("Expected Gain command"),
+            }
+        }
+    }
+
+    #[test]
     fn test_meta_commands_reject_bad_flags() {
         // RTK meta-commands should produce parse errors (not fall through to raw execution).
         // Skip "proxy" because it uses trailing_var_arg (accepts any args by design).
