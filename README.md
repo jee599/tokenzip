@@ -353,5 +353,3 @@ MIT — Based on [RTK](https://github.com/rtk-ai/rtk) by rtk-ai.
 </p>
 
 [![Star History Chart](https://api.star-history.com/svg?repos=jee599/contextzip&type=Date)](https://star-history.com/#jee599/contextzip&Date)
-</content>
-</invoke>
