@@ -64,7 +64,7 @@ pub fn run_err(command: &str, verbose: u8) -> Result<()> {
     } else {
         println!("{}", rtk);
     }
-    timer.track(command, "tokenzip run-err", &raw, &rtk);
+    timer.track(command, "contextzip run-err", &raw, &rtk);
     Ok(())
 }
 
@@ -105,7 +105,7 @@ pub fn run_test(command: &str, verbose: u8) -> Result<()> {
     } else {
         println!("{}", summary);
     }
-    timer.track(command, "tokenzip run-test", &raw, &summary);
+    timer.track(command, "contextzip run-test", &raw, &summary);
     Ok(())
 }
 

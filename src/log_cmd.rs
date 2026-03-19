@@ -31,7 +31,7 @@ pub fn run_file(file: &Path, verbose: u8) -> Result<()> {
     println!("{}", result);
     timer.track(
         &format!("cat {}", file.display()),
-        "tokenzip log",
+        "contextzip log",
         &content,
         &result,
     );
@@ -52,7 +52,7 @@ pub fn run_stdin(_verbose: u8) -> Result<()> {
     let result = analyze_logs(&content);
     println!("{}", result);
 
-    timer.track("log (stdin)", "tokenzip log (stdin)", &content, &result);
+    timer.track("log (stdin)", "contextzip log (stdin)", &content, &result);
 
     Ok(())
 }

@@ -87,7 +87,7 @@ pub fn run(
             for part in parts {
                 total_commands += 1;
 
-                // Detect TOKENZIP_DISABLED= bypass before classification
+                // Detect CONTEXTZIP_DISABLED= bypass before classification
                 if has_rtk_disabled_prefix(part) {
                     let actual_cmd = strip_disabled_prefix(part);
                     // Only count if the underlying command is one RTK supports
@@ -98,7 +98,7 @@ pub fn run(
                             *rtk_disabled_cmds.entry(display).or_insert(0) += 1;
                         }
                         _ => {
-                            // TOKENZIP_DISABLED on unsupported/ignored command — not interesting
+                            // CONTEXTZIP_DISABLED on unsupported/ignored command — not interesting
                         }
                     }
                     continue;
@@ -156,8 +156,8 @@ pub fn run(
                         bucket.count += 1;
                     }
                     Classification::Ignored => {
-                        // Check if it starts with "tokenzip "
-                        if part.trim().starts_with("tokenzip ") {
+                        // Check if it starts with "contextzip "
+                        if part.trim().starts_with("contextzip ") {
                             already_rtk += 1;
                         }
                         // Otherwise just skip
@@ -220,7 +220,7 @@ pub fn run(
     // Sort by count descending
     unsupported.sort_by(|a, b| b.count.cmp(&a.count));
 
-    // Build TOKENZIP_DISABLED examples sorted by frequency (top 5)
+    // Build CONTEXTZIP_DISABLED examples sorted by frequency (top 5)
     let rtk_disabled_examples: Vec<String> = {
         let mut sorted: Vec<_> = rtk_disabled_cmds.into_iter().collect();
         sorted.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));

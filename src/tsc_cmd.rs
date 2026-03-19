@@ -45,7 +45,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("tsc {}", args.join(" ")),
-        &format!("tokenzip tsc {}", args.join(" ")),
+        &format!("contextzip tsc {}", args.join(" ")),
         &raw,
         &filtered,
     );

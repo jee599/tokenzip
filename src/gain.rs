@@ -107,7 +107,7 @@ pub fn run(
 
     if summary.total_commands == 0 {
         println!("No tracking data yet.");
-        println!("Run some tokenzip commands to start tracking savings.");
+        println!("Run some contextzip commands to start tracking savings.");
         return Ok(());
     }
 
@@ -115,9 +115,9 @@ pub fn run(
     if !daily && !weekly && !monthly && !all {
         // added: scope-aware styled header // changed: merged upstream styled + project scope
         let title = if project_scope.is_some() {
-            "TokenZip Token Savings (Project Scope)"
+            "ContextZip Token Savings (Project Scope)"
         } else {
-            "TokenZip Token Savings (Global Scope)"
+            "ContextZip Token Savings (Global Scope)"
         };
         println!("{}", styled(title, true));
         println!("{}", "═".repeat(60));
@@ -155,7 +155,7 @@ pub fn run(
             hook_check::HookStatus::Missing => {
                 eprintln!(
                     "{}",
-                    "[warn] No hook installed — run `tokenzip init -g` for automatic token savings"
+                    "[warn] No hook installed — run `contextzip init -g` for automatic token savings"
                         .yellow()
                 );
                 eprintln!();
@@ -163,14 +163,14 @@ pub fn run(
             hook_check::HookStatus::Outdated => {
                 eprintln!(
                     "{}",
-                    "[warn] Hook outdated — run `tokenzip init -g` to update".yellow()
+                    "[warn] Hook outdated — run `contextzip init -g` to update".yellow()
                 );
                 eprintln!();
             }
             hook_check::HookStatus::Ok => {}
         }
 
-        // Lightweight TOKENZIP_DISABLED bypass check (best-effort, silent on failure)
+        // Lightweight CONTEXTZIP_DISABLED bypass check (best-effort, silent on failure)
         if let Some(warning) = check_rtk_disabled_bypass() {
             eprintln!("{}", warning.yellow());
             eprintln!();
@@ -693,7 +693,7 @@ fn export_csv(
     Ok(())
 }
 
-/// Lightweight scan of recent Claude Code sessions for TOKENZIP_DISABLED= overuse.
+/// Lightweight scan of recent Claude Code sessions for CONTEXTZIP_DISABLED= overuse.
 /// Returns a warning string if bypass rate exceeds 10%, None otherwise.
 /// Silently returns None on any error (missing dirs, permission issues, etc.).
 fn check_rtk_disabled_bypass() -> Option<String> {
@@ -734,7 +734,7 @@ fn check_rtk_disabled_bypass() -> Option<String> {
     let pct = (bypassed as f64 / total_bash as f64) * 100.0;
     if pct > 10.0 {
         Some(format!(
-            "[warn] {} commands ({:.0}%) used TOKENZIP_DISABLED=1 unnecessarily — run `tokenzip discover` for details",
+            "[warn] {} commands ({:.0}%) used CONTEXTZIP_DISABLED=1 unnecessarily — run `contextzip discover` for details",
             bypassed, pct
         ))
     } else {
@@ -753,7 +753,7 @@ fn show_failures(tracker: &Tracker) -> Result<()> {
         return Ok(());
     }
 
-    println!("{}", styled("TokenZip Parse Failures", true));
+    println!("{}", styled("ContextZip Parse Failures", true));
     println!("{}", "═".repeat(60));
     println!();
 
@@ -838,7 +838,7 @@ mod tests {
 
     #[test]
     fn test_truncate_for_column_long() {
-        let result = truncate_for_column("tokenzip cargo build --release", 16);
+        let result = truncate_for_column("contextzip cargo build --release", 16);
         assert!(result.ends_with("..."));
         assert!(result.len() <= 16);
     }

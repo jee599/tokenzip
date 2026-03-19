@@ -1,6 +1,6 @@
-# Search Strategy — TokenZip Codebase Navigation
+# Search Strategy — ContextZip Codebase Navigation
 
-Efficient search patterns for TokenZip's Rust codebase.
+Efficient search patterns for ContextZip's Rust codebase.
 
 ## Priority Order
 
@@ -11,7 +11,7 @@ Efficient search patterns for TokenZip's Rust codebase.
 
 Never use Bash for search (`find`, `grep`, `rg`) — use dedicated tools.
 
-## TokenZip Module Map
+## ContextZip Module Map
 
 ```
 src/
@@ -24,10 +24,10 @@ src/
 ├── read.rs           ← File reading with filter levels
 ├── filter.rs         ← Language-aware code filtering engine
 ├── tracking.rs       ← SQLite token metrics
-├── config.rs         ← ~/.config/tokenzip/config.toml
+├── config.rs         ← ~/.config/contextzip/config.toml
 ├── tee.rs            ← Raw output recovery on failure
 ├── utils.rs          ← strip_ansi, truncate, execute_command
-├── init.rs           ← tokenzip init command
+├── init.rs           ← contextzip init command
 └── *_cmd.rs          ← All other command modules
 ```
 
@@ -87,7 +87,7 @@ Grep pattern="count_tokens\|savings" type="rust" output_mode="content"
 Glob pattern="tests/fixtures/*.txt"
 ```
 
-## TokenZip-Specific Navigation Rules
+## ContextZip-Specific Navigation Rules
 
 ### Adding a new filter
 
@@ -112,14 +112,14 @@ Glob pattern="tests/fixtures/*.txt"
 ### Configuration issues
 
 1. `src/config.rs` → `RtkConfig` struct
-2. `src/init.rs` → `tokenzip init` command
-3. Config file: `~/.config/tokenzip/config.toml`
-4. Filter files: `~/.config/tokenzip/filters/` (global) or `.tokenzip/filters/` (project)
+2. `src/init.rs` → `contextzip init` command
+3. Config file: `~/.config/contextzip/config.toml`
+4. Filter files: `~/.config/contextzip/filters/` (global) or `.contextzip/filters/` (project)
 
 ## TOML Filter DSL Navigation
 
 ```
-Glob pattern=".tokenzip/filters/*.toml"         # Project-local filters
+Glob pattern=".contextzip/filters/*.toml"         # Project-local filters
 Glob pattern="src/filter_*.rs"             # TOML filter engine
 Grep pattern="FilterRule\|FilterConfig" type="rust"
 ```

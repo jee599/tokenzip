@@ -3,8 +3,8 @@ use crate::tracking;
 use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 
-const TELEMETRY_URL: Option<&str> = option_env!("TOKENZIP_TELEMETRY_URL");
-const TELEMETRY_TOKEN: Option<&str> = option_env!("TOKENZIP_TELEMETRY_TOKEN");
+const TELEMETRY_URL: Option<&str> = option_env!("CONTEXTZIP_TELEMETRY_URL");
+const TELEMETRY_TOKEN: Option<&str> = option_env!("CONTEXTZIP_TELEMETRY_TOKEN");
 const PING_INTERVAL_SECS: u64 = 23 * 3600; // 23 hours
 
 /// Send a telemetry ping if enabled and not already sent today.
@@ -16,7 +16,7 @@ pub fn maybe_ping() {
     }
 
     // Check opt-out: env var
-    if std::env::var("TOKENZIP_TELEMETRY_DISABLED").unwrap_or_default() == "1" {
+    if std::env::var("CONTEXTZIP_TELEMETRY_DISABLED").unwrap_or_default() == "1" {
         return;
     }
 
@@ -74,7 +74,7 @@ fn send_ping() -> Result<(), Box<dyn std::error::Error>> {
     let mut req = ureq::post(url).set("Content-Type", "application/json");
 
     if let Some(token) = TELEMETRY_TOKEN {
-        req = req.set("X-TokenZip-Token", token);
+        req = req.set("X-ContextZip-Token", token);
     }
 
     // 2 second timeout — if server is down, we move on
@@ -140,7 +140,7 @@ fn detect_install_method() -> &'static str {
 }
 
 fn install_method_from_path(path: &str) -> &'static str {
-    if path.contains("/Cellar/tokenzip/") || path.contains("/homebrew/") {
+    if path.contains("/Cellar/contextzip/") || path.contains("/homebrew/") {
         "homebrew"
     } else if path.contains("/.cargo/bin/") || path.contains("\\.cargo\\bin\\") {
         "cargo"
@@ -156,7 +156,7 @@ fn install_method_from_path(path: &str) -> &'static str {
 fn telemetry_marker_path() -> PathBuf {
     let data_dir = dirs::data_local_dir()
         .unwrap_or_else(|| PathBuf::from("/tmp"))
-        .join("tokenzip");
+        .join("contextzip");
     let _ = std::fs::create_dir_all(&data_dir);
     data_dir.join(".telemetry_last_ping")
 }
@@ -180,46 +180,46 @@ mod tests {
     #[test]
     fn test_marker_path_exists() {
         let path = telemetry_marker_path();
-        assert!(path.to_string_lossy().contains("tokenzip"));
+        assert!(path.to_string_lossy().contains("contextzip"));
     }
 
     #[test]
     fn test_install_method_unix_paths() {
         assert_eq!(
-            install_method_from_path("/opt/homebrew/Cellar/tokenzip/0.1.0/bin/tokenzip"),
+            install_method_from_path("/opt/homebrew/Cellar/contextzip/0.1.0/bin/contextzip"),
             "homebrew"
         );
         assert_eq!(
-            install_method_from_path("/usr/local/homebrew/bin/tokenzip"),
+            install_method_from_path("/usr/local/homebrew/bin/contextzip"),
             "homebrew"
         );
         assert_eq!(
-            install_method_from_path("/home/user/.cargo/bin/tokenzip"),
+            install_method_from_path("/home/user/.cargo/bin/contextzip"),
             "cargo"
         );
         assert_eq!(
-            install_method_from_path("/home/user/.local/bin/tokenzip"),
+            install_method_from_path("/home/user/.local/bin/contextzip"),
             "script"
         );
         assert_eq!(
-            install_method_from_path("/nix/store/abc123-tokenzip/bin/tokenzip"),
+            install_method_from_path("/nix/store/abc123-contextzip/bin/contextzip"),
             "nix"
         );
-        assert_eq!(install_method_from_path("/usr/bin/tokenzip"), "other");
+        assert_eq!(install_method_from_path("/usr/bin/contextzip"), "other");
     }
 
     #[test]
     fn test_install_method_windows_paths() {
         assert_eq!(
-            install_method_from_path("C:\\Users\\user\\.cargo\\bin\\tokenzip.exe"),
+            install_method_from_path("C:\\Users\\user\\.cargo\\bin\\contextzip.exe"),
             "cargo"
         );
         assert_eq!(
-            install_method_from_path("C:\\Users\\user\\.local\\bin\\tokenzip.exe"),
+            install_method_from_path("C:\\Users\\user\\.local\\bin\\contextzip.exe"),
             "script"
         );
         assert_eq!(
-            install_method_from_path("C:\\Program Files\\tokenzip\\tokenzip.exe"),
+            install_method_from_path("C:\\Program Files\\contextzip\\contextzip.exe"),
             "other"
         );
     }

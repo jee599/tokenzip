@@ -1,4 +1,4 @@
-//! CLI smoke tests: verify tokenzip commands don't panic.
+//! CLI smoke tests: verify contextzip commands don't panic.
 //!
 //! These tests build and run the actual binary, checking that each
 //! subcommand exits without crashing (exit code 0 or 2 for --help/--version).
@@ -6,38 +6,38 @@
 use std::process::Command;
 
 /// Get the path to the cargo-built binary.
-fn tokenzip_bin() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_tokenzip"))
+fn contextzip_bin() -> Command {
+    Command::new(env!("CARGO_BIN_EXE_contextzip"))
 }
 
 #[test]
 fn smoke_version() {
-    let output = tokenzip_bin()
+    let output = contextzip_bin()
         .arg("--version")
         .output()
-        .expect("Failed to execute tokenzip --version");
+        .expect("Failed to execute contextzip --version");
     assert!(
         output.status.success(),
-        "tokenzip --version failed: {}",
+        "contextzip --version failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
-        stdout.contains("tokenzip"),
-        "Version output should contain 'tokenzip': {}",
+        stdout.contains("contextzip"),
+        "Version output should contain 'contextzip': {}",
         stdout
     );
 }
 
 #[test]
 fn smoke_help() {
-    let output = tokenzip_bin()
+    let output = contextzip_bin()
         .arg("--help")
         .output()
-        .expect("Failed to execute tokenzip --help");
+        .expect("Failed to execute contextzip --help");
     assert!(
         output.status.success(),
-        "tokenzip --help failed: {}",
+        "contextzip --help failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -50,14 +50,14 @@ fn smoke_help() {
 
 #[test]
 fn smoke_gain() {
-    let output = tokenzip_bin()
+    let output = contextzip_bin()
         .arg("gain")
         .output()
-        .expect("Failed to execute tokenzip gain");
+        .expect("Failed to execute contextzip gain");
     // gain should succeed (shows summary or "no data yet" message)
     assert!(
         output.status.success(),
-        "tokenzip gain failed with code {:?}: {}",
+        "contextzip gain failed with code {:?}: {}",
         output.status.code(),
         String::from_utf8_lossy(&output.stderr)
     );
@@ -65,52 +65,52 @@ fn smoke_gain() {
 
 #[test]
 fn smoke_gain_by_feature() {
-    let output = tokenzip_bin()
+    let output = contextzip_bin()
         .args(["gain", "--by-feature"])
         .output()
-        .expect("Failed to execute tokenzip gain --by-feature");
+        .expect("Failed to execute contextzip gain --by-feature");
     assert!(
         output.status.success(),
-        "tokenzip gain --by-feature failed: {}",
+        "contextzip gain --by-feature failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
 
 #[test]
 fn smoke_gain_graph() {
-    let output = tokenzip_bin()
+    let output = contextzip_bin()
         .args(["gain", "--graph"])
         .output()
-        .expect("Failed to execute tokenzip gain --graph");
+        .expect("Failed to execute contextzip gain --graph");
     assert!(
         output.status.success(),
-        "tokenzip gain --graph failed: {}",
+        "contextzip gain --graph failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
 
 #[test]
 fn smoke_gain_history() {
-    let output = tokenzip_bin()
+    let output = contextzip_bin()
         .args(["gain", "--history"])
         .output()
-        .expect("Failed to execute tokenzip gain --history");
+        .expect("Failed to execute contextzip gain --history");
     assert!(
         output.status.success(),
-        "tokenzip gain --history failed: {}",
+        "contextzip gain --history failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }
 
 #[test]
 fn smoke_init_show() {
-    let output = tokenzip_bin()
+    let output = contextzip_bin()
         .args(["init", "--show"])
         .output()
-        .expect("Failed to execute tokenzip init --show");
+        .expect("Failed to execute contextzip init --show");
     assert!(
         output.status.success(),
-        "tokenzip init --show failed: {}",
+        "contextzip init --show failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
 }

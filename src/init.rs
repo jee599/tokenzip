@@ -7,15 +7,15 @@ use tempfile::NamedTempFile;
 use crate::integrity;
 
 // Embedded hook script (guards before set -euo pipefail)
-const REWRITE_HOOK: &str = include_str!("../hooks/tokenzip-rewrite.sh");
+const REWRITE_HOOK: &str = include_str!("../hooks/contextzip-rewrite.sh");
 
 // Embedded OpenCode plugin (auto-rewrite)
-const OPENCODE_PLUGIN: &str = include_str!("../hooks/opencode-tokenzip.ts");
+const OPENCODE_PLUGIN: &str = include_str!("../hooks/opencode-contextzip.ts");
 
-// Embedded slim TokenZip awareness instructions
-const TOKENZIP_SLIM: &str = include_str!("../hooks/tokenzip-awareness.md");
+// Embedded slim ContextZip awareness instructions
+const CONTEXTZIP_SLIM: &str = include_str!("../hooks/contextzip-awareness.md");
 
-/// Template written by `tokenzip init` when no filters.toml exists yet.
+/// Template written by `contextzip init` when no filters.toml exists yet.
 const FILTERS_TEMPLATE: &str = r#"# Project-local RTK filters — commit this file with your repo.
 # Filters here override user-global and built-in filters.
 # Docs: https://github.com/rtk-ai/rtk#custom-filters
@@ -31,9 +31,9 @@ schema_version = 1
 # on_empty = "my-tool: ok"
 "#;
 
-/// Template for user-global filters (~/.config/tokenzip/filters.toml).
+/// Template for user-global filters (~/.config/contextzip/filters.toml).
 const FILTERS_GLOBAL_TEMPLATE: &str = r#"# User-global RTK filters — apply to all your projects.
-# Project-local .tokenzip/filters.toml takes precedence over these.
+# Project-local .contextzip/filters.toml takes precedence over these.
 # Docs: https://github.com/rtk-ai/rtk#custom-filters
 schema_version = 1
 
@@ -64,122 +64,122 @@ pub enum PatchResult {
 }
 
 // Legacy full instructions for backward compatibility (--claude-md mode)
-const TOKENZIP_INSTRUCTIONS: &str = r##"<!-- tokenzip-instructions v2 -->
-# TokenZip - Token-Optimized Commands (based on RTK)
+const CONTEXTZIP_INSTRUCTIONS: &str = r##"<!-- contextzip-instructions v2 -->
+# ContextZip - Token-Optimized Commands (based on RTK)
 
 ## Golden Rule
 
-**Always prefix commands with `tokenzip`**. If TokenZip has a dedicated filter, it uses it. If not, it passes through unchanged. This means TokenZip is always safe to use.
+**Always prefix commands with `contextzip`**. If ContextZip has a dedicated filter, it uses it. If not, it passes through unchanged. This means ContextZip is always safe to use.
 
-**Important**: Even in command chains with `&&`, use `tokenzip`:
+**Important**: Even in command chains with `&&`, use `contextzip`:
 ```bash
 # ❌ Wrong
 git add . && git commit -m "msg" && git push
 
 # ✅ Correct
-tokenzip git add . && tokenzip git commit -m "msg" && tokenzip git push
+contextzip git add . && contextzip git commit -m "msg" && contextzip git push
 ```
 
-## TokenZip Commands by Workflow
+## ContextZip Commands by Workflow
 
 ### Build & Compile (80-90% savings)
 ```bash
-tokenzip cargo build         # Cargo build output
-tokenzip cargo check         # Cargo check output
-tokenzip cargo clippy        # Clippy warnings grouped by file (80%)
-tokenzip tsc                 # TypeScript errors grouped by file/code (83%)
-tokenzip lint                # ESLint/Biome violations grouped (84%)
-tokenzip prettier --check    # Files needing format only (70%)
-tokenzip next build          # Next.js build with route metrics (87%)
+contextzip cargo build         # Cargo build output
+contextzip cargo check         # Cargo check output
+contextzip cargo clippy        # Clippy warnings grouped by file (80%)
+contextzip tsc                 # TypeScript errors grouped by file/code (83%)
+contextzip lint                # ESLint/Biome violations grouped (84%)
+contextzip prettier --check    # Files needing format only (70%)
+contextzip next build          # Next.js build with route metrics (87%)
 ```
 
 ### Test (90-99% savings)
 ```bash
-tokenzip cargo test          # Cargo test failures only (90%)
-tokenzip vitest run          # Vitest failures only (99.5%)
-tokenzip playwright test     # Playwright failures only (94%)
-tokenzip test <cmd>          # Generic test wrapper - failures only
+contextzip cargo test          # Cargo test failures only (90%)
+contextzip vitest run          # Vitest failures only (99.5%)
+contextzip playwright test     # Playwright failures only (94%)
+contextzip test <cmd>          # Generic test wrapper - failures only
 ```
 
 ### Git (59-80% savings)
 ```bash
-tokenzip git status          # Compact status
-tokenzip git log             # Compact log (works with all git flags)
-tokenzip git diff            # Compact diff (80%)
-tokenzip git show            # Compact show (80%)
-tokenzip git add             # Ultra-compact confirmations (59%)
-tokenzip git commit          # Ultra-compact confirmations (59%)
-tokenzip git push            # Ultra-compact confirmations
-tokenzip git pull            # Ultra-compact confirmations
-tokenzip git branch          # Compact branch list
-tokenzip git fetch           # Compact fetch
-tokenzip git stash           # Compact stash
-tokenzip git worktree        # Compact worktree
+contextzip git status          # Compact status
+contextzip git log             # Compact log (works with all git flags)
+contextzip git diff            # Compact diff (80%)
+contextzip git show            # Compact show (80%)
+contextzip git add             # Ultra-compact confirmations (59%)
+contextzip git commit          # Ultra-compact confirmations (59%)
+contextzip git push            # Ultra-compact confirmations
+contextzip git pull            # Ultra-compact confirmations
+contextzip git branch          # Compact branch list
+contextzip git fetch           # Compact fetch
+contextzip git stash           # Compact stash
+contextzip git worktree        # Compact worktree
 ```
 
 Note: Git passthrough works for ALL subcommands, even those not explicitly listed.
 
 ### GitHub (26-87% savings)
 ```bash
-tokenzip gh pr view <num>    # Compact PR view (87%)
-tokenzip gh pr checks        # Compact PR checks (79%)
-tokenzip gh run list         # Compact workflow runs (82%)
-tokenzip gh issue list       # Compact issue list (80%)
-tokenzip gh api              # Compact API responses (26%)
+contextzip gh pr view <num>    # Compact PR view (87%)
+contextzip gh pr checks        # Compact PR checks (79%)
+contextzip gh run list         # Compact workflow runs (82%)
+contextzip gh issue list       # Compact issue list (80%)
+contextzip gh api              # Compact API responses (26%)
 ```
 
 ### JavaScript/TypeScript Tooling (70-90% savings)
 ```bash
-tokenzip pnpm list           # Compact dependency tree (70%)
-tokenzip pnpm outdated       # Compact outdated packages (80%)
-tokenzip pnpm install        # Compact install output (90%)
-tokenzip npm run <script>    # Compact npm script output
-tokenzip npx <cmd>           # Compact npx command output
-tokenzip prisma              # Prisma without ASCII art (88%)
+contextzip pnpm list           # Compact dependency tree (70%)
+contextzip pnpm outdated       # Compact outdated packages (80%)
+contextzip pnpm install        # Compact install output (90%)
+contextzip npm run <script>    # Compact npm script output
+contextzip npx <cmd>           # Compact npx command output
+contextzip prisma              # Prisma without ASCII art (88%)
 ```
 
 ### Files & Search (60-75% savings)
 ```bash
-tokenzip ls <path>           # Tree format, compact (65%)
-tokenzip read <file>         # Code reading with filtering (60%)
-tokenzip grep <pattern>      # Search grouped by file (75%)
-tokenzip find <pattern>      # Find grouped by directory (70%)
+contextzip ls <path>           # Tree format, compact (65%)
+contextzip read <file>         # Code reading with filtering (60%)
+contextzip grep <pattern>      # Search grouped by file (75%)
+contextzip find <pattern>      # Find grouped by directory (70%)
 ```
 
 ### Analysis & Debug (70-90% savings)
 ```bash
-tokenzip err <cmd>           # Filter errors only from any command
-tokenzip log <file>          # Deduplicated logs with counts
-tokenzip json <file>         # JSON structure without values
-tokenzip deps                # Dependency overview
-tokenzip env                 # Environment variables compact
-tokenzip summary <cmd>       # Smart summary of command output
-tokenzip diff                # Ultra-compact diffs
+contextzip err <cmd>           # Filter errors only from any command
+contextzip log <file>          # Deduplicated logs with counts
+contextzip json <file>         # JSON structure without values
+contextzip deps                # Dependency overview
+contextzip env                 # Environment variables compact
+contextzip summary <cmd>       # Smart summary of command output
+contextzip diff                # Ultra-compact diffs
 ```
 
 ### Infrastructure (85% savings)
 ```bash
-tokenzip docker ps           # Compact container list
-tokenzip docker images       # Compact image list
-tokenzip docker logs <c>     # Deduplicated logs
-tokenzip kubectl get         # Compact resource list
-tokenzip kubectl logs        # Deduplicated pod logs
+contextzip docker ps           # Compact container list
+contextzip docker images       # Compact image list
+contextzip docker logs <c>     # Deduplicated logs
+contextzip kubectl get         # Compact resource list
+contextzip kubectl logs        # Deduplicated pod logs
 ```
 
 ### Network (65-70% savings)
 ```bash
-tokenzip curl <url>          # Compact HTTP responses (70%)
-tokenzip wget <url>          # Compact download output (65%)
+contextzip curl <url>          # Compact HTTP responses (70%)
+contextzip wget <url>          # Compact download output (65%)
 ```
 
 ### Meta Commands
 ```bash
-tokenzip gain                # View token savings statistics
-tokenzip gain --history      # View command history with savings
-tokenzip discover            # Analyze Claude Code sessions for missed TokenZip usage
-tokenzip proxy <cmd>         # Run command without filtering (for debugging)
-tokenzip init                # Add TokenZip instructions to CLAUDE.md
-tokenzip init --global       # Add TokenZip to ~/.claude/CLAUDE.md
+contextzip gain                # View token savings statistics
+contextzip gain --history      # View command history with savings
+contextzip discover            # Analyze Claude Code sessions for missed ContextZip usage
+contextzip proxy <cmd>         # Run command without filtering (for debugging)
+contextzip init                # Add ContextZip instructions to CLAUDE.md
+contextzip init --global       # Add ContextZip to ~/.claude/CLAUDE.md
 ```
 
 ## Token Savings Overview
@@ -196,10 +196,10 @@ tokenzip init --global       # Add TokenZip to ~/.claude/CLAUDE.md
 | Network | curl, wget | 65-70% |
 
 Overall average: **60-90% token reduction** on common development operations.
-<!-- /tokenzip-instructions -->
+<!-- /contextzip-instructions -->
 "##;
 
-/// Main entry point for `tokenzip init`
+/// Main entry point for `contextzip init`
 pub fn run(
     global: bool,
     install_claude: bool,
@@ -210,7 +210,7 @@ pub fn run(
     verbose: u8,
 ) -> Result<()> {
     if install_opencode && !global {
-        anyhow::bail!("OpenCode plugin is global-only. Use: tokenzip init -g --opencode");
+        anyhow::bail!("OpenCode plugin is global-only. Use: contextzip init -g --opencode");
     }
 
     // Mode selection
@@ -231,7 +231,7 @@ fn prepare_hook_paths() -> Result<(PathBuf, PathBuf)> {
     let hook_dir = claude_dir.join("hooks");
     fs::create_dir_all(&hook_dir)
         .with_context(|| format!("Failed to create hook directory: {}", hook_dir.display()))?;
-    let hook_path = hook_dir.join("tokenzip-rewrite.sh");
+    let hook_path = hook_dir.join("contextzip-rewrite.sh");
     Ok((hook_dir, hook_path))
 }
 
@@ -383,7 +383,7 @@ fn print_manual_instructions(hook_path: &Path, include_opencode: bool) {
     }
 }
 
-/// Remove TokenZip hook entry from settings.json
+/// Remove ContextZip hook entry from settings.json
 /// Returns true if hook was found and removed
 fn remove_hook_from_json(root: &mut serde_json::Value) -> bool {
     let hooks = match root.get_mut("hooks").and_then(|h| h.get_mut("PreToolUse")) {
@@ -396,13 +396,13 @@ fn remove_hook_from_json(root: &mut serde_json::Value) -> bool {
         None => return false,
     };
 
-    // Find and remove TokenZip entry
+    // Find and remove ContextZip entry
     let original_len = pre_tool_use_array.len();
     pre_tool_use_array.retain(|entry| {
         if let Some(hooks_array) = entry.get("hooks").and_then(|h| h.as_array()) {
             for hook in hooks_array {
                 if let Some(command) = hook.get("command").and_then(|c| c.as_str()) {
-                    if command.contains("tokenzip-rewrite.sh") {
+                    if command.contains("contextzip-rewrite.sh") {
                         return false; // Remove this entry
                     }
                 }
@@ -414,7 +414,7 @@ fn remove_hook_from_json(root: &mut serde_json::Value) -> bool {
     pre_tool_use_array.len() < original_len
 }
 
-/// Remove TokenZip hook from settings.json file
+/// Remove ContextZip hook from settings.json file
 /// Backs up before modification, returns true if hook was found and removed
 fn remove_hook_from_settings(verbose: u8) -> Result<bool> {
     let claude_dir = resolve_claude_dir()?;
@@ -451,24 +451,24 @@ fn remove_hook_from_settings(verbose: u8) -> Result<bool> {
         atomic_write(&settings_path, &serialized)?;
 
         if verbose > 0 {
-            eprintln!("Removed TokenZip hook from settings.json");
+            eprintln!("Removed ContextZip hook from settings.json");
         }
     }
 
     Ok(removed)
 }
 
-/// Full uninstall: remove hook, TOKENZIP.md, @TOKENZIP.md reference, settings.json entry
+/// Full uninstall: remove hook, CONTEXTZIP.md, @CONTEXTZIP.md reference, settings.json entry
 pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
     if !global {
-        anyhow::bail!("Uninstall only works with --global flag. For local projects, manually remove TokenZip from CLAUDE.md");
+        anyhow::bail!("Uninstall only works with --global flag. For local projects, manually remove ContextZip from CLAUDE.md");
     }
 
     let claude_dir = resolve_claude_dir()?;
     let mut removed = Vec::new();
 
     // 1. Remove hook file
-    let hook_path = claude_dir.join("hooks").join("tokenzip-rewrite.sh");
+    let hook_path = claude_dir.join("hooks").join("contextzip-rewrite.sh");
     if hook_path.exists() {
         fs::remove_file(&hook_path)
             .with_context(|| format!("Failed to remove hook: {}", hook_path.display()))?;
@@ -480,28 +480,28 @@ pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
         removed.push("Integrity hash: removed".to_string());
     }
 
-    // 2. Remove TOKENZIP.md
-    let tokenzip_md_path = claude_dir.join("TOKENZIP.md");
-    if tokenzip_md_path.exists() {
-        fs::remove_file(&tokenzip_md_path).with_context(|| {
+    // 2. Remove CONTEXTZIP.md
+    let contextzip_md_path = claude_dir.join("CONTEXTZIP.md");
+    if contextzip_md_path.exists() {
+        fs::remove_file(&contextzip_md_path).with_context(|| {
             format!(
-                "Failed to remove TOKENZIP.md: {}",
-                tokenzip_md_path.display()
+                "Failed to remove CONTEXTZIP.md: {}",
+                contextzip_md_path.display()
             )
         })?;
-        removed.push(format!("TOKENZIP.md: {}", tokenzip_md_path.display()));
+        removed.push(format!("CONTEXTZIP.md: {}", contextzip_md_path.display()));
     }
 
-    // 3. Remove @TOKENZIP.md reference from CLAUDE.md
+    // 3. Remove @CONTEXTZIP.md reference from CLAUDE.md
     let claude_md_path = claude_dir.join("CLAUDE.md");
     if claude_md_path.exists() {
         let content = fs::read_to_string(&claude_md_path)
             .with_context(|| format!("Failed to read CLAUDE.md: {}", claude_md_path.display()))?;
 
-        if content.contains("@TOKENZIP.md") {
+        if content.contains("@CONTEXTZIP.md") {
             let new_content = content
                 .lines()
-                .filter(|line| !line.trim().starts_with("@TOKENZIP.md"))
+                .filter(|line| !line.trim().starts_with("@CONTEXTZIP.md"))
                 .collect::<Vec<_>>()
                 .join("\n");
 
@@ -511,13 +511,13 @@ pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
             fs::write(&claude_md_path, cleaned).with_context(|| {
                 format!("Failed to write CLAUDE.md: {}", claude_md_path.display())
             })?;
-            removed.push("CLAUDE.md: removed @TOKENZIP.md reference".to_string());
+            removed.push("CLAUDE.md: removed @CONTEXTZIP.md reference".to_string());
         }
     }
 
     // 4. Remove hook entry from settings.json
     if remove_hook_from_settings(verbose)? {
-        removed.push("settings.json: removed TokenZip hook entry".to_string());
+        removed.push("settings.json: removed ContextZip hook entry".to_string());
     }
 
     // 5. Remove OpenCode plugin
@@ -528,9 +528,9 @@ pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
 
     // Report results
     if removed.is_empty() {
-        println!("TokenZip was not installed (nothing to remove)");
+        println!("ContextZip was not installed (nothing to remove)");
     } else {
-        println!("TokenZip uninstalled:");
+        println!("ContextZip uninstalled:");
         for item in removed {
             println!("  - {}", item);
         }
@@ -540,7 +540,7 @@ pub fn uninstall(global: bool, verbose: u8) -> Result<()> {
     Ok(())
 }
 
-/// Orchestrator: patch settings.json with TokenZip hook
+/// Orchestrator: patch settings.json with ContextZip hook
 /// Handles reading, checking, prompting, merging, backing up, and atomic writing
 fn patch_settings_json(
     hook_path: &Path,
@@ -629,7 +629,7 @@ fn patch_settings_json(
 }
 
 /// Clean up consecutive blank lines (collapse 3+ to 2)
-/// Used when removing @TOKENZIP.md line from CLAUDE.md
+/// Used when removing @CONTEXTZIP.md line from CLAUDE.md
 fn clean_double_blanks(content: &str) -> String {
     let lines: Vec<&str> = content.lines().collect();
     let mut result = Vec::new();
@@ -658,7 +658,7 @@ fn clean_double_blanks(content: &str) -> String {
     result.join("\n")
 }
 
-/// Deep-merge TokenZip hook entry into settings.json
+/// Deep-merge ContextZip hook entry into settings.json
 /// Creates hooks.PreToolUse structure if missing, preserves existing hooks
 fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) {
     // Ensure root is an object
@@ -684,7 +684,7 @@ fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) {
         .as_array_mut()
         .expect("PreToolUse must be an array");
 
-    // Append TokenZip hook entry
+    // Append ContextZip hook entry
     pre_tool_use.push(serde_json::json!({
         "matcher": "Bash",
         "hooks": [{
@@ -694,8 +694,8 @@ fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) {
     }));
 }
 
-/// Check if TokenZip hook is already present in settings.json
-/// Matches on tokenzip-rewrite.sh substring to handle different path formats
+/// Check if ContextZip hook is already present in settings.json
+/// Matches on contextzip-rewrite.sh substring to handle different path formats
 fn hook_already_present(root: &serde_json::Value, hook_command: &str) -> bool {
     let pre_tool_use_array = match root
         .get("hooks")
@@ -712,14 +712,14 @@ fn hook_already_present(root: &serde_json::Value, hook_command: &str) -> bool {
         .flatten()
         .filter_map(|hook| hook.get("command")?.as_str())
         .any(|cmd| {
-            // Exact match OR both contain tokenzip-rewrite.sh
+            // Exact match OR both contain contextzip-rewrite.sh
             cmd == hook_command
-                || (cmd.contains("tokenzip-rewrite.sh")
-                    && hook_command.contains("tokenzip-rewrite.sh"))
+                || (cmd.contains("contextzip-rewrite.sh")
+                    && hook_command.contains("contextzip-rewrite.sh"))
         })
 }
 
-/// Default mode: hook + slim TOKENZIP.md + @TOKENZIP.md reference
+/// Default mode: hook + slim CONTEXTZIP.md + @CONTEXTZIP.md reference
 #[cfg(not(unix))]
 fn run_default_mode(
     _global: bool,
@@ -748,15 +748,15 @@ fn run_default_mode(
     }
 
     let claude_dir = resolve_claude_dir()?;
-    let tokenzip_md_path = claude_dir.join("TOKENZIP.md");
+    let contextzip_md_path = claude_dir.join("CONTEXTZIP.md");
     let claude_md_path = claude_dir.join("CLAUDE.md");
 
     // 1. Prepare hook directory and install hook
     let (_hook_dir, hook_path) = prepare_hook_paths()?;
     let hook_changed = ensure_hook_installed(&hook_path, verbose)?;
 
-    // 2. Write TOKENZIP.md
-    write_if_changed(&tokenzip_md_path, TOKENZIP_SLIM, "TOKENZIP.md", verbose)?;
+    // 2. Write CONTEXTZIP.md
+    write_if_changed(&contextzip_md_path, CONTEXTZIP_SLIM, "CONTEXTZIP.md", verbose)?;
 
     let opencode_plugin_path = if install_opencode {
         let path = prepare_opencode_plugin_path()?;
@@ -766,7 +766,7 @@ fn run_default_mode(
         None
     };
 
-    // 3. Patch CLAUDE.md (add @TOKENZIP.md, migrate if needed)
+    // 3. Patch CLAUDE.md (add @CONTEXTZIP.md, migrate if needed)
     let migrated = patch_claude_md(&claude_md_path, verbose)?;
 
     // 4. Print success message
@@ -775,20 +775,20 @@ fn run_default_mode(
     } else {
         "already up to date"
     };
-    println!("\nTokenZip hook {} (global).\n", hook_status);
+    println!("\nContextZip hook {} (global).\n", hook_status);
     println!("  Hook:      {}", hook_path.display());
     println!(
-        "  TOKENZIP.md:    {} (10 lines)",
-        tokenzip_md_path.display()
+        "  CONTEXTZIP.md:    {} (10 lines)",
+        contextzip_md_path.display()
     );
     if let Some(path) = &opencode_plugin_path {
         println!("  OpenCode:  {}", path.display());
     }
-    println!("  CLAUDE.md: @TOKENZIP.md reference added");
+    println!("  CLAUDE.md: @CONTEXTZIP.md reference added");
 
     if migrated {
-        println!("\n  [ok] Migrated: removed 137-line TokenZip block from CLAUDE.md");
-        println!("              replaced with @TOKENZIP.md (10 lines)");
+        println!("\n  [ok] Migrated: removed 137-line ContextZip block from CLAUDE.md");
+        println!("              replaced with @CONTEXTZIP.md (10 lines)");
     }
 
     // 5. Patch settings.json
@@ -812,7 +812,7 @@ fn run_default_mode(
         }
     }
 
-    // 6. Generate user-global filters template (~/.config/tokenzip/filters.toml)
+    // 6. Generate user-global filters template (~/.config/contextzip/filters.toml)
     generate_global_filters_template(verbose)?;
 
     println!(); // Final newline
@@ -820,14 +820,14 @@ fn run_default_mode(
     Ok(())
 }
 
-/// Generate .tokenzip/filters.toml template in the current directory if not present.
+/// Generate .contextzip/filters.toml template in the current directory if not present.
 fn generate_project_filters_template(verbose: u8) -> Result<()> {
-    let tz_dir = std::path::Path::new(".tokenzip");
+    let tz_dir = std::path::Path::new(".contextzip");
     let path = tz_dir.join("filters.toml");
 
     if path.exists() {
         if verbose > 0 {
-            eprintln!(".tokenzip/filters.toml already exists, skipping template");
+            eprintln!(".contextzip/filters.toml already exists, skipping template");
         }
         return Ok(());
     }
@@ -844,10 +844,10 @@ fn generate_project_filters_template(verbose: u8) -> Result<()> {
     Ok(())
 }
 
-/// Generate ~/.config/tokenzip/filters.toml template if not present.
+/// Generate ~/.config/contextzip/filters.toml template if not present.
 fn generate_global_filters_template(verbose: u8) -> Result<()> {
     let config_dir = dirs::config_dir().unwrap_or_else(|| std::path::PathBuf::from(".config"));
-    let tz_dir = config_dir.join("tokenzip");
+    let tz_dir = config_dir.join("contextzip");
     let path = tz_dir.join("filters.toml");
 
     if path.exists() {
@@ -869,7 +869,7 @@ fn generate_global_filters_template(verbose: u8) -> Result<()> {
     Ok(())
 }
 
-/// Hook-only mode: just the hook, no TOKENZIP.md
+/// Hook-only mode: just the hook, no CONTEXTZIP.md
 #[cfg(not(unix))]
 fn run_hook_only_mode(
     _global: bool,
@@ -910,13 +910,13 @@ fn run_hook_only_mode(
     } else {
         "already up to date"
     };
-    println!("\nTokenZip hook {} (hook-only mode).\n", hook_status);
+    println!("\nContextZip hook {} (hook-only mode).\n", hook_status);
     println!("  Hook: {}", hook_path.display());
     if let Some(path) = &opencode_plugin_path {
         println!("  OpenCode: {}", path.display());
     }
     println!(
-        "  Note: No TOKENZIP.md created. Claude won't know about meta commands (gain, discover, proxy)."
+        "  Note: No CONTEXTZIP.md created. Claude won't know about meta commands (gain, discover, proxy)."
     );
 
     // Patch settings.json
@@ -960,59 +960,59 @@ fn run_claude_md_mode(global: bool, verbose: u8, install_opencode: bool) -> Resu
     }
 
     if verbose > 0 {
-        eprintln!("Writing tokenzip instructions to: {}", path.display());
+        eprintln!("Writing contextzip instructions to: {}", path.display());
     }
 
     if path.exists() {
         let existing = fs::read_to_string(&path)?;
-        // upsert_tokenzip_block handles all 4 cases: add, update, unchanged, malformed
-        let (new_content, action) = upsert_tokenzip_block(&existing, TOKENZIP_INSTRUCTIONS);
+        // upsert_contextzip_block handles all 4 cases: add, update, unchanged, malformed
+        let (new_content, action) = upsert_contextzip_block(&existing, CONTEXTZIP_INSTRUCTIONS);
 
         match action {
             TzBlockUpsert::Added => {
                 fs::write(&path, new_content)?;
                 println!(
-                    "[ok] Added tokenzip instructions to existing {}",
+                    "[ok] Added contextzip instructions to existing {}",
                     path.display()
                 );
             }
             TzBlockUpsert::Updated => {
                 fs::write(&path, new_content)?;
-                println!("[ok] Updated tokenzip instructions in {}", path.display());
+                println!("[ok] Updated contextzip instructions in {}", path.display());
             }
             TzBlockUpsert::Unchanged => {
                 println!(
-                    "[ok] {} already contains up-to-date tokenzip instructions",
+                    "[ok] {} already contains up-to-date contextzip instructions",
                     path.display()
                 );
                 return Ok(());
             }
             TzBlockUpsert::Malformed => {
                 eprintln!(
-                    "[warn] Warning: Found '<!-- tokenzip-instructions' without closing marker in {}",
+                    "[warn] Warning: Found '<!-- contextzip-instructions' without closing marker in {}",
                     path.display()
                 );
 
                 if let Some((line_num, _)) = existing
                     .lines()
                     .enumerate()
-                    .find(|(_, line)| line.contains("<!-- tokenzip-instructions"))
+                    .find(|(_, line)| line.contains("<!-- contextzip-instructions"))
                 {
                     eprintln!("    Location: line {}", line_num + 1);
                 }
 
                 eprintln!("    Action: Manually remove the incomplete block, then re-run:");
                 if global {
-                    eprintln!("            tokenzip init -g --claude-md");
+                    eprintln!("            contextzip init -g --claude-md");
                 } else {
-                    eprintln!("            tokenzip init --claude-md");
+                    eprintln!("            contextzip init --claude-md");
                 }
                 return Ok(());
             }
         }
     } else {
-        fs::write(&path, TOKENZIP_INSTRUCTIONS)?;
-        println!("[ok] Created {} with tokenzip instructions", path.display());
+        fs::write(&path, CONTEXTZIP_INSTRUCTIONS)?;
+        println!("[ok] Created {} with contextzip instructions", path.display());
     }
 
     if global {
@@ -1024,15 +1024,15 @@ fn run_claude_md_mode(global: bool, verbose: u8, install_opencode: bool) -> Resu
                 opencode_plugin_path.display()
             );
         }
-        println!("   Claude Code will now use tokenzip in all sessions");
+        println!("   Claude Code will now use contextzip in all sessions");
     } else {
-        println!("   Claude Code will use tokenzip in this project");
+        println!("   Claude Code will use contextzip in this project");
     }
 
     Ok(())
 }
 
-// --- upsert_tokenzip_block: idempotent TokenZip block management ---
+// --- upsert_contextzip_block: idempotent ContextZip block management ---
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum TzBlockUpsert {
@@ -1046,13 +1046,13 @@ enum TzBlockUpsert {
     Malformed,
 }
 
-/// Insert or replace the TokenZip instructions block in `content`.
+/// Insert or replace the ContextZip instructions block in `content`.
 ///
 /// Returns `(new_content, action)` describing what happened.
 /// The caller decides whether to write `new_content` based on `action`.
-fn upsert_tokenzip_block(content: &str, block: &str) -> (String, TzBlockUpsert) {
-    let start_marker = "<!-- tokenzip-instructions";
-    let end_marker = "<!-- /tokenzip-instructions -->";
+fn upsert_contextzip_block(content: &str, block: &str) -> (String, TzBlockUpsert) {
+    let start_marker = "<!-- contextzip-instructions";
+    let end_marker = "<!-- /contextzip-instructions -->";
 
     if let Some(start) = content.find(start_marker) {
         if let Some(relative_end) = content[start..].find(end_marker) {
@@ -1095,7 +1095,7 @@ fn upsert_tokenzip_block(content: &str, block: &str) -> (String, TzBlockUpsert) 
     }
 }
 
-/// Patch CLAUDE.md: add @TOKENZIP.md, migrate if old block exists
+/// Patch CLAUDE.md: add @CONTEXTZIP.md, migrate if old block exists
 fn patch_claude_md(path: &Path, verbose: u8) -> Result<bool> {
     let mut content = if path.exists() {
         fs::read_to_string(path)?
@@ -1106,21 +1106,21 @@ fn patch_claude_md(path: &Path, verbose: u8) -> Result<bool> {
     let mut migrated = false;
 
     // Check for old block and migrate
-    if content.contains("<!-- tokenzip-instructions") {
-        let (new_content, did_migrate) = remove_tokenzip_block(&content);
+    if content.contains("<!-- contextzip-instructions") {
+        let (new_content, did_migrate) = remove_contextzip_block(&content);
         if did_migrate {
             content = new_content;
             migrated = true;
             if verbose > 0 {
-                eprintln!("Migrated: removed old TokenZip block from CLAUDE.md");
+                eprintln!("Migrated: removed old ContextZip block from CLAUDE.md");
             }
         }
     }
 
-    // Check if @TOKENZIP.md already present
-    if content.contains("@TOKENZIP.md") {
+    // Check if @CONTEXTZIP.md already present
+    if content.contains("@CONTEXTZIP.md") {
         if verbose > 0 {
-            eprintln!("@TOKENZIP.md reference already present in CLAUDE.md");
+            eprintln!("@CONTEXTZIP.md reference already present in CLAUDE.md");
         }
         if migrated {
             fs::write(path, content)?;
@@ -1128,29 +1128,29 @@ fn patch_claude_md(path: &Path, verbose: u8) -> Result<bool> {
         return Ok(migrated);
     }
 
-    // Add @TOKENZIP.md
+    // Add @CONTEXTZIP.md
     let new_content = if content.is_empty() {
-        "@TOKENZIP.md\n".to_string()
+        "@CONTEXTZIP.md\n".to_string()
     } else {
-        format!("{}\n\n@TOKENZIP.md\n", content.trim())
+        format!("{}\n\n@CONTEXTZIP.md\n", content.trim())
     };
 
     fs::write(path, new_content)?;
 
     if verbose > 0 {
-        eprintln!("Added @TOKENZIP.md reference to CLAUDE.md");
+        eprintln!("Added @CONTEXTZIP.md reference to CLAUDE.md");
     }
 
     Ok(migrated)
 }
 
-/// Remove old TokenZip block from CLAUDE.md (migration helper)
-fn remove_tokenzip_block(content: &str) -> (String, bool) {
+/// Remove old ContextZip block from CLAUDE.md (migration helper)
+fn remove_contextzip_block(content: &str) -> (String, bool) {
     if let (Some(start), Some(end)) = (
-        content.find("<!-- tokenzip-instructions"),
-        content.find("<!-- /tokenzip-instructions -->"),
+        content.find("<!-- contextzip-instructions"),
+        content.find("<!-- /contextzip-instructions -->"),
     ) {
-        let end_pos = end + "<!-- /tokenzip-instructions -->".len();
+        let end_pos = end + "<!-- /contextzip-instructions -->".len();
         let before = content[..start].trim_end();
         let after = content[end_pos..].trim_start();
 
@@ -1161,21 +1161,21 @@ fn remove_tokenzip_block(content: &str) -> (String, bool) {
         };
 
         (result, true) // migrated
-    } else if content.contains("<!-- tokenzip-instructions") {
-        eprintln!("[warn] Warning: Found '<!-- tokenzip-instructions' without closing marker.");
+    } else if content.contains("<!-- contextzip-instructions") {
+        eprintln!("[warn] Warning: Found '<!-- contextzip-instructions' without closing marker.");
         eprintln!("    This can happen if CLAUDE.md was manually edited.");
 
         // Find line number
         if let Some((line_num, _)) = content
             .lines()
             .enumerate()
-            .find(|(_, line)| line.contains("<!-- tokenzip-instructions"))
+            .find(|(_, line)| line.contains("<!-- contextzip-instructions"))
         {
             eprintln!("    Location: line {}", line_num + 1);
         }
 
         eprintln!("    Action: Manually remove the incomplete block, then re-run:");
-        eprintln!("            tokenzip init -g");
+        eprintln!("            contextzip init -g");
         (content.to_string(), false)
     } else {
         (content.to_string(), false)
@@ -1198,9 +1198,9 @@ fn resolve_opencode_dir() -> Result<PathBuf> {
         .context("Cannot determine home directory. Is $HOME set?")
 }
 
-/// Return OpenCode plugin path: ~/.config/opencode/plugins/tokenzip.ts
+/// Return OpenCode plugin path: ~/.config/opencode/plugins/contextzip.ts
 fn opencode_plugin_path(opencode_dir: &Path) -> PathBuf {
-    opencode_dir.join("plugins").join("tokenzip.ts")
+    opencode_dir.join("plugins").join("contextzip.ts")
 }
 
 /// Prepare OpenCode plugin directory and return install path
@@ -1241,15 +1241,15 @@ fn remove_opencode_plugin(verbose: u8) -> Result<Vec<PathBuf>> {
     Ok(removed)
 }
 
-/// Show current tokenzip configuration
+/// Show current contextzip configuration
 pub fn show_config() -> Result<()> {
     let claude_dir = resolve_claude_dir()?;
-    let hook_path = claude_dir.join("hooks").join("tokenzip-rewrite.sh");
-    let tokenzip_md_path = claude_dir.join("TOKENZIP.md");
+    let hook_path = claude_dir.join("hooks").join("contextzip-rewrite.sh");
+    let contextzip_md_path = claude_dir.join("CONTEXTZIP.md");
     let global_claude_md = claude_dir.join("CLAUDE.md");
     let local_claude_md = PathBuf::from("CLAUDE.md");
 
-    println!("tokenzip Configuration:\n");
+    println!("contextzip Configuration:\n");
 
     // Check hook
     if hook_path.exists() {
@@ -1261,9 +1261,9 @@ pub fn show_config() -> Result<()> {
             let is_executable = perms.mode() & 0o111 != 0;
 
             let hook_content = fs::read_to_string(&hook_path)?;
-            let has_guards = hook_content.contains("command -v tokenzip")
+            let has_guards = hook_content.contains("command -v contextzip")
                 && hook_content.contains("command -v jq");
-            let is_thin_delegator = hook_content.contains("tokenzip rewrite");
+            let is_thin_delegator = hook_content.contains("contextzip rewrite");
             let hook_version = crate::hook_check::parse_hook_version(&hook_content);
 
             if !is_executable {
@@ -1277,7 +1277,7 @@ pub fn show_config() -> Result<()> {
                     hook_path.display()
                 );
                 println!(
-                    "   → Run `tokenzip init --global` to upgrade to the single source of truth hook"
+                    "   → Run `contextzip init --global` to upgrade to the single source of truth hook"
                 );
             } else if is_executable && has_guards {
                 println!(
@@ -1301,14 +1301,14 @@ pub fn show_config() -> Result<()> {
         println!("[--] Hook: not found");
     }
 
-    // Check TOKENZIP.md
-    if tokenzip_md_path.exists() {
+    // Check CONTEXTZIP.md
+    if contextzip_md_path.exists() {
         println!(
-            "[ok] TOKENZIP.md: {} (slim mode)",
-            tokenzip_md_path.display()
+            "[ok] CONTEXTZIP.md: {} (slim mode)",
+            contextzip_md_path.display()
         );
     } else {
-        println!("[--] TOKENZIP.md: not found");
+        println!("[--] CONTEXTZIP.md: not found");
     }
 
     // Check hook integrity
@@ -1318,11 +1318,11 @@ pub fn show_config() -> Result<()> {
         }
         Ok(integrity::IntegrityStatus::Tampered { .. }) => {
             println!(
-                "[FAIL] Integrity: hook modified outside tokenzip init (run: tokenzip verify)"
+                "[FAIL] Integrity: hook modified outside contextzip init (run: contextzip verify)"
             );
         }
         Ok(integrity::IntegrityStatus::NoBaseline) => {
-            println!("[warn] Integrity: no baseline hash (run: tokenzip init -g to establish)");
+            println!("[warn] Integrity: no baseline hash (run: contextzip init -g to establish)");
         }
         Ok(integrity::IntegrityStatus::NotInstalled)
         | Ok(integrity::IntegrityStatus::OrphanedHash) => {
@@ -1336,14 +1336,14 @@ pub fn show_config() -> Result<()> {
     // Check global CLAUDE.md
     if global_claude_md.exists() {
         let content = fs::read_to_string(&global_claude_md)?;
-        if content.contains("@TOKENZIP.md") {
-            println!("[ok] Global (~/.claude/CLAUDE.md): @TOKENZIP.md reference");
-        } else if content.contains("<!-- tokenzip-instructions") {
+        if content.contains("@CONTEXTZIP.md") {
+            println!("[ok] Global (~/.claude/CLAUDE.md): @CONTEXTZIP.md reference");
+        } else if content.contains("<!-- contextzip-instructions") {
             println!(
-                "[warn] Global (~/.claude/CLAUDE.md): old TokenZip block (run: tokenzip init -g to migrate)"
+                "[warn] Global (~/.claude/CLAUDE.md): old ContextZip block (run: contextzip init -g to migrate)"
             );
         } else {
-            println!("[--] Global (~/.claude/CLAUDE.md): exists but tokenzip not configured");
+            println!("[--] Global (~/.claude/CLAUDE.md): exists but contextzip not configured");
         }
     } else {
         println!("[--] Global (~/.claude/CLAUDE.md): not found");
@@ -1352,10 +1352,10 @@ pub fn show_config() -> Result<()> {
     // Check local CLAUDE.md
     if local_claude_md.exists() {
         let content = fs::read_to_string(&local_claude_md)?;
-        if content.contains("tokenzip") {
-            println!("[ok] Local (./CLAUDE.md): tokenzip enabled");
+        if content.contains("contextzip") {
+            println!("[ok] Local (./CLAUDE.md): contextzip enabled");
         } else {
-            println!("[--] Local (./CLAUDE.md): exists but tokenzip not configured");
+            println!("[--] Local (./CLAUDE.md): exists but contextzip not configured");
         }
     } else {
         println!("[--] Local (./CLAUDE.md): not found");
@@ -1369,10 +1369,10 @@ pub fn show_config() -> Result<()> {
             if let Ok(root) = serde_json::from_str::<serde_json::Value>(&content) {
                 let hook_command = hook_path.display().to_string();
                 if hook_already_present(&root, &hook_command) {
-                    println!("[ok] settings.json: TokenZip hook configured");
+                    println!("[ok] settings.json: ContextZip hook configured");
                 } else {
-                    println!("[warn] settings.json: exists but TokenZip hook not configured");
-                    println!("    Run: tokenzip init -g --auto-patch");
+                    println!("[warn] settings.json: exists but ContextZip hook not configured");
+                    println!("    Run: contextzip init -g --auto-patch");
                 }
             } else {
                 println!("[warn] settings.json: exists but invalid JSON");
@@ -1397,16 +1397,16 @@ pub fn show_config() -> Result<()> {
     }
 
     println!("\nUsage:");
-    println!("  tokenzip init              # Full injection into local CLAUDE.md");
-    println!("  tokenzip init -g           # Hook + TOKENZIP.md + @TOKENZIP.md + settings.json (recommended)");
-    println!("  tokenzip init -g --auto-patch    # Same as above but no prompt");
-    println!("  tokenzip init -g --no-patch      # Skip settings.json (manual setup)");
-    println!("  tokenzip init -g --uninstall     # Remove all TokenZip artifacts");
+    println!("  contextzip init              # Full injection into local CLAUDE.md");
+    println!("  contextzip init -g           # Hook + CONTEXTZIP.md + @CONTEXTZIP.md + settings.json (recommended)");
+    println!("  contextzip init -g --auto-patch    # Same as above but no prompt");
+    println!("  contextzip init -g --no-patch      # Skip settings.json (manual setup)");
+    println!("  contextzip init -g --uninstall     # Remove all ContextZip artifacts");
     println!(
-        "  tokenzip init -g --claude-md     # Legacy: full injection into ~/.claude/CLAUDE.md"
+        "  contextzip init -g --claude-md     # Legacy: full injection into ~/.claude/CLAUDE.md"
     );
-    println!("  tokenzip init -g --hook-only     # Hook only, no TOKENZIP.md");
-    println!("  tokenzip init -g --opencode      # OpenCode plugin only");
+    println!("  contextzip init -g --hook-only     # Hook only, no CONTEXTZIP.md");
+    println!("  contextzip init -g --opencode      # OpenCode plugin only");
 
     Ok(())
 }
@@ -1426,7 +1426,7 @@ pub fn run_uninstall(purge: bool, verbose: u8) -> Result<()> {
     let mut removed = Vec::new();
 
     // 1. Remove hook file
-    let hook_path = claude_dir.join("hooks").join("tokenzip-rewrite.sh");
+    let hook_path = claude_dir.join("hooks").join("contextzip-rewrite.sh");
     if hook_path.exists() {
         fs::remove_file(&hook_path)
             .with_context(|| format!("Failed to remove hook: {}", hook_path.display()))?;
@@ -1438,33 +1438,33 @@ pub fn run_uninstall(purge: bool, verbose: u8) -> Result<()> {
         removed.push("Integrity hash: removed".to_string());
     }
 
-    // 2. Remove tokenzip entry from settings.json PreToolUse hooks
+    // 2. Remove contextzip entry from settings.json PreToolUse hooks
     if remove_hook_from_settings(verbose)? {
-        removed.push("settings.json: removed TokenZip hook entry".to_string());
+        removed.push("settings.json: removed ContextZip hook entry".to_string());
     }
 
-    // 3. Remove TOKENZIP.md
-    let tokenzip_md_path = claude_dir.join("TOKENZIP.md");
-    if tokenzip_md_path.exists() {
-        fs::remove_file(&tokenzip_md_path).with_context(|| {
+    // 3. Remove CONTEXTZIP.md
+    let contextzip_md_path = claude_dir.join("CONTEXTZIP.md");
+    if contextzip_md_path.exists() {
+        fs::remove_file(&contextzip_md_path).with_context(|| {
             format!(
-                "Failed to remove TOKENZIP.md: {}",
-                tokenzip_md_path.display()
+                "Failed to remove CONTEXTZIP.md: {}",
+                contextzip_md_path.display()
             )
         })?;
-        removed.push(format!("TOKENZIP.md: {}", tokenzip_md_path.display()));
+        removed.push(format!("CONTEXTZIP.md: {}", contextzip_md_path.display()));
     }
 
-    // 4. Remove @TOKENZIP.md reference from CLAUDE.md
+    // 4. Remove @CONTEXTZIP.md reference from CLAUDE.md
     let claude_md_path = claude_dir.join("CLAUDE.md");
     if claude_md_path.exists() {
         let content = fs::read_to_string(&claude_md_path)
             .with_context(|| format!("Failed to read CLAUDE.md: {}", claude_md_path.display()))?;
 
-        if content.contains("@TOKENZIP.md") {
+        if content.contains("@CONTEXTZIP.md") {
             let new_content = content
                 .lines()
-                .filter(|line| !line.trim().starts_with("@TOKENZIP.md"))
+                .filter(|line| !line.trim().starts_with("@CONTEXTZIP.md"))
                 .collect::<Vec<_>>()
                 .join("\n");
 
@@ -1473,7 +1473,7 @@ pub fn run_uninstall(purge: bool, verbose: u8) -> Result<()> {
             fs::write(&claude_md_path, cleaned).with_context(|| {
                 format!("Failed to write CLAUDE.md: {}", claude_md_path.display())
             })?;
-            removed.push("CLAUDE.md: removed @TOKENZIP.md reference".to_string());
+            removed.push("CLAUDE.md: removed @CONTEXTZIP.md reference".to_string());
         }
     }
 
@@ -1483,12 +1483,12 @@ pub fn run_uninstall(purge: bool, verbose: u8) -> Result<()> {
         removed.push(format!("OpenCode plugin: {}", path.display()));
     }
 
-    // 6. Remove binary (~/.local/bin/tokenzip)
+    // 6. Remove binary (~/.local/bin/contextzip)
     let bin_path = dirs::home_dir()
         .context("Cannot determine home directory")?
         .join(".local")
         .join("bin")
-        .join("tokenzip");
+        .join("contextzip");
     if bin_path.exists() {
         fs::remove_file(&bin_path)
             .with_context(|| format!("Failed to remove binary: {}", bin_path.display()))?;
@@ -1498,7 +1498,7 @@ pub fn run_uninstall(purge: bool, verbose: u8) -> Result<()> {
     // 7. Handle SQLite database
     let db_path = dirs::data_local_dir()
         .unwrap_or_else(|| PathBuf::from("."))
-        .join("tokenzip")
+        .join("contextzip")
         .join("history.db");
 
     if purge && db_path.exists() {
@@ -1514,9 +1514,9 @@ pub fn run_uninstall(purge: bool, verbose: u8) -> Result<()> {
 
     // Report results
     if removed.is_empty() {
-        println!("TokenZip was not installed (nothing to remove)");
+        println!("ContextZip was not installed (nothing to remove)");
     } else {
-        println!("TokenZip uninstalled:");
+        println!("ContextZip uninstalled:");
         for item in &removed {
             println!("  - {}", item);
         }
@@ -1540,15 +1540,15 @@ pub fn run_update(verbose: u8) -> Result<()> {
 
     // Detect platform
     let (os, arch) = detect_platform()?;
-    let asset_name = format!("tokenzip-{}-{}.tar.gz", os, arch);
+    let asset_name = format!("contextzip-{}-{}.tar.gz", os, arch);
 
     println!("Current version: v{}", current_version);
     println!("Checking for updates...");
 
     // Fetch latest release info from GitHub API
-    let api_url = "https://api.github.com/repos/jee599/tokenzip/releases/latest";
+    let api_url = "https://api.github.com/repos/jee599/contextzip/releases/latest";
     let response_body = ureq::get(api_url)
-        .set("User-Agent", "tokenzip-updater")
+        .set("User-Agent", "contextzip-updater")
         .set("Accept", "application/vnd.github.v3+json")
         .call()
         .context("Failed to fetch latest release from GitHub")?
@@ -1591,7 +1591,7 @@ pub fn run_update(verbose: u8) -> Result<()> {
 
     // Download the tarball
     let dl_response = ureq::get(&download_url)
-        .set("User-Agent", "tokenzip-updater")
+        .set("User-Agent", "contextzip-updater")
         .call()
         .context("Failed to download release")?;
 
@@ -1608,24 +1608,24 @@ pub fn run_update(verbose: u8) -> Result<()> {
     let current_exe = std::env::current_exe().context("Failed to determine current binary path")?;
 
     let temp_dir = tempfile::tempdir().context("Failed to create temp directory")?;
-    let temp_bin = temp_dir.path().join("tokenzip");
+    let temp_bin = temp_dir.path().join("contextzip");
 
     let mut found = false;
     for entry in archive.entries().context("Failed to read tar entries")? {
         let mut entry = entry.context("Failed to read tar entry")?;
         let path = entry.path().context("Failed to read entry path")?;
 
-        if path.file_name().map(|n| n == "tokenzip").unwrap_or(false) {
+        if path.file_name().map(|n| n == "contextzip").unwrap_or(false) {
             entry
                 .unpack(&temp_bin)
-                .context("Failed to extract tokenzip binary")?;
+                .context("Failed to extract contextzip binary")?;
             found = true;
             break;
         }
     }
 
     if !found {
-        anyhow::bail!("tokenzip binary not found in release tarball");
+        anyhow::bail!("contextzip binary not found in release tarball");
     }
 
     // Set executable permissions
@@ -1685,25 +1685,25 @@ mod tests {
     #[test]
     fn test_init_mentions_all_top_level_commands() {
         for cmd in [
-            "tokenzip cargo",
-            "tokenzip gh",
-            "tokenzip vitest",
-            "tokenzip tsc",
-            "tokenzip lint",
-            "tokenzip prettier",
-            "tokenzip next",
-            "tokenzip playwright",
-            "tokenzip prisma",
-            "tokenzip pnpm",
-            "tokenzip npm",
-            "tokenzip curl",
-            "tokenzip git",
-            "tokenzip docker",
-            "tokenzip kubectl",
+            "contextzip cargo",
+            "contextzip gh",
+            "contextzip vitest",
+            "contextzip tsc",
+            "contextzip lint",
+            "contextzip prettier",
+            "contextzip next",
+            "contextzip playwright",
+            "contextzip prisma",
+            "contextzip pnpm",
+            "contextzip npm",
+            "contextzip curl",
+            "contextzip git",
+            "contextzip docker",
+            "contextzip kubectl",
         ] {
             assert!(
-                TOKENZIP_INSTRUCTIONS.contains(cmd),
-                "Missing {cmd} in TOKENZIP_INSTRUCTIONS"
+                CONTEXTZIP_INSTRUCTIONS.contains(cmd),
+                "Missing {cmd} in CONTEXTZIP_INSTRUCTIONS"
             );
         }
     }
@@ -1711,22 +1711,22 @@ mod tests {
     #[test]
     fn test_init_has_version_marker() {
         assert!(
-            TOKENZIP_INSTRUCTIONS.contains("<!-- tokenzip-instructions"),
-            "TOKENZIP_INSTRUCTIONS must have version marker for idempotency"
+            CONTEXTZIP_INSTRUCTIONS.contains("<!-- contextzip-instructions"),
+            "CONTEXTZIP_INSTRUCTIONS must have version marker for idempotency"
         );
     }
 
     #[test]
     fn test_hook_has_guards() {
-        assert!(REWRITE_HOOK.contains("command -v tokenzip"));
+        assert!(REWRITE_HOOK.contains("command -v contextzip"));
         assert!(REWRITE_HOOK.contains("command -v jq"));
-        // Guards (tokenzip/jq availability checks) must appear before the actual delegation call.
+        // Guards (contextzip/jq availability checks) must appear before the actual delegation call.
         // The thin delegating hook no longer uses set -euo pipefail.
         let jq_pos = REWRITE_HOOK.find("command -v jq").unwrap();
-        let tz_delegate_pos = REWRITE_HOOK.find("tokenzip rewrite \"$CMD\"").unwrap();
+        let tz_delegate_pos = REWRITE_HOOK.find("contextzip rewrite \"$CMD\"").unwrap();
         assert!(
             jq_pos < tz_delegate_pos,
-            "Guards must appear before tokenzip rewrite delegation"
+            "Guards must appear before contextzip rewrite delegation"
         );
     }
 
@@ -1734,13 +1734,13 @@ mod tests {
     fn test_migration_removes_old_block() {
         let input = r#"# My Config
 
-<!-- tokenzip-instructions v2 -->
+<!-- contextzip-instructions v2 -->
 OLD RTK STUFF
-<!-- /tokenzip-instructions -->
+<!-- /contextzip-instructions -->
 
 More content"#;
 
-        let (result, migrated) = remove_tokenzip_block(input);
+        let (result, migrated) = remove_contextzip_block(input);
         assert!(migrated);
         assert!(!result.contains("OLD RTK STUFF"));
         assert!(result.contains("# My Config"));
@@ -1783,27 +1783,27 @@ More content"#;
 
     #[test]
     fn test_migration_warns_on_missing_end_marker() {
-        let input = "<!-- tokenzip-instructions v2 -->\nOLD STUFF\nNo end marker";
-        let (result, migrated) = remove_tokenzip_block(input);
+        let input = "<!-- contextzip-instructions v2 -->\nOLD STUFF\nNo end marker";
+        let (result, migrated) = remove_contextzip_block(input);
         assert!(!migrated);
         assert_eq!(result, input);
     }
 
     #[test]
     #[cfg(unix)]
-    fn test_default_mode_creates_hook_and_tokenzip_md() {
+    fn test_default_mode_creates_hook_and_contextzip_md() {
         let temp = TempDir::new().unwrap();
-        let hook_path = temp.path().join("tokenzip-rewrite.sh");
-        let tokenzip_md_path = temp.path().join("TOKENZIP.md");
+        let hook_path = temp.path().join("contextzip-rewrite.sh");
+        let contextzip_md_path = temp.path().join("CONTEXTZIP.md");
 
         fs::write(&hook_path, REWRITE_HOOK).unwrap();
-        fs::write(&tokenzip_md_path, TOKENZIP_SLIM).unwrap();
+        fs::write(&contextzip_md_path, CONTEXTZIP_SLIM).unwrap();
 
         use std::os::unix::fs::PermissionsExt;
         fs::set_permissions(&hook_path, fs::Permissions::from_mode(0o755)).unwrap();
 
         assert!(hook_path.exists());
-        assert!(tokenzip_md_path.exists());
+        assert!(contextzip_md_path.exists());
 
         let metadata = fs::metadata(&hook_path).unwrap();
         assert!(metadata.permissions().mode() & 0o111 != 0);
@@ -1811,58 +1811,58 @@ More content"#;
 
     #[test]
     fn test_claude_md_mode_creates_full_injection() {
-        // Just verify TOKENZIP_INSTRUCTIONS constant has the right content
-        assert!(TOKENZIP_INSTRUCTIONS.contains("<!-- tokenzip-instructions"));
-        assert!(TOKENZIP_INSTRUCTIONS.contains("tokenzip cargo test"));
-        assert!(TOKENZIP_INSTRUCTIONS.contains("<!-- /tokenzip-instructions -->"));
-        assert!(TOKENZIP_INSTRUCTIONS.len() > 4000);
+        // Just verify CONTEXTZIP_INSTRUCTIONS constant has the right content
+        assert!(CONTEXTZIP_INSTRUCTIONS.contains("<!-- contextzip-instructions"));
+        assert!(CONTEXTZIP_INSTRUCTIONS.contains("contextzip cargo test"));
+        assert!(CONTEXTZIP_INSTRUCTIONS.contains("<!-- /contextzip-instructions -->"));
+        assert!(CONTEXTZIP_INSTRUCTIONS.len() > 4000);
     }
 
-    // --- upsert_tokenzip_block tests ---
+    // --- upsert_contextzip_block tests ---
 
     #[test]
-    fn test_upsert_tokenzip_block_appends_when_missing() {
+    fn test_upsert_contextzip_block_appends_when_missing() {
         let input = "# Team instructions";
-        let (content, action) = upsert_tokenzip_block(input, TOKENZIP_INSTRUCTIONS);
+        let (content, action) = upsert_contextzip_block(input, CONTEXTZIP_INSTRUCTIONS);
         assert_eq!(action, TzBlockUpsert::Added);
         assert!(content.contains("# Team instructions"));
-        assert!(content.contains("<!-- tokenzip-instructions"));
+        assert!(content.contains("<!-- contextzip-instructions"));
     }
 
     #[test]
-    fn test_upsert_tokenzip_block_updates_stale_block() {
+    fn test_upsert_contextzip_block_updates_stale_block() {
         let input = r#"# Team instructions
 
-<!-- tokenzip-instructions v1 -->
+<!-- contextzip-instructions v1 -->
 OLD RTK CONTENT
-<!-- /tokenzip-instructions -->
+<!-- /contextzip-instructions -->
 
 More notes
 "#;
 
-        let (content, action) = upsert_tokenzip_block(input, TOKENZIP_INSTRUCTIONS);
+        let (content, action) = upsert_contextzip_block(input, CONTEXTZIP_INSTRUCTIONS);
         assert_eq!(action, TzBlockUpsert::Updated);
         assert!(!content.contains("OLD RTK CONTENT"));
-        assert!(content.contains("tokenzip cargo test")); // from current TOKENZIP_INSTRUCTIONS
+        assert!(content.contains("contextzip cargo test")); // from current CONTEXTZIP_INSTRUCTIONS
         assert!(content.contains("# Team instructions"));
         assert!(content.contains("More notes"));
     }
 
     #[test]
-    fn test_upsert_tokenzip_block_noop_when_already_current() {
+    fn test_upsert_contextzip_block_noop_when_already_current() {
         let input = format!(
             "# Team instructions\n\n{}\n\nMore notes\n",
-            TOKENZIP_INSTRUCTIONS
+            CONTEXTZIP_INSTRUCTIONS
         );
-        let (content, action) = upsert_tokenzip_block(&input, TOKENZIP_INSTRUCTIONS);
+        let (content, action) = upsert_contextzip_block(&input, CONTEXTZIP_INSTRUCTIONS);
         assert_eq!(action, TzBlockUpsert::Unchanged);
         assert_eq!(content, input);
     }
 
     #[test]
-    fn test_upsert_tokenzip_block_detects_malformed_block() {
-        let input = "<!-- tokenzip-instructions v2 -->\npartial";
-        let (content, action) = upsert_tokenzip_block(input, TOKENZIP_INSTRUCTIONS);
+    fn test_upsert_contextzip_block_detects_malformed_block() {
+        let input = "<!-- contextzip-instructions v2 -->\npartial";
+        let (content, action) = upsert_contextzip_block(input, CONTEXTZIP_INSTRUCTIONS);
         assert_eq!(action, TzBlockUpsert::Malformed);
         assert_eq!(content, input);
     }
@@ -1872,10 +1872,10 @@ More notes
         let temp = TempDir::new().unwrap();
         let claude_md = temp.path().join("CLAUDE.md");
 
-        fs::write(&claude_md, "# My stuff\n\n@TOKENZIP.md\n").unwrap();
+        fs::write(&claude_md, "# My stuff\n\n@CONTEXTZIP.md\n").unwrap();
 
         let content = fs::read_to_string(&claude_md).unwrap();
-        let count = content.matches("@TOKENZIP.md").count();
+        let count = content.matches("@CONTEXTZIP.md").count();
         assert_eq!(count, 1);
     }
 
@@ -1885,10 +1885,10 @@ More notes
         let temp = TempDir::new().unwrap();
         let claude_md = temp.path().join("CLAUDE.md");
 
-        fs::write(&claude_md, TOKENZIP_INSTRUCTIONS).unwrap();
+        fs::write(&claude_md, CONTEXTZIP_INSTRUCTIONS).unwrap();
         let content = fs::read_to_string(&claude_md).unwrap();
 
-        assert!(content.contains("<!-- tokenzip-instructions"));
+        assert!(content.contains("<!-- contextzip-instructions"));
     }
 
     // Tests for hook_already_present()
@@ -1900,13 +1900,13 @@ More notes
                     "matcher": "Bash",
                     "hooks": [{
                         "type": "command",
-                        "command": "/Users/test/.claude/hooks/tokenzip-rewrite.sh"
+                        "command": "/Users/test/.claude/hooks/contextzip-rewrite.sh"
                     }]
                 }]
             }
         });
 
-        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/contextzip-rewrite.sh";
         assert!(hook_already_present(&json_content, hook_command));
     }
 
@@ -1918,21 +1918,21 @@ More notes
                     "matcher": "Bash",
                     "hooks": [{
                         "type": "command",
-                        "command": "/home/user/.claude/hooks/tokenzip-rewrite.sh"
+                        "command": "/home/user/.claude/hooks/contextzip-rewrite.sh"
                     }]
                 }]
             }
         });
 
-        let hook_command = "~/.claude/hooks/tokenzip-rewrite.sh";
-        // Should match on tokenzip-rewrite.sh substring
+        let hook_command = "~/.claude/hooks/contextzip-rewrite.sh";
+        // Should match on contextzip-rewrite.sh substring
         assert!(hook_already_present(&json_content, hook_command));
     }
 
     #[test]
     fn test_hook_not_present_empty() {
         let json_content = serde_json::json!({});
-        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/contextzip-rewrite.sh";
         assert!(!hook_already_present(&json_content, hook_command));
     }
 
@@ -1950,7 +1950,7 @@ More notes
             }
         });
 
-        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/contextzip-rewrite.sh";
         assert!(!hook_already_present(&json_content, hook_command));
     }
 
@@ -1958,7 +1958,7 @@ More notes
     #[test]
     fn test_insert_hook_entry_empty_root() {
         let mut json_content = serde_json::json!({});
-        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/contextzip-rewrite.sh";
 
         insert_hook_entry(&mut json_content, hook_command);
 
@@ -1991,7 +1991,7 @@ More notes
             }
         });
 
-        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/contextzip-rewrite.sh";
         insert_hook_entry(&mut json_content, hook_command);
 
         let pre_tool_use = json_content["hooks"]["PreToolUse"].as_array().unwrap();
@@ -2014,7 +2014,7 @@ More notes
             "model": "claude-sonnet-4"
         });
 
-        let hook_command = "/Users/test/.claude/hooks/tokenzip-rewrite.sh";
+        let hook_command = "/Users/test/.claude/hooks/contextzip-rewrite.sh";
         insert_hook_entry(&mut json_content, hook_command);
 
         // Should preserve all other keys
@@ -2094,7 +2094,7 @@ More notes
                         "matcher": "Bash",
                         "hooks": [{
                             "type": "command",
-                            "command": "/Users/test/.claude/hooks/tokenzip-rewrite.sh"
+                            "command": "/Users/test/.claude/hooks/contextzip-rewrite.sh"
                         }]
                     }
                 ]
@@ -2157,13 +2157,13 @@ More notes
     #[test]
     fn test_no_rtk_in_user_facing_show_config_output() {
         // show_config prints to stdout; verify the constants used don't say "RTK hook"
-        // in user-facing contexts (comments in code are ok, but printed strings should say TokenZip)
+        // in user-facing contexts (comments in code are ok, but printed strings should say ContextZip)
         // This is a lightweight check on the key format strings
-        let show_usage_lines = ["tokenzip init -g --uninstall     # Remove all TokenZip artifacts"];
+        let show_usage_lines = ["contextzip init -g --uninstall     # Remove all ContextZip artifacts"];
         for line in show_usage_lines {
             assert!(
                 !line.contains("RTK artifacts"),
-                "User-facing string should say TokenZip, not RTK: {}",
+                "User-facing string should say ContextZip, not RTK: {}",
                 line
             );
         }

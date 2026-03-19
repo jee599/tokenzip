@@ -19,7 +19,7 @@
 //! let timer = TimedExecution::start();
 //! let input = "raw output";
 //! let output = "filtered output";
-//! timer.track("ls -la", "tokenzip ls", input, output);
+//! timer.track("ls -la", "contextzip ls", input, output);
 //!
 //! // Query statistics
 //! let tracker = Tracker::new().unwrap();
@@ -83,7 +83,7 @@ const HISTORY_DAYS: i64 = 90;
 /// use rtk::tracking::Tracker;
 ///
 /// let tracker = Tracker::new()?;
-/// tracker.record("ls -la", "tokenzip ls", 1000, 200, 50)?;
+/// tracker.record("ls -la", "contextzip ls", 1000, 200, 50)?;
 ///
 /// let summary = tracker.get_summary()?;
 /// println!("Total saved: {} tokens", summary.total_saved);
@@ -100,7 +100,7 @@ pub struct Tracker {
 pub struct CommandRecord {
     /// UTC timestamp when command was executed
     pub timestamp: DateTime<Utc>,
-    /// RTK command that was executed (e.g., "tokenzip ls")
+    /// RTK command that was executed (e.g., "contextzip ls")
     pub rtk_cmd: String,
     /// Input tokens (raw command output size)
     pub input_tokens: usize,
@@ -141,7 +141,7 @@ pub struct GainSummary {
 
 /// Per-feature aggregate statistics.
 ///
-/// Groups savings by the tokenzip module that produced them (cli, error, web, etc.).
+/// Groups savings by the contextzip module that produced them (cli, error, web, etc.).
 #[derive(Debug, Serialize)]
 pub struct FeatureStats {
     /// Feature module name (e.g., "cli", "error", "web")
@@ -156,7 +156,7 @@ pub struct FeatureStats {
 
 /// Daily statistics for token savings and execution metrics.
 ///
-/// Serializable to JSON for export via `tokenzip gain --daily --format json`.
+/// Serializable to JSON for export via `contextzip gain --daily --format json`.
 ///
 /// # JSON Schema
 ///
@@ -194,7 +194,7 @@ pub struct DayStats {
 
 /// Weekly statistics for token savings and execution metrics.
 ///
-/// Serializable to JSON for export via `tokenzip gain --weekly --format json`.
+/// Serializable to JSON for export via `contextzip gain --weekly --format json`.
 /// Weeks start on Sunday (SQLite default).
 #[derive(Debug, Serialize)]
 pub struct WeekStats {
@@ -220,7 +220,7 @@ pub struct WeekStats {
 
 /// Monthly statistics for token savings and execution metrics.
 ///
-/// Serializable to JSON for export via `tokenzip gain --monthly --format json`.
+/// Serializable to JSON for export via `contextzip gain --monthly --format json`.
 #[derive(Debug, Serialize)]
 pub struct MonthStats {
     /// Month identifier (YYYY-MM)
@@ -309,7 +309,7 @@ impl Tracker {
             "ALTER TABLE commands ADD COLUMN project_path TEXT DEFAULT ''",
             [],
         );
-        // Migration: add feature column for tracking which tokenzip module produced savings
+        // Migration: add feature column for tracking which contextzip module produced savings
         let _ = conn.execute(
             "ALTER TABLE commands ADD COLUMN feature TEXT DEFAULT 'cli'",
             [],
@@ -374,7 +374,7 @@ impl Tracker {
     /// # Arguments
     ///
     /// - `original_cmd`: The standard command (e.g., "ls -la")
-    /// - `rtk_cmd`: The RTK command used (e.g., "tokenzip ls")
+    /// - `rtk_cmd`: The RTK command used (e.g., "contextzip ls")
     /// - `input_tokens`: Estimated tokens from standard command output
     /// - `output_tokens`: Actual tokens from RTK output
     /// - `exec_time_ms`: Execution time in milliseconds
@@ -385,7 +385,7 @@ impl Tracker {
     /// use rtk::tracking::Tracker;
     ///
     /// let tracker = Tracker::new()?;
-    /// tracker.record("ls -la", "tokenzip ls", 1000, 200, 50)?;
+    /// tracker.record("ls -la", "contextzip ls", 1000, 200, 50)?;
     /// # Ok::<(), anyhow::Error>(())
     /// ```
     pub fn record(
@@ -408,7 +408,7 @@ impl Tracker {
 
     /// Record a command execution with a specific feature tag.
     ///
-    /// Feature identifies which tokenzip module produced the savings:
+    /// Feature identifies which contextzip module produced the savings:
     /// 'cli', 'error', 'web', 'ansi', 'build', 'pkg', 'docker'.
     pub fn record_with_feature(
         &self,
@@ -483,7 +483,7 @@ impl Tracker {
         Ok(())
     }
 
-    /// Get parse failure summary for `tokenzip gain --failures`.
+    /// Get parse failure summary for `contextzip gain --failures`.
     pub fn get_parse_failure_summary(&self) -> Result<ParseFailureSummary> {
         let total: i64 = self
             .conn
@@ -1005,7 +1005,7 @@ impl Tracker {
         )?;
         let rows = stmt.query_map(params![limit as i64], |row| {
             let cmd: String = row.get(0)?;
-            // Extract just the command name (e.g. "tokenzip git status" → "git")
+            // Extract just the command name (e.g. "contextzip git status" → "git")
             Ok(cmd.split_whitespace().nth(1).unwrap_or(&cmd).to_string())
         })?;
         Ok(rows.filter_map(|r| r.ok()).collect())
@@ -1048,8 +1048,8 @@ impl Tracker {
 }
 
 fn get_db_path() -> Result<PathBuf> {
-    // Priority 1: Environment variable TOKENZIP_DB_PATH
-    if let Ok(custom_path) = std::env::var("TOKENZIP_DB_PATH") {
+    // Priority 1: Environment variable CONTEXTZIP_DB_PATH
+    if let Ok(custom_path) = std::env::var("CONTEXTZIP_DB_PATH") {
         return Ok(PathBuf::from(custom_path));
     }
 
@@ -1062,7 +1062,7 @@ fn get_db_path() -> Result<PathBuf> {
 
     // Priority 3: Default platform-specific location
     let data_dir = dirs::data_local_dir().unwrap_or_else(|| PathBuf::from("."));
-    Ok(data_dir.join("tokenzip").join("history.db"))
+    Ok(data_dir.join("contextzip").join("history.db"))
 }
 
 /// Individual parse failure record.
@@ -1133,7 +1133,7 @@ pub fn format_tokens(n: usize) -> String {
 
 /// Check if per-command savings display should be suppressed.
 fn is_quiet() -> bool {
-    if std::env::var("TOKENZIP_QUIET").is_ok() {
+    if std::env::var("CONTEXTZIP_QUIET").is_ok() {
         return true;
     }
     crate::config::Config::load()
@@ -1153,7 +1153,7 @@ fn print_savings(input_tokens: usize, output_tokens: usize) {
         0
     };
     eprintln!(
-        "\x1b[2m\u{1f4be} tokenzip: {} \u{2192} {} tokens (saved {}%)\x1b[0m",
+        "\x1b[2m\u{1f4be} contextzip: {} \u{2192} {} tokens (saved {}%)\x1b[0m",
         format_tokens(input_tokens),
         format_tokens(output_tokens),
         pct
@@ -1174,7 +1174,7 @@ fn print_savings(input_tokens: usize, output_tokens: usize) {
 /// let timer = TimedExecution::start();
 /// let input = execute_standard_command()?;
 /// let output = execute_rtk_command()?;
-/// timer.track("ls -la", "tokenzip ls", &input, &output);
+/// timer.track("ls -la", "contextzip ls", &input, &output);
 /// # Ok::<(), anyhow::Error>(())
 /// ```
 pub struct TimedExecution {
@@ -1195,7 +1195,7 @@ impl TimedExecution {
     ///
     /// let timer = TimedExecution::start();
     /// // ... execute command ...
-    /// timer.track("cmd", "tokenzip cmd", "input", "output");
+    /// timer.track("cmd", "contextzip cmd", "input", "output");
     /// ```
     pub fn start() -> Self {
         Self {
@@ -1213,7 +1213,7 @@ impl TimedExecution {
     /// # Arguments
     ///
     /// - `original_cmd`: Standard command (e.g., "ls -la")
-    /// - `rtk_cmd`: RTK command used (e.g., "tokenzip ls")
+    /// - `rtk_cmd`: RTK command used (e.g., "contextzip ls")
     /// - `input`: Standard command output (for token estimation)
     /// - `output`: RTK command output (for token estimation)
     ///
@@ -1225,7 +1225,7 @@ impl TimedExecution {
     /// let timer = TimedExecution::start();
     /// let input = "long output...";
     /// let output = "short output";
-    /// timer.track("ls -la", "tokenzip ls", input, output);
+    /// timer.track("ls -la", "contextzip ls", input, output);
     /// ```
     pub fn track(&self, original_cmd: &str, rtk_cmd: &str, input: &str, output: &str) {
         self.track_with_feature(original_cmd, rtk_cmd, input, output, "cli");
@@ -1268,7 +1268,7 @@ impl TimedExecution {
     /// # Arguments
     ///
     /// - `original_cmd`: Standard command (e.g., "git tag --list")
-    /// - `rtk_cmd`: RTK command used (e.g., "tokenzip git tag --list")
+    /// - `rtk_cmd`: RTK command used (e.g., "contextzip git tag --list")
     ///
     /// # Examples
     ///
@@ -1277,7 +1277,7 @@ impl TimedExecution {
     ///
     /// let timer = TimedExecution::start();
     /// // ... execute streaming command ...
-    /// timer.track_passthrough("git tag", "tokenzip git tag");
+    /// timer.track_passthrough("git tag", "contextzip git tag");
     /// ```
     pub fn track_passthrough(&self, original_cmd: &str, rtk_cmd: &str) {
         let elapsed_ms = self.start.elapsed().as_millis() as u64;
@@ -1319,7 +1319,7 @@ pub fn args_display(args: &[OsString]) -> String {
 /// # Arguments
 ///
 /// - `original_cmd`: Standard command (e.g., "ls -la")
-/// - `rtk_cmd`: RTK command used (e.g., "tokenzip ls")
+/// - `rtk_cmd`: RTK command used (e.g., "contextzip ls")
 /// - `input`: Standard command output (for token estimation)
 /// - `output`: RTK command output (for token estimation)
 ///
@@ -1328,11 +1328,11 @@ pub fn args_display(args: &[OsString]) -> String {
 /// ```no_run
 /// # use rtk::tracking::{track, TimedExecution};
 /// // Old (deprecated)
-/// track("ls -la", "tokenzip ls", "input", "output");
+/// track("ls -la", "contextzip ls", "input", "output");
 ///
 /// // New (preferred)
 /// let timer = TimedExecution::start();
-/// timer.track("ls -la", "tokenzip ls", "input", "output");
+/// timer.track("ls -la", "contextzip ls", "input", "output");
 /// ```
 #[deprecated(note = "Use TimedExecution instead")]
 #[allow(dead_code)]
@@ -1376,7 +1376,7 @@ mod tests {
         let tracker = Tracker::new().expect("Failed to create tracker");
 
         // Use unique test identifier to avoid conflicts with other tests
-        let test_cmd = format!("tokenzip git status test_{}", std::process::id());
+        let test_cmd = format!("contextzip git status test_{}", std::process::id());
 
         tracker
             .record("git status", &test_cmd, 100, 20, 50)
@@ -1401,8 +1401,8 @@ mod tests {
 
         // Use unique test identifiers
         let pid = std::process::id();
-        let cmd1 = format!("tokenzip cmd1_test_{}", pid);
-        let cmd2 = format!("tokenzip cmd2_passthrough_test_{}", pid);
+        let cmd1 = format!("contextzip cmd1_test_{}", pid);
+        let cmd2 = format!("contextzip cmd2_passthrough_test_{}", pid);
 
         // Record one real command with 80% savings
         tracker
@@ -1443,19 +1443,19 @@ mod tests {
     fn test_timed_execution_records_time() {
         let timer = TimedExecution::start();
         std::thread::sleep(std::time::Duration::from_millis(10));
-        timer.track("test cmd", "tokenzip test", "raw input data", "filtered");
+        timer.track("test cmd", "contextzip test", "raw input data", "filtered");
 
         // Verify via DB that record exists
         let tracker = Tracker::new().expect("Failed to create tracker");
         let recent = tracker.get_recent(5).expect("Failed to get recent");
-        assert!(recent.iter().any(|r| r.rtk_cmd == "tokenzip test"));
+        assert!(recent.iter().any(|r| r.rtk_cmd == "contextzip test"));
     }
 
     // 6. TimedExecution::track_passthrough records with 0 tokens
     #[test]
     fn test_timed_execution_passthrough() {
         let timer = TimedExecution::start();
-        timer.track_passthrough("git tag", "tokenzip git tag (passthrough)");
+        timer.track_passthrough("git tag", "contextzip git tag (passthrough)");
 
         let tracker = Tracker::new().expect("Failed to create tracker");
         let recent = tracker.get_recent(5).expect("Failed to get recent");
@@ -1470,18 +1470,18 @@ mod tests {
         assert_eq!(pt.saved_tokens, 0);
     }
 
-    // 7. get_db_path respects environment variable TOKENZIP_DB_PATH
+    // 7. get_db_path respects environment variable CONTEXTZIP_DB_PATH
     #[test]
     fn test_custom_db_path_env() {
         use std::env;
 
         let custom_path = "/tmp/rtk_test_custom.db";
-        env::set_var("TOKENZIP_DB_PATH", custom_path);
+        env::set_var("CONTEXTZIP_DB_PATH", custom_path);
 
         let db_path = get_db_path().expect("Failed to get db path");
         assert_eq!(db_path, PathBuf::from(custom_path));
 
-        env::remove_var("TOKENZIP_DB_PATH");
+        env::remove_var("CONTEXTZIP_DB_PATH");
     }
 
     // 8. get_db_path falls back to default when no custom config
@@ -1490,10 +1490,10 @@ mod tests {
         use std::env;
 
         // Ensure no env var is set
-        env::remove_var("TOKENZIP_DB_PATH");
+        env::remove_var("CONTEXTZIP_DB_PATH");
 
         let db_path = get_db_path().expect("Failed to get db path");
-        assert!(db_path.ends_with("tokenzip/history.db"));
+        assert!(db_path.ends_with("contextzip/history.db"));
     }
 
     // 9. project_filter_params uses GLOB pattern with * wildcard // added
@@ -1580,7 +1580,7 @@ mod tests {
     fn test_record_with_feature() {
         let tracker = Tracker::new().expect("Failed to create tracker");
         let pid = std::process::id();
-        let cmd = format!("tokenzip_feat_test_{}", pid);
+        let cmd = format!("contextzip_feat_test_{}", pid);
 
         tracker
             .record_with_feature("test cmd", &cmd, 500, 50, 10, "error")
@@ -1600,7 +1600,7 @@ mod tests {
     fn test_record_defaults_to_cli_feature() {
         let tracker = Tracker::new().expect("Failed to create tracker");
         let pid = std::process::id();
-        let cmd = format!("tokenzip_cli_default_test_{}", pid);
+        let cmd = format!("contextzip_cli_default_test_{}", pid);
 
         tracker
             .record("test cmd", &cmd, 200, 40, 10)
@@ -1652,7 +1652,7 @@ mod tests {
     #[test]
     fn test_timed_execution_track_with_feature() {
         let timer = TimedExecution::start();
-        timer.track_with_feature("cmd", "tokenzip cmd", "long input data", "short", "docker");
+        timer.track_with_feature("cmd", "contextzip cmd", "long input data", "short", "docker");
 
         let tracker = Tracker::new().expect("Failed to create tracker");
         let features = tracker
@@ -1810,14 +1810,14 @@ mod tests {
         assert_eq!(saved_neg, 0);
     }
 
-    // 21. TOKENZIP_QUIET=1 suppresses savings display
+    // 21. CONTEXTZIP_QUIET=1 suppresses savings display
     #[test]
     fn test_quiet_env_suppresses_output() {
         use std::env;
 
-        env::set_var("TOKENZIP_QUIET", "1");
+        env::set_var("CONTEXTZIP_QUIET", "1");
         assert!(is_quiet());
-        env::remove_var("TOKENZIP_QUIET");
+        env::remove_var("CONTEXTZIP_QUIET");
     }
 
     // 22. is_quiet returns false when env var not set and config default
@@ -1825,10 +1825,10 @@ mod tests {
     fn test_not_quiet_by_default() {
         use std::env;
 
-        env::remove_var("TOKENZIP_QUIET");
+        env::remove_var("CONTEXTZIP_QUIET");
         // With default config (quiet: false), should not be quiet
         // Note: this may read real config file, but default is quiet=false
-        let quiet = std::env::var("TOKENZIP_QUIET").is_ok();
+        let quiet = std::env::var("CONTEXTZIP_QUIET").is_ok();
         assert!(!quiet);
     }
 }

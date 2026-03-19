@@ -1,4 +1,4 @@
-# TokenZip
+# ContextZip
 
 **你的 Claude Code 正在浪费 token。5 秒搞定。**
 
@@ -10,10 +10,10 @@
 
 ```bash
 # Homebrew (macOS/Linux)
-brew install jee599/tap/tokenzip
+brew install jee599/tap/contextzip
 
 # 或 curl
-curl -fsSL https://raw.githubusercontent.com/jee599/tokenzip/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/jee599/contextzip/main/install.sh | bash
 ```
 
 重启 Claude Code。搞定。所有命令自动压缩。
@@ -28,7 +28,7 @@ Claude Code 每次执行 `git status`、`npm install`、`cargo test`，原始输
 
 ## 解决方案
 
-TokenZip 拦截 CLI 输出，在到达 Claude 上下文之前剥离噪音。零配置。零开销（<10ms）。
+ContextZip 拦截 CLI 输出，在到达 Claude 上下文之前剥离噪音。零配置。零开销（<10ms）。
 
 ### 真实案例
 
@@ -53,7 +53,7 @@ no changes added to commit
 ```
 （12 行，约 200 token）
 
-压缩后（tokenzip）：
+压缩后（contextzip）：
 ```
 * main...origin/main
 M src/api/users.ts
@@ -140,16 +140,16 @@ added 847 packages, and audited 848 packages in 32s
 $ git status
 * main...origin/main
 M src/api/users.ts
-💾 tokenzip: 200 → 40 tokens (saved 80%)
+💾 contextzip: 200 → 40 tokens (saved 80%)
 ```
 
 随时查看累计节省：
 
 ```bash
-tokenzip gain                  # 节省量仪表盘
-tokenzip gain --by-feature     # 按过滤器类型
-tokenzip gain --graph          # 每日节省图表
-tokenzip gain --history        # 最近命令详情
+contextzip gain                  # 节省量仪表盘
+contextzip gain --by-feature     # 按过滤器类型
+contextzip gain --graph          # 每日节省图表
+contextzip gain --history        # 最近命令详情
 ```
 
 ---
@@ -158,26 +158,26 @@ tokenzip gain --history        # 最近命令详情
 
 ```bash
 # 通过 hook 自动生效：
-git status          # → tokenzip git status（压缩）
-cargo test          # → tokenzip cargo test（仅失败）
-npm install         # → tokenzip npm install（去噪）
-docker build .      # → tokenzip docker build（摘要）
+git status          # → contextzip git status（压缩）
+cargo test          # → contextzip cargo test（仅失败）
+npm install         # → contextzip npm install（去噪）
+docker build .      # → contextzip docker build（摘要）
 
 # 手动命令：
-tokenzip web https://docs.example.com    # 提取页面内容
-tokenzip err node server.js              # 错误聚焦输出
+contextzip web https://docs.example.com    # 提取页面内容
+contextzip err node server.js              # 错误聚焦输出
 
 # 分析：
-tokenzip gain                  # 节省量仪表盘
-tokenzip gain --by-feature     # 按过滤器类型
-tokenzip gain --graph          # 每日图表
-tokenzip gain --history        # 最近命令
+contextzip gain                  # 节省量仪表盘
+contextzip gain --by-feature     # 按过滤器类型
+contextzip gain --graph          # 每日图表
+contextzip gain --history        # 最近命令
 
 # 设置：
-tokenzip init -g --auto-patch  # 安装 hook（安装器已完成）
-tokenzip init --show           # 检查安装状态
-tokenzip update                # 自更新
-tokenzip uninstall             # 干净卸载
+contextzip init -g --auto-patch  # 安装 hook（安装器已完成）
+contextzip init --show           # 检查安装状态
+contextzip update                # 自更新
+contextzip uninstall             # 干净卸载
 ```
 
 ---
@@ -185,7 +185,7 @@ tokenzip uninstall             # 干净卸载
 ## 工作原理
 
 1. Claude Code hook 拦截 bash 命令
-2. TokenZip 压缩输出（ANSI → 命令过滤器 → 错误后处理）
+2. ContextZip 压缩输出（ANSI → 命令过滤器 → 错误后处理）
 3. 压缩结果传入 Claude 上下文
 4. 每条命令后显示节省量
 
@@ -195,4 +195,4 @@ tokenzip uninstall             # 干净卸载
 
 ## 基于 RTK
 
-TokenZip 是 [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk) 的 fork，新增 6 个噪音过滤器。包含 RTK 全部 34 个命令。MIT 许可证。
+ContextZip 是 [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk) 的 fork，新增 6 个噪音过滤器。包含 RTK 全部 34 个命令。MIT 许可证。

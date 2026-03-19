@@ -82,7 +82,7 @@ pub fn run_test(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("go test {}", args.join(" ")),
-        &format!("tokenzip go test {}", args.join(" ")),
+        &format!("contextzip go test {}", args.join(" ")),
         &raw,
         &filtered,
     );
@@ -135,7 +135,7 @@ pub fn run_build(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("go build {}", args.join(" ")),
-        &format!("tokenzip go build {}", args.join(" ")),
+        &format!("contextzip go build {}", args.join(" ")),
         &raw,
         &filtered,
     );
@@ -188,7 +188,7 @@ pub fn run_vet(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("go vet {}", args.join(" ")),
-        &format!("tokenzip go vet {}", args.join(" ")),
+        &format!("contextzip go vet {}", args.join(" ")),
         &raw,
         &filtered,
     );
@@ -233,7 +233,7 @@ pub fn run_other(args: &[OsString], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("go {}", subcommand),
-        &format!("tokenzip go {}", subcommand),
+        &format!("contextzip go {}", subcommand),
         &raw,
         &raw, // No filtering for unsupported commands
     );

@@ -1,12 +1,12 @@
 [package]
-name = "tokenzip"
+name = "contextzip"
 version = "0.1.0"
 edition = "2021"
 authors = ["Jidong Lee"]
-description = "TokenZip - High-performance CLI proxy to minimize LLM token consumption (based on rtk)"
+description = "ContextZip - High-performance CLI proxy to minimize LLM token consumption (based on rtk)"
 license = "MIT"
-homepage = "https://github.com/jee599/tokenzip"
-repository = "https://github.com/jee599/tokenzip"
+homepage = "https://github.com/jee599/contextzip"
+repository = "https://github.com/jee599/contextzip"
 readme = "README.md"
 keywords = ["cli", "llm", "token", "filter", "productivity"]
 categories = ["command-line-utilities", "development-tools"]
@@ -53,15 +53,15 @@ strip = true
 maintainer = "Jidong Lee"
 copyright = "2026 Jidong Lee"
 license-file = ["LICENSE", "0"]
-extended-description = "tokenzip filters and compresses command outputs before they reach your LLM context, saving 60-90% of tokens."
+extended-description = "contextzip filters and compresses command outputs before they reach your LLM context, saving 60-90% of tokens."
 section = "utility"
 priority = "optional"
 assets = [
-    ["target/release/tokenzip", "usr/bin/", "755"],
+    ["target/release/contextzip", "usr/bin/", "755"],
 ]
 
 # cargo-generate-rpm configuration
 [package.metadata.generate-rpm]
 assets = [
-    { source = "target/release/tokenzip", dest = "/usr/bin/tokenzip", mode = "755" },
+    { source = "target/release/contextzip", dest = "/usr/bin/contextzip", mode = "755" },
 ]

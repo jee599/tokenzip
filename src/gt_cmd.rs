@@ -74,7 +74,7 @@ fn run_gt_filtered(
     } else {
         format!("gt {} {}", subcmd_str, args.join(" "))
     };
-    let rtk_label = format!("tokenzip {}", label);
+    let rtk_label = format!("contextzip {}", label);
     timer.track(&label, &rtk_label, &raw, &output);
 
     if !cmd_output.status.success() {
@@ -191,7 +191,7 @@ fn passthrough_gt(subcommand: &str, args: &[String], verbose: u8) -> Result<()> 
     };
     timer.track_passthrough(
         &format!("gt {}", args_str),
-        &format!("tokenzip gt {} (passthrough)", args_str),
+        &format!("contextzip gt {} (passthrough)", args_str),
     );
 
     if !status.success() {

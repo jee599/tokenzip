@@ -39,12 +39,12 @@ pub fn run(url: &str, args: &[String], verbose: u8) -> Result<()> {
             format_size(size)
         );
         println!("{}", msg);
-        timer.track(&format!("wget {}", url), "tokenzip wget", &raw_output, &msg);
+        timer.track(&format!("wget {}", url), "contextzip wget", &raw_output, &msg);
     } else {
         let error = parse_error(&stderr, &stdout);
         let msg = format!("{} FAILED: {}", compact_url(url), error);
         println!("{}", msg);
-        timer.track(&format!("wget {}", url), "tokenzip wget", &raw_output, &msg);
+        timer.track(&format!("wget {}", url), "contextzip wget", &raw_output, &msg);
         std::process::exit(output.status.code().unwrap_or(1));
     }
 
@@ -98,7 +98,7 @@ pub fn run_stdout(url: &str, args: &[String], verbose: u8) -> Result<()> {
         print!("{}", rtk_output);
         timer.track(
             &format!("wget -O - {}", url),
-            "tokenzip wget -o",
+            "contextzip wget -o",
             &raw_output,
             &rtk_output,
         );
@@ -109,7 +109,7 @@ pub fn run_stdout(url: &str, args: &[String], verbose: u8) -> Result<()> {
         println!("{}", msg);
         timer.track(
             &format!("wget -O - {}", url),
-            "tokenzip wget -o",
+            "contextzip wget -o",
             &stderr,
             &msg,
         );

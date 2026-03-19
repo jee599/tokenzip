@@ -267,7 +267,7 @@ fn run_vitest(args: &[String], verbose: u8) -> Result<()> {
         println!("{}", filtered);
     }
 
-    timer.track("vitest run", "tokenzip vitest run", &combined, &filtered);
+    timer.track("vitest run", "contextzip vitest run", &combined, &filtered);
 
     // Propagate original exit code
     std::process::exit(exit_code)

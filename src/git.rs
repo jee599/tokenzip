@@ -96,7 +96,7 @@ fn run_diff(
 
         timer.track(
             &format!("git diff {}", args.join(" ")),
-            &format!("tokenzip git diff {} (passthrough)", args.join(" ")),
+            &format!("contextzip git diff {} (passthrough)", args.join(" ")),
             &stdout,
             &stdout,
         );
@@ -123,7 +123,7 @@ fn run_diff(
         let raw = stat_stdout.to_string();
         timer.track(
             &format!("git diff {}", args.join(" ")),
-            &format!("tokenzip git diff {}", args.join(" ")),
+            &format!("contextzip git diff {}", args.join(" ")),
             &raw,
             &raw,
         );
@@ -158,7 +158,7 @@ fn run_diff(
 
     timer.track(
         &format!("git diff {}", args.join(" ")),
-        &format!("tokenzip git diff {}", args.join(" ")),
+        &format!("contextzip git diff {}", args.join(" ")),
         &format!("{}\n{}", stat_stdout, diff_stdout),
         &final_output,
     );
@@ -208,7 +208,7 @@ fn run_show(
 
         timer.track(
             &format!("git show {}", args.join(" ")),
-            &format!("tokenzip git show {} (passthrough)", args.join(" ")),
+            &format!("contextzip git show {} (passthrough)", args.join(" ")),
             &stdout,
             &stdout,
         );
@@ -277,7 +277,7 @@ fn run_show(
 
     timer.track(
         &format!("git show {}", args.join(" ")),
-        &format!("tokenzip git show {}", args.join(" ")),
+        &format!("contextzip git show {}", args.join(" ")),
         &raw_output,
         &final_output,
     );
@@ -442,7 +442,7 @@ fn run_log(
 
     timer.track(
         &format!("git log {}", args.join(" ")),
-        &format!("tokenzip git log {}", args.join(" ")),
+        &format!("contextzip git log {}", args.join(" ")),
         &stdout,
         &filtered,
     );
@@ -731,7 +731,7 @@ fn run_status(args: &[String], verbose: u8, global_args: &[String]) -> Result<()
             let raw = stdout.to_string();
             timer.track(
                 &format!("git status {}", args.join(" ")),
-                &format!("tokenzip git status {}", args.join(" ")),
+                &format!("contextzip git status {}", args.join(" ")),
                 &raw,
                 &raw,
             );
@@ -748,7 +748,7 @@ fn run_status(args: &[String], verbose: u8, global_args: &[String]) -> Result<()
 
         timer.track(
             &format!("git status {}", args.join(" ")),
-            &format!("tokenzip git status {}", args.join(" ")),
+            &format!("contextzip git status {}", args.join(" ")),
             &stdout,
             &filtered,
         );
@@ -775,7 +775,7 @@ fn run_status(args: &[String], verbose: u8, global_args: &[String]) -> Result<()
     if !stderr.is_empty() && stderr.contains("not a git repository") {
         let message = "Not a git repository".to_string();
         eprintln!("{}", message);
-        timer.track("git status", "tokenzip git status", &raw_output, &message);
+        timer.track("git status", "contextzip git status", &raw_output, &message);
         std::process::exit(output.status.code().unwrap_or(128));
     }
 
@@ -784,7 +784,7 @@ fn run_status(args: &[String], verbose: u8, global_args: &[String]) -> Result<()
     println!("{}", formatted);
 
     // Track for statistics
-    timer.track("git status", "tokenzip git status", &raw_output, &formatted);
+    timer.track("git status", "contextzip git status", &raw_output, &formatted);
 
     Ok(())
 }
@@ -840,7 +840,7 @@ fn run_add(args: &[String], verbose: u8, global_args: &[String]) -> Result<()> {
 
         timer.track(
             &format!("git add {}", args.join(" ")),
-            &format!("tokenzip git add {}", args.join(" ")),
+            &format!("contextzip git add {}", args.join(" ")),
             &raw_output,
             &compact,
         );
@@ -906,13 +906,13 @@ fn run_commit(args: &[String], verbose: u8, global_args: &[String]) -> Result<()
 
         println!("{}", compact);
 
-        timer.track(&original_cmd, "tokenzip git commit", &raw_output, &compact);
+        timer.track(&original_cmd, "contextzip git commit", &raw_output, &compact);
     } else {
         if stderr.contains("nothing to commit") || stdout.contains("nothing to commit") {
             println!("ok (nothing to commit)");
             timer.track(
                 &original_cmd,
-                "tokenzip git commit",
+                "contextzip git commit",
                 &raw_output,
                 "ok (nothing to commit)",
             );
@@ -925,7 +925,7 @@ fn run_commit(args: &[String], verbose: u8, global_args: &[String]) -> Result<()
             }
             timer.track(
                 &original_cmd,
-                "tokenzip git commit",
+                "contextzip git commit",
                 &raw_output,
                 &raw_output,
             );
@@ -980,7 +980,7 @@ fn run_push(args: &[String], verbose: u8, global_args: &[String]) -> Result<()> 
 
         timer.track(
             &format!("git push {}", args.join(" ")),
-            &format!("tokenzip git push {}", args.join(" ")),
+            &format!("contextzip git push {}", args.join(" ")),
             &raw,
             &compact,
         );
@@ -1066,7 +1066,7 @@ fn run_pull(args: &[String], verbose: u8, global_args: &[String]) -> Result<()> 
 
         timer.track(
             &format!("git pull {}", args.join(" ")),
-            &format!("tokenzip git pull {}", args.join(" ")),
+            &format!("contextzip git pull {}", args.join(" ")),
             &raw_output,
             &compact,
         );
@@ -1146,7 +1146,7 @@ fn run_branch(args: &[String], verbose: u8, global_args: &[String]) -> Result<()
         let trimmed = stdout.trim();
         timer.track(
             &format!("git branch {}", args.join(" ")),
-            &format!("tokenzip git branch {}", args.join(" ")),
+            &format!("contextzip git branch {}", args.join(" ")),
             &combined,
             trimmed,
         );
@@ -1183,7 +1183,7 @@ fn run_branch(args: &[String], verbose: u8, global_args: &[String]) -> Result<()
 
         timer.track(
             &format!("git branch {}", args.join(" ")),
-            &format!("tokenzip git branch {}", args.join(" ")),
+            &format!("contextzip git branch {}", args.join(" ")),
             &combined,
             msg,
         );
@@ -1225,7 +1225,7 @@ fn run_branch(args: &[String], verbose: u8, global_args: &[String]) -> Result<()
         }
         timer.track(
             &format!("git branch {}", args.join(" ")),
-            &format!("tokenzip git branch {}", args.join(" ")),
+            &format!("contextzip git branch {}", args.join(" ")),
             &raw,
             &raw,
         );
@@ -1237,7 +1237,7 @@ fn run_branch(args: &[String], verbose: u8, global_args: &[String]) -> Result<()
 
     timer.track(
         &format!("git branch {}", args.join(" ")),
-        &format!("tokenzip git branch {}", args.join(" ")),
+        &format!("contextzip git branch {}", args.join(" ")),
         &raw,
         &filtered,
     );
@@ -1338,7 +1338,7 @@ fn run_fetch(args: &[String], verbose: u8, global_args: &[String]) -> Result<()>
     };
 
     println!("{}", msg);
-    timer.track("git fetch", "tokenzip git fetch", &raw, &msg);
+    timer.track("git fetch", "contextzip git fetch", &raw, &msg);
 
     Ok(())
 }
@@ -1367,13 +1367,13 @@ fn run_stash(
             if stdout.trim().is_empty() {
                 let msg = "No stashes";
                 println!("{}", msg);
-                timer.track("git stash list", "tokenzip git stash list", &raw, msg);
+                timer.track("git stash list", "contextzip git stash list", &raw, msg);
                 return Ok(());
             }
 
             let filtered = filter_stash_list(&stdout);
             println!("{}", filtered);
-            timer.track("git stash list", "tokenzip git stash list", &raw, &filtered);
+            timer.track("git stash list", "contextzip git stash list", &raw, &filtered);
         }
         Some("show") => {
             let mut cmd = git_cmd(global_args);
@@ -1395,7 +1395,7 @@ fn run_stash(
                 compacted
             };
 
-            timer.track("git stash show", "tokenzip git stash show", &raw, &filtered);
+            timer.track("git stash show", "contextzip git stash show", &raw, &filtered);
         }
         Some("pop") | Some("apply") | Some("drop") | Some("push") => {
             let sub = subcommand.unwrap();
@@ -1423,7 +1423,7 @@ fn run_stash(
 
             timer.track(
                 &format!("git stash {}", sub),
-                &format!("tokenzip git stash {}", sub),
+                &format!("contextzip git stash {}", sub),
                 &combined,
                 &msg,
             );
@@ -1458,7 +1458,7 @@ fn run_stash(
 
             timer.track(
                 &format!("git stash {}", sub),
-                &format!("tokenzip git stash {}", sub),
+                &format!("contextzip git stash {}", sub),
                 &combined,
                 &msg,
             );
@@ -1497,7 +1497,7 @@ fn run_stash(
                 combined.clone()
             };
 
-            timer.track("git stash", "tokenzip git stash", &combined, &msg);
+            timer.track("git stash", "contextzip git stash", &combined, &msg);
 
             if !output.status.success() {
                 std::process::exit(output.status.code().unwrap_or(1));
@@ -1560,7 +1560,7 @@ fn run_worktree(args: &[String], verbose: u8, global_args: &[String]) -> Result<
 
         timer.track(
             &format!("git worktree {}", args.join(" ")),
-            &format!("tokenzip git worktree {}", args.join(" ")),
+            &format!("contextzip git worktree {}", args.join(" ")),
             &combined,
             msg,
         );
@@ -1590,7 +1590,7 @@ fn run_worktree(args: &[String], verbose: u8, global_args: &[String]) -> Result<
     println!("{}", filtered);
     timer.track(
         "git worktree list",
-        "tokenzip git worktree",
+        "contextzip git worktree",
         &raw,
         &filtered,
     );
@@ -1640,7 +1640,7 @@ pub fn run_passthrough(args: &[OsString], global_args: &[String], verbose: u8) -
     let args_str = tracking::args_display(args);
     timer.track_passthrough(
         &format!("git {}", args_str),
-        &format!("tokenzip git {} (passthrough)", args_str),
+        &format!("contextzip git {} (passthrough)", args_str),
     );
 
     if !status.success() {
@@ -2275,7 +2275,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
         let bin_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("target")
             .join("debug")
-            .join("tokenzip");
+            .join("contextzip");
         assert!(
             bin_path.exists(),
             "Debug binary not found at {:?} — run `cargo build` first",

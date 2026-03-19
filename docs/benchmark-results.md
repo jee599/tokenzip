@@ -1,9 +1,9 @@
-# TokenZip Benchmark Results
+# ContextZip Benchmark Results
 
 **Date:** 2026-03-19
 **Version:** 0.1.0 (based on rtk 0.30.1)
 **Test cases:** 102
-**Methodology:** Each test uses realistic, production-like input data. Character count is used as a proxy for tokens. All tests run with `TOKENZIP_QUIET=1`.
+**Methodology:** Each test uses realistic, production-like input data. Character count is used as a proxy for tokens. All tests run with `CONTEXTZIP_QUIET=1`.
 
 ## Summary
 
@@ -170,19 +170,19 @@
 ## Notes
 
 ### Measurement Methodology
-- **Error Stacktraces (1-20):** Realistic stacktraces piped through `tokenzip err cat <file>`
+- **Error Stacktraces (1-20):** Realistic stacktraces piped through `contextzip err cat <file>`
 - **Web Pages (21-35):** HTML files processed by `extract_content()` function (tested via `cargo test`)
-- **ANSI/Spinners (36-50):** ANSI-laden output piped through `tokenzip err cat <file>`
-- **Build Errors (51-65):** Realistic compiler output through `tokenzip tsc/lint/cargo cat <file>`
-- **Package Install (66-80):** Install logs through `tokenzip npm/pip/pnpm cat <file>`
-- **Docker Build (81-90):** Docker build output through `tokenzip docker cat <file>`
-- **CLI Commands (91-103):** Real commands run in the tokenzip repository
+- **ANSI/Spinners (36-50):** ANSI-laden output piped through `contextzip err cat <file>`
+- **Build Errors (51-65):** Realistic compiler output through `contextzip tsc/lint/cargo cat <file>`
+- **Package Install (66-80):** Install logs through `contextzip npm/pip/pnpm cat <file>`
+- **Docker Build (81-90):** Docker build output through `contextzip docker cat <file>`
+- **CLI Commands (91-103):** Real commands run in the contextzip repository
 
 ### Why Some Cases Show Low/Negative Savings
-- **`err` filter catches all as success:** When `tokenzip err` runs a command that exits 0, it outputs `[ok] Command completed successfully (no errors)` -- a 48-char summary. This is great for noisy success output but shows low savings for already-concise error messages.
+- **`err` filter catches all as success:** When `contextzip err` runs a command that exits 0, it outputs `[ok] Command completed successfully (no errors)` -- a 48-char summary. This is great for noisy success output but shows low savings for already-concise error messages.
 - **npm deprecation warnings:** The `npm` filter passes through warnings rather than stripping them, since deprecation info can be useful.
 - **Rust panics:** The `err` filter doesn't specifically parse Rust panic format, so it treats panic output as normal output.
-- **`ls` enrichment:** `tokenzip ls` adds file count, sizes, and directory structure info that can exceed raw `ls` output for small directories.
+- **`ls` enrichment:** `contextzip ls` adds file count, sizes, and directory structure info that can exceed raw `ls` output for small directories.
 - **Java IOException:** The `err` filter added formatting overhead that exceeded the original for this particular case.
 - **ESLint small inputs:** With fewer than 10 violations, the filter's grouping headers add overhead.
 

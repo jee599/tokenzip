@@ -1,4 +1,4 @@
-# TokenZip
+# ContextZip
 
 **Claude Code가 토큰을 낭비하고 있다. 5초면 고친다.**
 
@@ -10,10 +10,10 @@
 
 ```bash
 # Homebrew (macOS/Linux)
-brew install jee599/tap/tokenzip
+brew install jee599/tap/contextzip
 
 # 또는 curl
-curl -fsSL https://raw.githubusercontent.com/jee599/tokenzip/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/jee599/contextzip/main/install.sh | bash
 ```
 
 Claude Code 재시작. 끝. 모든 명령어가 자동으로 압축된다.
@@ -28,7 +28,7 @@ Claude Code가 `git status`, `npm install`, `cargo test`를 실행할 때마다 
 
 ## 해결
 
-TokenZip이 CLI 출력을 가로채서 Claude 컨텍스트에 도달하기 전에 노이즈를 제거한다. 설정 없음. 오버헤드 없음 (<10ms).
+ContextZip이 CLI 출력을 가로채서 Claude 컨텍스트에 도달하기 전에 노이즈를 제거한다. 설정 없음. 오버헤드 없음 (<10ms).
 
 ### 실제 예시
 
@@ -53,7 +53,7 @@ no changes added to commit
 ```
 (12줄, ~200 토큰)
 
-After (tokenzip):
+After (contextzip):
 ```
 * main...origin/main
 M src/api/users.ts
@@ -140,16 +140,16 @@ After (1줄): `✓ built my-app:latest (12 steps, 8 cached)` — **96% 절감**
 $ git status
 * main...origin/main
 M src/api/users.ts
-💾 tokenzip: 200 → 40 tokens (saved 80%)
+💾 contextzip: 200 → 40 tokens (saved 80%)
 ```
 
 누적 절감량을 언제든 확인할 수 있다:
 
 ```bash
-tokenzip gain                  # 절감량 대시보드
-tokenzip gain --by-feature     # 필터별 절감량
-tokenzip gain --graph          # 일별 절감량 차트
-tokenzip gain --history        # 최근 명령어 상세
+contextzip gain                  # 절감량 대시보드
+contextzip gain --by-feature     # 필터별 절감량
+contextzip gain --graph          # 일별 절감량 차트
+contextzip gain --history        # 최근 명령어 상세
 ```
 
 ---
@@ -158,26 +158,26 @@ tokenzip gain --history        # 최근 명령어 상세
 
 ```bash
 # 훅으로 자동 적용:
-git status          # → tokenzip git status (압축)
-cargo test          # → tokenzip cargo test (실패만)
-npm install         # → tokenzip npm install (노이즈 제거)
-docker build .      # → tokenzip docker build (요약)
+git status          # → contextzip git status (압축)
+cargo test          # → contextzip cargo test (실패만)
+npm install         # → contextzip npm install (노이즈 제거)
+docker build .      # → contextzip docker build (요약)
 
 # 수동 명령어:
-tokenzip web https://docs.example.com    # 페이지 콘텐츠 추출
-tokenzip err node server.js              # 에러 중심 출력
+contextzip web https://docs.example.com    # 페이지 콘텐츠 추출
+contextzip err node server.js              # 에러 중심 출력
 
 # 분석:
-tokenzip gain                  # 절감량 대시보드
-tokenzip gain --by-feature     # 필터 유형별
-tokenzip gain --graph          # 일별 차트
-tokenzip gain --history        # 최근 명령어
+contextzip gain                  # 절감량 대시보드
+contextzip gain --by-feature     # 필터 유형별
+contextzip gain --graph          # 일별 차트
+contextzip gain --history        # 최근 명령어
 
 # 설정:
-tokenzip init -g --auto-patch  # 훅 설치 (인스톨러가 처리)
-tokenzip init --show           # 설치 상태 확인
-tokenzip update                # 셀프 업데이트
-tokenzip uninstall             # 깔끔한 제거
+contextzip init -g --auto-patch  # 훅 설치 (인스톨러가 처리)
+contextzip init --show           # 설치 상태 확인
+contextzip update                # 셀프 업데이트
+contextzip uninstall             # 깔끔한 제거
 ```
 
 ---
@@ -185,7 +185,7 @@ tokenzip uninstall             # 깔끔한 제거
 ## 동작 방식
 
 1. Claude Code 훅이 bash 명령어를 가로챈다
-2. TokenZip이 출력을 압축한다 (ANSI → 명령어 필터 → 에러 후처리)
+2. ContextZip이 출력을 압축한다 (ANSI → 명령어 필터 → 에러 후처리)
 3. 압축된 결과가 Claude 컨텍스트로 전달된다
 4. 매 명령어마다 절감량을 볼 수 있다
 
@@ -195,4 +195,4 @@ tokenzip uninstall             # 깔끔한 제거
 
 ## RTK 기반
 
-TokenZip은 [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk)의 포크다. 6개의 노이즈 필터를 추가했다. RTK의 34개 명령어 모두 포함. MIT 라이선스.
+ContextZip은 [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk)의 포크다. 6개의 노이즈 필터를 추가했다. RTK의 34개 명령어 모두 포함. MIT 라이선스.

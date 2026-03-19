@@ -66,7 +66,7 @@ fn run_generate(args: &[String], verbose: u8) -> Result<()> {
         if !stderr.trim().is_empty() {
             eprint!("{}", stderr);
         }
-        timer.track("prisma generate", "tokenzip prisma generate", &raw, &raw);
+        timer.track("prisma generate", "contextzip prisma generate", &raw, &raw);
         std::process::exit(exit_code);
     }
 
@@ -74,7 +74,7 @@ fn run_generate(args: &[String], verbose: u8) -> Result<()> {
     println!("{}", filtered);
     timer.track(
         "prisma generate",
-        "tokenzip prisma generate",
+        "contextzip prisma generate",
         &raw,
         &filtered,
     );
@@ -128,7 +128,7 @@ fn run_migrate(subcommand: MigrateSubcommand, args: &[String], verbose: u8) -> R
         if !stderr.trim().is_empty() {
             eprint!("{}", stderr);
         }
-        timer.track(cmd_name, &format!("tokenzip {}", cmd_name), &raw, &raw);
+        timer.track(cmd_name, &format!("contextzip {}", cmd_name), &raw, &raw);
         std::process::exit(exit_code);
     }
 
@@ -139,7 +139,7 @@ fn run_migrate(subcommand: MigrateSubcommand, args: &[String], verbose: u8) -> R
     };
 
     println!("{}", filtered);
-    timer.track(cmd_name, &format!("tokenzip {}", cmd_name), &raw, &filtered);
+    timer.track(cmd_name, &format!("contextzip {}", cmd_name), &raw, &filtered);
 
     Ok(())
 }
@@ -172,13 +172,13 @@ fn run_db_push(args: &[String], verbose: u8) -> Result<()> {
         if !stderr.trim().is_empty() {
             eprint!("{}", stderr);
         }
-        timer.track("prisma db push", "tokenzip prisma db push", &raw, &raw);
+        timer.track("prisma db push", "contextzip prisma db push", &raw, &raw);
         std::process::exit(exit_code);
     }
 
     let filtered = filter_db_push(&raw);
     println!("{}", filtered);
-    timer.track("prisma db push", "tokenzip prisma db push", &raw, &filtered);
+    timer.track("prisma db push", "contextzip prisma db push", &raw, &filtered);
 
     Ok(())
 }

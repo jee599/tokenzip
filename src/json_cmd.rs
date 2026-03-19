@@ -20,12 +20,12 @@ fn validate_json_extension(file: &Path) -> Result<()> {
         };
         if let Some(fmt) = format_name {
             let mut msg = format!(
-                "{} is not a JSON file (detected {}). Use `tokenzip read` for non-JSON files.",
+                "{} is not a JSON file (detected {}). Use `contextzip read` for non-JSON files.",
                 file.display(),
                 fmt
             );
             if ext == "toml" && file.file_name().is_some_and(|n| n == "Cargo.toml") {
-                msg.push_str(" Tip: use `tokenzip deps` for Cargo.toml.");
+                msg.push_str(" Tip: use `contextzip deps` for Cargo.toml.");
             }
             bail!("{}", msg);
         }
@@ -49,7 +49,7 @@ pub fn run(file: &Path, max_depth: usize, verbose: u8) -> Result<()> {
     println!("{}", schema);
     timer.track(
         &format!("cat {}", file.display()),
-        "tokenzip json",
+        "contextzip json",
         &content,
         &schema,
     );
@@ -72,7 +72,7 @@ pub fn run_stdin(max_depth: usize, verbose: u8) -> Result<()> {
 
     let schema = filter_json_string(&content, max_depth)?;
     println!("{}", schema);
-    timer.track("cat - (stdin)", "tokenzip json -", &content, &schema);
+    timer.track("cat - (stdin)", "contextzip json -", &content, &schema);
     Ok(())
 }
 
@@ -188,7 +188,7 @@ mod tests {
     #[test]
     fn test_cargo_toml_suggests_deps() {
         let err = validate_json_extension(Path::new("Cargo.toml")).unwrap_err();
-        assert!(err.to_string().contains("tokenzip deps"));
+        assert!(err.to_string().contains("contextzip deps"));
     }
 
     #[test]

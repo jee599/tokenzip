@@ -1,12 +1,12 @@
 # CLI Testing Strategy
 
-Comprehensive testing rules for TokenZip CLI tool development.
+Comprehensive testing rules for ContextZip CLI tool development.
 
 ## Snapshot Testing (🔴 Critical)
 
 **Priority**: 🔴 **Triggers**: All filter changes, output format modifications
 
-Use `insta` crate for output validation. This is the **primary testing strategy** for TokenZip filters.
+Use `insta` crate for output validation. This is the **primary testing strategy** for ContextZip filters.
 
 ### Basic Snapshot Test
 
@@ -132,7 +132,7 @@ pnpm list > tests/fixtures/pnpm_list_raw.txt
 
 **Priority**: 🔴 **Triggers**: Shell escaping changes, command execution logic
 
-TokenZip must work on macOS (zsh), Linux (bash), Windows (PowerShell). Shell escaping differs.
+ContextZip must work on macOS (zsh), Linux (bash), Windows (PowerShell). Shell escaping differs.
 
 ### Platform-Specific Tests
 
@@ -168,7 +168,7 @@ cargo test  # Local testing
 
 **Linux (via Docker)**:
 ```bash
-docker run --rm -v $(pwd):/tokenzip -w /tokenzip rust:latest cargo test
+docker run --rm -v $(pwd):/contextzip -w /contextzip rust:latest cargo test
 ```
 
 **Windows (via CI)**:
@@ -186,7 +186,7 @@ Trust GitHub Actions CI/CD pipeline or test manually if Windows machine availabl
 
 **Priority**: 🟡 **Triggers**: New filter, command routing changes, release preparation
 
-Integration tests execute real commands via TokenZip to verify end-to-end behavior.
+Integration tests execute real commands via ContextZip to verify end-to-end behavior.
 
 ### Real Command Execution
 
@@ -195,13 +195,13 @@ Integration tests execute real commands via TokenZip to verify end-to-end behavi
 #[ignore] // Run with: cargo test --ignored
 fn test_real_git_log() {
     // Requires:
-    // 1. TokenZip binary installed (cargo install --path .)
+    // 1. ContextZip binary installed (cargo install --path .)
     // 2. Git repository available
 
-    let output = std::process::Command::new("tokenzip")
+    let output = std::process::Command::new("contextzip")
         .args(&["git", "log", "-10"])
         .output()
-        .expect("Failed to run tokenzip");
+        .expect("Failed to run contextzip");
 
     assert!(output.status.success());
     assert!(!output.stdout.is_empty());
@@ -215,7 +215,7 @@ fn test_real_git_log() {
 ### Running Integration Tests
 
 ```bash
-# 1. Install TokenZip locally
+# 1. Install ContextZip locally
 cargo install --path .
 
 # 2. Run integration tests
@@ -235,7 +235,7 @@ cargo test --ignored test_real_git_log
 
 **Priority**: 🟡 **Triggers**: Performance-related changes, release preparation
 
-TokenZip targets <10ms startup time and <5MB memory usage.
+ContextZip targets <10ms startup time and <5MB memory usage.
 
 ### Benchmark Startup Time
 
@@ -244,12 +244,12 @@ TokenZip targets <10ms startup time and <5MB memory usage.
 brew install hyperfine  # macOS
 cargo install hyperfine  # or via cargo
 
-# Benchmark TokenZip vs raw command
-hyperfine 'tokenzip git status' 'git status' --warmup 3
+# Benchmark ContextZip vs raw command
+hyperfine 'contextzip git status' 'git status' --warmup 3
 
-# Should show TokenZip startup <10ms
+# Should show ContextZip startup <10ms
 # Example output:
-#   tokenzip git status    6.2 ms ±  0.3 ms
+#   contextzip git status    6.2 ms ±  0.3 ms
 #   git status        8.1 ms ±  0.4 ms
 ```
 
@@ -257,11 +257,11 @@ hyperfine 'tokenzip git status' 'git status' --warmup 3
 
 ```bash
 # macOS
-/usr/bin/time -l tokenzip git status
+/usr/bin/time -l contextzip git status
 # Look for "maximum resident set size" - should be <5MB
 
 # Linux
-/usr/bin/time -v tokenzip git status
+/usr/bin/time -v contextzip git status
 # Look for "Maximum resident set size" - should be <5000 kbytes
 ```
 
@@ -269,13 +269,13 @@ hyperfine 'tokenzip git status' 'git status' --warmup 3
 
 **Before changes**:
 ```bash
-hyperfine 'tokenzip git log -10' --warmup 3 > /tmp/before.txt
+hyperfine 'contextzip git log -10' --warmup 3 > /tmp/before.txt
 ```
 
 **After changes**:
 ```bash
 cargo build --release
-hyperfine 'target/release/tokenzip git log -10' --warmup 3 > /tmp/after.txt
+hyperfine 'target/release/contextzip git log -10' --warmup 3 > /tmp/after.txt
 ```
 
 **Compare**:
@@ -288,16 +288,16 @@ diff /tmp/before.txt /tmp/after.txt
 
 | Metric | Target | Verification |
 |--------|--------|--------------|
-| Startup time | <10ms | `hyperfine 'tokenzip <cmd>'` |
-| Memory usage | <5MB | `time -l tokenzip <cmd>` |
-| Binary size | <5MB | `ls -lh target/release/tokenzip` |
+| Startup time | <10ms | `hyperfine 'contextzip <cmd>'` |
+| Memory usage | <5MB | `time -l contextzip <cmd>` |
+| Binary size | <5MB | `ls -lh target/release/contextzip` |
 
 ## Test Organization
 
 **Directory structure**:
 
 ```
-tokenzip/
+contextzip/
 ├── src/
 │   ├── git.rs                  # Filter implementation
 │   │   └── #[cfg(test)] mod tests { ... }  # Unit tests
@@ -429,10 +429,10 @@ fn test_ansi_codes() {
 #[test]
 #[ignore]
 fn test_real_command_execution() {
-    let output = std::process::Command::new("tokenzip")
+    let output = std::process::Command::new("contextzip")
         .args(&["cmd", "args"])
         .output()
-        .expect("Failed to run tokenzip");
+        .expect("Failed to run contextzip");
 
     assert!(output.status.success());
     assert!(!output.stdout.is_empty());
@@ -498,10 +498,10 @@ fn test_filter() {
 ✅ **DO** benchmark and track performance
 ```bash
 # ✅ RIGHT - benchmark before/after
-hyperfine 'tokenzip cmd' --warmup 3 > /tmp/before.txt
+hyperfine 'contextzip cmd' --warmup 3 > /tmp/before.txt
 # Make changes
 cargo build --release
-hyperfine 'target/release/tokenzip cmd' --warmup 3 > /tmp/after.txt
+hyperfine 'target/release/contextzip cmd' --warmup 3 > /tmp/after.txt
 diff /tmp/before.txt /tmp/after.txt
 ```
 

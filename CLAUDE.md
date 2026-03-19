@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-**TokenZip** is a Claude Code context optimizer that reduces LLM token consumption by 60-90%. Fork of RTK (rtk-ai/rtk) with 6 additional noise filters.
+**ContextZip** is a Claude Code context optimizer that reduces LLM token consumption by 60-90%. Fork of RTK (rtk-ai/rtk) with 6 additional noise filters.
 
-Binary: `tokenzip`
+Binary: `contextzip`
 Language: Rust
 License: MIT (based on RTK by rtk-ai)
 
@@ -19,7 +19,7 @@ cargo clippy -- -D warnings
 ## Architecture
 
 ```
-tokenzip binary
+contextzip binary
   ├── ANSI preprocessor (ansi_filter.rs) — all output
   ├── Command router (main.rs, Clap enum)
   │     ├── 34 RTK modules (git, test, ls, grep, cargo, etc.)

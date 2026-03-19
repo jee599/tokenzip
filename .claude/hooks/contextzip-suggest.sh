@@ -29,110 +29,110 @@ SUGGESTION=""
 
 # --- Git commands ---
 if echo "$FIRST_CMD" | grep -qE '^git\s+status(\s|$)'; then
-  SUGGESTION="tokenzip git status"
+  SUGGESTION="contextzip git status"
 elif echo "$FIRST_CMD" | grep -qE '^git\s+diff(\s|$)'; then
-  SUGGESTION="tokenzip git diff"
+  SUGGESTION="contextzip git diff"
 elif echo "$FIRST_CMD" | grep -qE '^git\s+log(\s|$)'; then
-  SUGGESTION="tokenzip git log"
+  SUGGESTION="contextzip git log"
 elif echo "$FIRST_CMD" | grep -qE '^git\s+add(\s|$)'; then
-  SUGGESTION="tokenzip git add"
+  SUGGESTION="contextzip git add"
 elif echo "$FIRST_CMD" | grep -qE '^git\s+commit(\s|$)'; then
-  SUGGESTION="tokenzip git commit"
+  SUGGESTION="contextzip git commit"
 elif echo "$FIRST_CMD" | grep -qE '^git\s+push(\s|$)'; then
-  SUGGESTION="tokenzip git push"
+  SUGGESTION="contextzip git push"
 elif echo "$FIRST_CMD" | grep -qE '^git\s+pull(\s|$)'; then
-  SUGGESTION="tokenzip git pull"
+  SUGGESTION="contextzip git pull"
 elif echo "$FIRST_CMD" | grep -qE '^git\s+branch(\s|$)'; then
-  SUGGESTION="tokenzip git branch"
+  SUGGESTION="contextzip git branch"
 elif echo "$FIRST_CMD" | grep -qE '^git\s+fetch(\s|$)'; then
-  SUGGESTION="tokenzip git fetch"
+  SUGGESTION="contextzip git fetch"
 elif echo "$FIRST_CMD" | grep -qE '^git\s+stash(\s|$)'; then
-  SUGGESTION="tokenzip git stash"
+  SUGGESTION="contextzip git stash"
 elif echo "$FIRST_CMD" | grep -qE '^git\s+show(\s|$)'; then
-  SUGGESTION="tokenzip git show"
+  SUGGESTION="contextzip git show"
 
 # --- GitHub CLI ---
 elif echo "$FIRST_CMD" | grep -qE '^gh\s+(pr|issue|run)(\s|$)'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^gh /tokenzip gh /')
+  SUGGESTION=$(echo "$CMD" | sed 's/^gh /contextzip gh /')
 
 # --- Cargo ---
 elif echo "$FIRST_CMD" | grep -qE '^cargo\s+test(\s|$)'; then
-  SUGGESTION="tokenzip cargo test"
+  SUGGESTION="contextzip cargo test"
 elif echo "$FIRST_CMD" | grep -qE '^cargo\s+build(\s|$)'; then
-  SUGGESTION="tokenzip cargo build"
+  SUGGESTION="contextzip cargo build"
 elif echo "$FIRST_CMD" | grep -qE '^cargo\s+clippy(\s|$)'; then
-  SUGGESTION="tokenzip cargo clippy"
+  SUGGESTION="contextzip cargo clippy"
 elif echo "$FIRST_CMD" | grep -qE '^cargo\s+check(\s|$)'; then
-  SUGGESTION="tokenzip cargo check"
+  SUGGESTION="contextzip cargo check"
 elif echo "$FIRST_CMD" | grep -qE '^cargo\s+install(\s|$)'; then
-  SUGGESTION="tokenzip cargo install"
+  SUGGESTION="contextzip cargo install"
 elif echo "$FIRST_CMD" | grep -qE '^cargo\s+nextest(\s|$)'; then
-  SUGGESTION="tokenzip cargo nextest"
+  SUGGESTION="contextzip cargo nextest"
 elif echo "$FIRST_CMD" | grep -qE '^cargo\s+fmt(\s|$)'; then
-  SUGGESTION="tokenzip cargo fmt"
+  SUGGESTION="contextzip cargo fmt"
 
 # --- File operations ---
 elif echo "$FIRST_CMD" | grep -qE '^cat\s+'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^cat /tokenzip read /')
+  SUGGESTION=$(echo "$CMD" | sed 's/^cat /contextzip read /')
 elif echo "$FIRST_CMD" | grep -qE '^(rg|grep)\s+'; then
-  SUGGESTION=$(echo "$CMD" | sed -E 's/^(rg|grep) /tokenzip grep /')
+  SUGGESTION=$(echo "$CMD" | sed -E 's/^(rg|grep) /contextzip grep /')
 elif echo "$FIRST_CMD" | grep -qE '^ls(\s|$)'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^ls/tokenzip ls/')
+  SUGGESTION=$(echo "$CMD" | sed 's/^ls/contextzip ls/')
 elif echo "$FIRST_CMD" | grep -qE '^tree(\s|$)'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^tree/tokenzip tree/')
+  SUGGESTION=$(echo "$CMD" | sed 's/^tree/contextzip tree/')
 elif echo "$FIRST_CMD" | grep -qE '^find\s+'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^find /tokenzip find /')
+  SUGGESTION=$(echo "$CMD" | sed 's/^find /contextzip find /')
 elif echo "$FIRST_CMD" | grep -qE '^diff\s+'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^diff /tokenzip diff /')
+  SUGGESTION=$(echo "$CMD" | sed 's/^diff /contextzip diff /')
 elif echo "$FIRST_CMD" | grep -qE '^head\s+'; then
-  # Suggest tokenzip read with --max-lines transformation
+  # Suggest contextzip read with --max-lines transformation
   if echo "$FIRST_CMD" | grep -qE '^head\s+-[0-9]+\s+'; then
     LINES=$(echo "$FIRST_CMD" | sed -E 's/^head +-([0-9]+) +.+$/\1/')
     FILE=$(echo "$FIRST_CMD" | sed -E 's/^head +-[0-9]+ +(.+)$/\1/')
-    SUGGESTION="tokenzip read $FILE --max-lines $LINES"
+    SUGGESTION="contextzip read $FILE --max-lines $LINES"
   elif echo "$FIRST_CMD" | grep -qE '^head\s+--lines=[0-9]+\s+'; then
     LINES=$(echo "$FIRST_CMD" | sed -E 's/^head +--lines=([0-9]+) +.+$/\1/')
     FILE=$(echo "$FIRST_CMD" | sed -E 's/^head +--lines=[0-9]+ +(.+)$/\1/')
-    SUGGESTION="tokenzip read $FILE --max-lines $LINES"
+    SUGGESTION="contextzip read $FILE --max-lines $LINES"
   fi
 
 # --- JS/TS tooling ---
 elif echo "$FIRST_CMD" | grep -qE '^(pnpm\s+)?vitest(\s|$)'; then
-  SUGGESTION="tokenzip vitest run"
+  SUGGESTION="contextzip vitest run"
 elif echo "$FIRST_CMD" | grep -qE '^pnpm\s+test(\s|$)'; then
-  SUGGESTION="tokenzip vitest run"
+  SUGGESTION="contextzip vitest run"
 elif echo "$FIRST_CMD" | grep -qE '^pnpm\s+tsc(\s|$)'; then
-  SUGGESTION="tokenzip tsc"
+  SUGGESTION="contextzip tsc"
 elif echo "$FIRST_CMD" | grep -qE '^(npx\s+)?tsc(\s|$)'; then
-  SUGGESTION="tokenzip tsc"
+  SUGGESTION="contextzip tsc"
 elif echo "$FIRST_CMD" | grep -qE '^pnpm\s+lint(\s|$)'; then
-  SUGGESTION="tokenzip lint"
+  SUGGESTION="contextzip lint"
 elif echo "$FIRST_CMD" | grep -qE '^(npx\s+)?eslint(\s|$)'; then
-  SUGGESTION="tokenzip lint"
+  SUGGESTION="contextzip lint"
 elif echo "$FIRST_CMD" | grep -qE '^(npx\s+)?prettier(\s|$)'; then
-  SUGGESTION="tokenzip prettier"
+  SUGGESTION="contextzip prettier"
 elif echo "$FIRST_CMD" | grep -qE '^(npx\s+)?playwright(\s|$)'; then
-  SUGGESTION="tokenzip playwright"
+  SUGGESTION="contextzip playwright"
 elif echo "$FIRST_CMD" | grep -qE '^pnpm\s+playwright(\s|$)'; then
-  SUGGESTION="tokenzip playwright"
+  SUGGESTION="contextzip playwright"
 elif echo "$FIRST_CMD" | grep -qE '^(npx\s+)?prisma(\s|$)'; then
-  SUGGESTION="tokenzip prisma"
+  SUGGESTION="contextzip prisma"
 
 # --- Containers ---
 elif echo "$FIRST_CMD" | grep -qE '^docker\s+(ps|images|logs)(\s|$)'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^docker /tokenzip docker /')
+  SUGGESTION=$(echo "$CMD" | sed 's/^docker /contextzip docker /')
 elif echo "$FIRST_CMD" | grep -qE '^kubectl\s+(get|logs)(\s|$)'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^kubectl /tokenzip kubectl /')
+  SUGGESTION=$(echo "$CMD" | sed 's/^kubectl /contextzip kubectl /')
 
 # --- Network ---
 elif echo "$FIRST_CMD" | grep -qE '^curl\s+'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^curl /tokenzip curl /')
+  SUGGESTION=$(echo "$CMD" | sed 's/^curl /contextzip curl /')
 elif echo "$FIRST_CMD" | grep -qE '^wget\s+'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^wget /tokenzip wget /')
+  SUGGESTION=$(echo "$CMD" | sed 's/^wget /contextzip wget /')
 
 # --- pnpm package management ---
 elif echo "$FIRST_CMD" | grep -qE '^pnpm\s+(list|ls|outdated)(\s|$)'; then
-  SUGGESTION=$(echo "$CMD" | sed 's/^pnpm /tokenzip pnpm /')
+  SUGGESTION=$(echo "$CMD" | sed 's/^pnpm /contextzip pnpm /')
 fi
 
 # If no suggestion, allow command as-is

@@ -90,7 +90,7 @@ fn run_generic(subcommand: &str, args: &[String], verbose: u8, full_sub: &str) -
     if !output.status.success() {
         timer.track(
             &format!("aws {}", full_sub),
-            &format!("tokenzip aws {}", full_sub),
+            &format!("contextzip aws {}", full_sub),
             &stderr,
             &stderr,
         );
@@ -112,7 +112,7 @@ fn run_generic(subcommand: &str, args: &[String], verbose: u8, full_sub: &str) -
 
     timer.track(
         &format!("aws {}", full_sub),
-        &format!("tokenzip aws {}", full_sub),
+        &format!("contextzip aws {}", full_sub),
         &raw,
         &filtered,
     );
@@ -170,7 +170,7 @@ fn run_sts_identity(extra_args: &[String], verbose: u8) -> Result<()> {
     if !status.success() {
         timer.track(
             "aws sts get-caller-identity",
-            "tokenzip aws sts get-caller-identity",
+            "contextzip aws sts get-caller-identity",
             &stderr,
             &stderr,
         );
@@ -185,7 +185,7 @@ fn run_sts_identity(extra_args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         "aws sts get-caller-identity",
-        "tokenzip aws sts get-caller-identity",
+        "contextzip aws sts get-caller-identity",
         &raw,
         &filtered,
     );
@@ -211,7 +211,7 @@ fn run_s3_ls(extra_args: &[String], verbose: u8) -> Result<()> {
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-        timer.track("aws s3 ls", "tokenzip aws s3 ls", &stderr, &stderr);
+        timer.track("aws s3 ls", "contextzip aws s3 ls", &stderr, &stderr);
         eprintln!("{}", stderr.trim());
         std::process::exit(output.status.code().unwrap_or(1));
     }
@@ -219,7 +219,7 @@ fn run_s3_ls(extra_args: &[String], verbose: u8) -> Result<()> {
     let filtered = filter_s3_ls(&raw);
     println!("{}", filtered);
 
-    timer.track("aws s3 ls", "tokenzip aws s3 ls", &raw, &filtered);
+    timer.track("aws s3 ls", "contextzip aws s3 ls", &raw, &filtered);
     Ok(())
 }
 
@@ -230,7 +230,7 @@ fn run_ec2_describe(extra_args: &[String], verbose: u8) -> Result<()> {
     if !status.success() {
         timer.track(
             "aws ec2 describe-instances",
-            "tokenzip aws ec2 describe-instances",
+            "contextzip aws ec2 describe-instances",
             &stderr,
             &stderr,
         );
@@ -245,7 +245,7 @@ fn run_ec2_describe(extra_args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         "aws ec2 describe-instances",
-        "tokenzip aws ec2 describe-instances",
+        "contextzip aws ec2 describe-instances",
         &raw,
         &filtered,
     );
@@ -259,7 +259,7 @@ fn run_ecs_list_services(extra_args: &[String], verbose: u8) -> Result<()> {
     if !status.success() {
         timer.track(
             "aws ecs list-services",
-            "tokenzip aws ecs list-services",
+            "contextzip aws ecs list-services",
             &stderr,
             &stderr,
         );
@@ -274,7 +274,7 @@ fn run_ecs_list_services(extra_args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         "aws ecs list-services",
-        "tokenzip aws ecs list-services",
+        "contextzip aws ecs list-services",
         &raw,
         &filtered,
     );
@@ -288,7 +288,7 @@ fn run_ecs_describe_services(extra_args: &[String], verbose: u8) -> Result<()> {
     if !status.success() {
         timer.track(
             "aws ecs describe-services",
-            "tokenzip aws ecs describe-services",
+            "contextzip aws ecs describe-services",
             &stderr,
             &stderr,
         );
@@ -303,7 +303,7 @@ fn run_ecs_describe_services(extra_args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         "aws ecs describe-services",
-        "tokenzip aws ecs describe-services",
+        "contextzip aws ecs describe-services",
         &raw,
         &filtered,
     );
@@ -318,7 +318,7 @@ fn run_rds_describe(extra_args: &[String], verbose: u8) -> Result<()> {
     if !status.success() {
         timer.track(
             "aws rds describe-db-instances",
-            "tokenzip aws rds describe-db-instances",
+            "contextzip aws rds describe-db-instances",
             &stderr,
             &stderr,
         );
@@ -333,7 +333,7 @@ fn run_rds_describe(extra_args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         "aws rds describe-db-instances",
-        "tokenzip aws rds describe-db-instances",
+        "contextzip aws rds describe-db-instances",
         &raw,
         &filtered,
     );
@@ -348,7 +348,7 @@ fn run_cfn_list_stacks(extra_args: &[String], verbose: u8) -> Result<()> {
     if !status.success() {
         timer.track(
             "aws cloudformation list-stacks",
-            "tokenzip aws cloudformation list-stacks",
+            "contextzip aws cloudformation list-stacks",
             &stderr,
             &stderr,
         );
@@ -363,7 +363,7 @@ fn run_cfn_list_stacks(extra_args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         "aws cloudformation list-stacks",
-        "tokenzip aws cloudformation list-stacks",
+        "contextzip aws cloudformation list-stacks",
         &raw,
         &filtered,
     );
@@ -378,7 +378,7 @@ fn run_cfn_describe_stacks(extra_args: &[String], verbose: u8) -> Result<()> {
     if !status.success() {
         timer.track(
             "aws cloudformation describe-stacks",
-            "tokenzip aws cloudformation describe-stacks",
+            "contextzip aws cloudformation describe-stacks",
             &stderr,
             &stderr,
         );
@@ -393,7 +393,7 @@ fn run_cfn_describe_stacks(extra_args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         "aws cloudformation describe-stacks",
-        "tokenzip aws cloudformation describe-stacks",
+        "contextzip aws cloudformation describe-stacks",
         &raw,
         &filtered,
     );

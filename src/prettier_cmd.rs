@@ -36,7 +36,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
         }
         timer.track(
             &format!("prettier {}", args.join(" ")),
-            &format!("tokenzip prettier {}", args.join(" ")),
+            &format!("contextzip prettier {}", args.join(" ")),
             &raw,
             &raw,
         );
@@ -49,7 +49,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("prettier {}", args.join(" ")),
-        &format!("tokenzip prettier {}", args.join(" ")),
+        &format!("contextzip prettier {}", args.join(" ")),
         &raw,
         &filtered,
     );

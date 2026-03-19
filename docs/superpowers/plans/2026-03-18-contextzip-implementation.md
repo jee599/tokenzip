@@ -1,14 +1,14 @@
-# TokenZip Implementation Plan
+# ContextZip Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Fork RTK and build TokenZip — a Claude Code context optimizer that adds 6 noise filters (error stacktrace, web page, ANSI, build error, package install, Docker) on top of RTK's existing 34 CLI compression modules.
+**Goal:** Fork RTK and build ContextZip — a Claude Code context optimizer that adds 6 noise filters (error stacktrace, web page, ANSI, build error, package install, Docker) on top of RTK's existing 34 CLI compression modules.
 
-**Architecture:** Full fork of rtk-ai/rtk with rtk→tokenzip renaming. New modules plug into RTK's existing Clap enum router and SQLite tracking. ANSI filter runs as a preprocessor on all output before command-specific modules. Error stacktrace detection runs as a post-processor after all modules.
+**Architecture:** Full fork of rtk-ai/rtk with rtk→contextzip renaming. New modules plug into RTK's existing Clap enum router and SQLite tracking. ANSI filter runs as a preprocessor on all output before command-specific modules. Error stacktrace detection runs as a post-processor after all modules.
 
 **Tech Stack:** Rust, Clap 4, rusqlite, regex, scraper (HTML parsing), serde, colored, chrono
 
-**Spec:** `docs/superpowers/specs/2026-03-18-tokenzip-design.md`
+**Spec:** `docs/superpowers/specs/2026-03-18-contextzip-design.md`
 **Original Spec:** `/Users/jidong/Downloads/spoon-context-impl-spec.md`
 
 ---
@@ -16,15 +16,15 @@
 ## File Structure
 
 ### Existing (from RTK fork, renamed)
-- `Cargo.toml` — crate name/bin → tokenzip, add scraper dependency
+- `Cargo.toml` — crate name/bin → contextzip, add scraper dependency
 - `src/main.rs` — CLI router, add new Commands enum variants
 - `src/tracking.rs` — SQLite tracking, add `feature` column
 - `src/gain.rs` — gain dashboard, add `--by-feature`, `--graph`, `--history`
-- `src/init.rs` — hook installation, rtk→tokenzip paths
-- `src/config.rs` — config paths rtk→tokenzip
-- `src/discover/registry.rs` — rewrite rules rtk→tokenzip
-- `hooks/rtk-rewrite.sh` → `hooks/tokenzip-rewrite.sh`
-- All other `src/*.rs` — string replacements rtk→tokenzip
+- `src/init.rs` — hook installation, rtk→contextzip paths
+- `src/config.rs` — config paths rtk→contextzip
+- `src/discover/registry.rs` — rewrite rules rtk→contextzip
+- `hooks/rtk-rewrite.sh` → `hooks/contextzip-rewrite.sh`
+- All other `src/*.rs` — string replacements rtk→contextzip
 
 ### New Files
 - `src/ansi_filter.rs` — ANSI/spinner/decoration preprocessor
@@ -52,19 +52,19 @@
 - Create: all files (RTK source copy)
 - Modify: `Cargo.toml`
 
-- [ ] **Step 1: Clone RTK source into tokenzip repo**
+- [ ] **Step 1: Clone RTK source into contextzip repo**
 
 ```bash
 cd /Users/jidong
 git clone https://github.com/rtk-ai/rtk.git /tmp/rtk-source
-# Copy all source files (excluding .git) into tokenzip
-cp -r /tmp/rtk-source/* /Users/jidong/tokenzip/
-cp /tmp/rtk-source/.gitignore /Users/jidong/tokenzip/
+# Copy all source files (excluding .git) into contextzip
+cp -r /tmp/rtk-source/* /Users/jidong/contextzip/
+cp /tmp/rtk-source/.gitignore /Users/jidong/contextzip/
 ```
 
 - [ ] **Step 2: Verify RTK builds as-is**
 
-Run: `cd /Users/jidong/tokenzip && cargo build --release`
+Run: `cd /Users/jidong/contextzip && cargo build --release`
 Expected: Successful build, binary at `target/release/rtk`
 
 - [ ] **Step 3: Verify existing RTK tests pass**
@@ -81,7 +81,7 @@ git commit -m "chore: import rtk source as fork base"
 
 ---
 
-### Task 2: Rename rtk → tokenzip (Cargo.toml + binary)
+### Task 2: Rename rtk → contextzip (Cargo.toml + binary)
 
 **Files:**
 - Modify: `Cargo.toml`
@@ -91,11 +91,11 @@ git commit -m "chore: import rtk source as fork base"
 Change:
 ```toml
 [package]
-name = "tokenzip"
+name = "contextzip"
 # ...
 
 [[bin]]
-name = "tokenzip"
+name = "contextzip"
 path = "src/main.rs"
 ```
 
@@ -109,13 +109,13 @@ Note: RTK already includes `lazy_static`, `regex`, and other needed deps. Verify
 - [ ] **Step 2: Build to confirm binary name change**
 
 Run: `cargo build --release`
-Expected: Binary at `target/release/tokenzip`
+Expected: Binary at `target/release/contextzip`
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add Cargo.toml
-git commit -m "chore: rename crate and binary to tokenzip"
+git commit -m "chore: rename crate and binary to contextzip"
 ```
 
 ---
@@ -125,9 +125,9 @@ git commit -m "chore: rename crate and binary to tokenzip"
 **Files:**
 - Modify: all `src/*.rs`, `hooks/*`, `build.rs`
 
-This is a bulk rename operation. "rtk" → "tokenzip" in:
+This is a bulk rename operation. "rtk" → "contextzip" in:
 - CLI help text, error messages, version strings
-- Data directory paths (`rtk` → `tokenzip` in dirs:: calls)
+- Data directory paths (`rtk` → `contextzip` in dirs:: calls)
 - Config file paths
 - SQLite database paths
 - Hook script references
@@ -136,11 +136,11 @@ This is a bulk rename operation. "rtk" → "tokenzip" in:
 - [ ] **Step 1: Bulk rename in source files**
 
 Use `sed` or manual edits to replace:
-- `"rtk"` → `"tokenzip"` in user-facing strings
-- `rtk` → `tokenzip` in directory/path constants
-- `RTK` → `TokenZip` in display names
-- `rtk-rewrite.sh` → `tokenzip-rewrite.sh`
-- `RTK.md` → `TOKENZIP.md`
+- `"rtk"` → `"contextzip"` in user-facing strings
+- `rtk` → `contextzip` in directory/path constants
+- `RTK` → `ContextZip` in display names
+- `rtk-rewrite.sh` → `contextzip-rewrite.sh`
+- `RTK.md` → `CONTEXTZIP.md`
 
 Careful NOT to rename:
 - Rust std library references (no false positives)
@@ -150,30 +150,30 @@ Careful NOT to rename:
 - [ ] **Step 2: Rename hook files**
 
 ```bash
-mv hooks/rtk-rewrite.sh hooks/tokenzip-rewrite.sh
-mv hooks/rtk-awareness.md hooks/tokenzip-awareness.md
+mv hooks/rtk-rewrite.sh hooks/contextzip-rewrite.sh
+mv hooks/rtk-awareness.md hooks/contextzip-awareness.md
 ```
 
-Update hook script contents to reference `tokenzip` binary.
+Update hook script contents to reference `contextzip` binary.
 
 - [ ] **Step 3: Build and run tests**
 
 Run: `cargo build --release && cargo test`
-Expected: All pass. Binary is `tokenzip`.
+Expected: All pass. Binary is `contextzip`.
 
 - [ ] **Step 4: Verify CLI output**
 
-Run: `./target/release/tokenzip --version`
-Expected: Contains "tokenzip" and RTK base version (e.g., "tokenzip 0.1.0 (based on rtk 0.30.0)")
+Run: `./target/release/contextzip --version`
+Expected: Contains "contextzip" and RTK base version (e.g., "contextzip 0.1.0 (based on rtk 0.30.0)")
 
-Run: `./target/release/tokenzip --help`
+Run: `./target/release/contextzip --help`
 Expected: No "rtk" references in help text
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add -A
-git commit -m "refactor: rename all rtk references to tokenzip"
+git commit -m "refactor: rename all rtk references to contextzip"
 ```
 
 ---
@@ -285,18 +285,18 @@ git commit -m "feat: add feature column to tracking, gain --by-feature/--graph/-
 
 The script must:
 1. Detect OS/arch (Linux x86_64, macOS arm64/x86_64, Windows)
-2. Download binary from GitHub Releases (`https://github.com/jee599/tokenzip/releases/latest/download/tokenzip-{os}-{arch}`)
-3. Install to `~/.local/bin/tokenzip`
+2. Download binary from GitHub Releases (`https://github.com/jee599/contextzip/releases/latest/download/contextzip-{os}-{arch}`)
+3. Install to `~/.local/bin/contextzip`
 4. Check PATH for `~/.local/bin`
-5. Run `tokenzip init -g --hook-only --auto-patch`
+5. Run `contextzip init -g --hook-only --auto-patch`
 6. Detect existing RTK installation, offer replace/coexist/cancel
-7. Print success message with `tokenzip gain` hint
+7. Print success message with `contextzip gain` hint
 
 ```bash
 #!/bin/bash
 set -euo pipefail
 
-VERSION="${TOKENZIP_VERSION:-latest}"
+VERSION="${CONTEXTZIP_VERSION:-latest}"
 INSTALL_DIR="${HOME}/.local/bin"
 
 # OS/arch detection
@@ -310,24 +310,24 @@ esac
 
 # Platform mapping
 case "$OS" in
-  linux) TARGET="tokenzip-linux-${ARCH}" ;;
-  darwin) TARGET="tokenzip-macos-${ARCH}" ;;
+  linux) TARGET="contextzip-linux-${ARCH}" ;;
+  darwin) TARGET="contextzip-macos-${ARCH}" ;;
   *) echo "Unsupported OS: $OS"; exit 1 ;;
 esac
 
 # Download
 if [ "$VERSION" = "latest" ]; then
-  DOWNLOAD_URL="https://github.com/jee599/tokenzip/releases/latest/download/${TARGET}"
+  DOWNLOAD_URL="https://github.com/jee599/contextzip/releases/latest/download/${TARGET}"
 else
-  DOWNLOAD_URL="https://github.com/jee599/tokenzip/releases/download/${VERSION}/${TARGET}"
+  DOWNLOAD_URL="https://github.com/jee599/contextzip/releases/download/${VERSION}/${TARGET}"
 fi
-echo "Downloading tokenzip..."
-curl -fsSL "$DOWNLOAD_URL" -o /tmp/tokenzip
-chmod +x /tmp/tokenzip
+echo "Downloading contextzip..."
+curl -fsSL "$DOWNLOAD_URL" -o /tmp/contextzip
+chmod +x /tmp/contextzip
 
 # Install
 mkdir -p "$INSTALL_DIR"
-mv /tmp/tokenzip "$INSTALL_DIR/tokenzip"
+mv /tmp/contextzip "$INSTALL_DIR/contextzip"
 
 # PATH check
 if ! echo "$PATH" | tr ':' '\n' | grep -q "$INSTALL_DIR"; then
@@ -337,7 +337,7 @@ fi
 # RTK detection
 if command -v rtk &>/dev/null; then
   echo ""
-  echo "RTK detected. tokenzip includes all RTK features."
+  echo "RTK detected. contextzip includes all RTK features."
   echo "  [1] Replace RTK hooks (recommended)"
   echo "  [2] Install alongside RTK"
   echo "  [3] Cancel"
@@ -352,24 +352,24 @@ if command -v rtk &>/dev/null; then
   if [ "$REPLACE_RTK" = "true" ]; then
     # Remove RTK hook from settings.json
     if [ -f "$HOME/.claude/settings.json" ]; then
-      sed -i.bak 's/rtk-rewrite\.sh/tokenzip-rewrite.sh/g' "$HOME/.claude/settings.json"
+      sed -i.bak 's/rtk-rewrite\.sh/contextzip-rewrite.sh/g' "$HOME/.claude/settings.json"
       rm -f "$HOME/.claude/settings.json.bak"
     fi
     rm -f "$HOME/.claude/hooks/rtk-rewrite.sh"
-    echo "✓ RTK hooks replaced with tokenzip"
+    echo "✓ RTK hooks replaced with contextzip"
   fi
 fi
 
 # Hook installation
-"$INSTALL_DIR/tokenzip" init -g --hook-only --auto-patch
+"$INSTALL_DIR/contextzip" init -g --hook-only --auto-patch
 
 echo ""
-echo "✓ tokenzip installed to $INSTALL_DIR/tokenzip"
+echo "✓ contextzip installed to $INSTALL_DIR/contextzip"
 echo "✓ Claude Code hook installed"
 echo "✓ Ready! Restart Claude Code to activate."
 echo ""
-echo "  Quick check:  tokenzip gain"
-echo "  Full status:  tokenzip init --show"
+echo "  Quick check:  contextzip gain"
+echo "  Full status:  contextzip init --show"
 ```
 
 - [ ] **Step 2: Make executable**
@@ -431,21 +431,21 @@ git commit -m "ci: add CI and cross-platform release workflows"
 **Files:**
 - Modify: `src/init.rs`
 
-- [ ] **Step 1: Verify init --show works with tokenzip paths**
+- [ ] **Step 1: Verify init --show works with contextzip paths**
 
 Run: `cargo run -- init --show`
-Expected: Shows tokenzip paths (not rtk):
+Expected: Shows contextzip paths (not rtk):
 ```
-✅ Binary: ~/.local/bin/tokenzip (v0.1.0)
-✅ Hook: ~/.claude/hooks/tokenzip-rewrite.sh (executable)
+✅ Binary: ~/.local/bin/contextzip (v0.1.0)
+✅ Hook: ~/.claude/hooks/contextzip-rewrite.sh (executable)
 ✅ Settings: ~/.claude/settings.json (PreToolUse registered)
-✅ Database: ~/.local/share/tokenzip/tracking.db
+✅ Database: ~/.local/share/contextzip/tracking.db
 ```
 
 - [ ] **Step 2: Verify init -g installs hook + awareness file**
 
 Run: `cargo run -- init -g` (in a temp environment)
-Expected: Creates `~/.claude/hooks/tokenzip-rewrite.sh` AND `TOKENZIP.md` awareness file.
+Expected: Creates `~/.claude/hooks/contextzip-rewrite.sh` AND `CONTEXTZIP.md` awareness file.
 
 - [ ] **Step 3: Verify init -g --hook-only installs hook only**
 
@@ -481,18 +481,18 @@ git commit -m "feat: add uninstall and update commands"
 **Verification:**
 1. `cargo build --release` succeeds
 2. `cargo test` — all tests pass
-3. `./target/release/tokenzip --version` — shows "tokenzip 0.1.0 (based on rtk 0.30.0)"
-4. `./target/release/tokenzip --help` — no "rtk" references
-5. `./target/release/tokenzip gain` — works (shows "no data yet" message)
-6. `./target/release/tokenzip gain --by-feature` — works
-6a. `./target/release/tokenzip gain --graph` — works
-6b. `./target/release/tokenzip gain --history` — works
-7. `./target/release/tokenzip init --show` — shows tokenzip paths
-8. `./target/release/tokenzip init -g` — installs hook + awareness file
-9. `./target/release/tokenzip init -g --hook-only` — installs hook only
-10. All existing RTK command modules work (e.g., `tokenzip git status`, `tokenzip ls`)
-11. `./target/release/tokenzip discover` — works
-12. Hook script references tokenzip binary
+3. `./target/release/contextzip --version` — shows "contextzip 0.1.0 (based on rtk 0.30.0)"
+4. `./target/release/contextzip --help` — no "rtk" references
+5. `./target/release/contextzip gain` — works (shows "no data yet" message)
+6. `./target/release/contextzip gain --by-feature` — works
+6a. `./target/release/contextzip gain --graph` — works
+6b. `./target/release/contextzip gain --history` — works
+7. `./target/release/contextzip init --show` — shows contextzip paths
+8. `./target/release/contextzip init -g` — installs hook + awareness file
+9. `./target/release/contextzip init -g --hook-only` — installs hook only
+10. All existing RTK command modules work (e.g., `contextzip git status`, `contextzip ls`)
+11. `./target/release/contextzip discover` — works
+12. Hook script references contextzip binary
 
 **Stop here. Report results to user for review before proceeding to Week 2.**
 
@@ -827,7 +827,7 @@ ErrorMessage
 
 In `main.rs`:
 - `mod error_cmd;`
-- Add `Err` command variant for explicit `tokenzip err <cmd>`
+- Add `Err` command variant for explicit `contextzip err <cmd>`
 - Wire `error_cmd::compress_errors()` as post-processor on all command output
 
 - [ ] **Step 5: Run tests**
@@ -959,7 +959,7 @@ Using `scraper` crate:
 - Remove by class/id patterns: `cookie|consent|banner|newsletter|subscribe|signup|social|share|follow|ad|advertisement|sponsor`
 - Preserve: `main, article, pre, code, table`
 - Extract img alt text
-- `run_web_command(url: &str) -> Result<String>` — for `tokenzip web <url>` (fetch + extract)
+- `run_web_command(url: &str) -> Result<String>` — for `contextzip web <url>` (fetch + extract)
 
 - [ ] **Step 4: Add mod and CLI command**
 
@@ -992,8 +992,8 @@ git commit -m "feat: add web page content extraction with HTML noise removal"
 5. Error compression preserves error message + user code frames
 6. Web extraction strips nav/footer/sidebar/ads/cookies
 7. Web extraction preserves main/article content, code blocks, tables
-8. `tokenzip err <cmd>` works
-9. `tokenzip web <url>` works
+8. `contextzip err <cmd>` works
+9. `contextzip web <url>` works
 10. Post-processor auto-detects stacktraces in any command output
 
 **Stop here. Report results to user for review before proceeding to Week 3.**
@@ -1355,11 +1355,11 @@ Create test entries with different features, verify `gain --by-feature` aggregat
 - [ ] **Step 5: Test CLI commands end-to-end**
 
 ```bash
-echo "test output" | ./target/release/tokenzip err cat
-./target/release/tokenzip --version
-./target/release/tokenzip gain
-./target/release/tokenzip gain --by-feature
-./target/release/tokenzip init --show
+echo "test output" | ./target/release/contextzip err cat
+./target/release/contextzip --version
+./target/release/contextzip gain
+./target/release/contextzip gain --by-feature
+./target/release/contextzip init --show
 ```
 
 - [ ] **Step 6: Commit**
@@ -1381,7 +1381,7 @@ git commit -m "test: add integration tests for full pipeline"
 Structure:
 - One-line description
 - Install (1 command)
-- Feature comparison table (RTK vs TokenZip)
+- Feature comparison table (RTK vs ContextZip)
 - Before/After examples for each new feature
 - CLI reference
 - Configuration
@@ -1415,8 +1415,8 @@ git commit -m "docs: add README with install instructions and feature comparison
 8. Build: 에러 그룹화 + 모든 줄 번호 유지
 9. Pkg: 로그 압축 + 보안 경고 보존
 10. Docker: 성공 1줄 요약, 실패 시 컨텍스트 보존
-11. `tokenzip gain` — 전체 절약량
-12. `tokenzip gain --by-feature` — 기능별 절약량
+11. `contextzip gain` — 전체 절약량
+12. `contextzip gain --by-feature` — 기능별 절약량
 13. install.sh 동작
 14. CI/CD workflow 설정 완료
 15. README 완성

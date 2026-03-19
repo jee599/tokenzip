@@ -230,6 +230,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "contextzip"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "clap",
+ "colored",
+ "dirs",
+ "flate2",
+ "hostname",
+ "ignore",
+ "lazy_static",
+ "quick-xml",
+ "regex",
+ "rusqlite",
+ "scraper",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tar",
+ "tempfile",
+ "thiserror",
+ "toml",
+ "ureq",
+ "walkdir",
+ "which",
+]
+
+[[package]]
 name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1539,35 +1568,6 @@ checksum = "42d3e9c45c09de15d06dd8acf5f4e0e399e85927b7f00711024eb7ae10fa4869"
 dependencies = [
  "displaydoc",
  "zerovec",
-]
-
-[[package]]
-name = "tokenzip"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "clap",
- "colored",
- "dirs",
- "flate2",
- "hostname",
- "ignore",
- "lazy_static",
- "quick-xml",
- "regex",
- "rusqlite",
- "scraper",
- "serde",
- "serde_json",
- "sha2",
- "tar",
- "tempfile",
- "thiserror",
- "toml",
- "ureq",
- "walkdir",
- "which",
 ]
 
 [[package]]

@@ -106,7 +106,7 @@ where
 
     timer.track(
         &format!("cargo {} {}", subcommand, restored_args.join(" ")),
-        &format!("tokenzip cargo {} {}", subcommand, restored_args.join(" ")),
+        &format!("contextzip cargo {} {}", subcommand, restored_args.join(" ")),
         &raw,
         &filtered,
     );
@@ -974,7 +974,7 @@ pub fn run_passthrough(args: &[OsString], verbose: u8) -> Result<()> {
     let args_str = tracking::args_display(args);
     timer.track_passthrough(
         &format!("cargo {}", args_str),
-        &format!("tokenzip cargo {} (passthrough)", args_str),
+        &format!("contextzip cargo {} (passthrough)", args_str),
     );
 
     if !status.success() {
@@ -992,7 +992,7 @@ mod tests {
         // rtk cargo test -- --nocapture → clap gives ["--nocapture"]
         let args: Vec<String> = vec!["--nocapture".into()];
         let raw = vec![
-            "tokenzip".into(),
+            "contextzip".into(),
             "cargo".into(),
             "test".into(),
             "--".into(),
@@ -1007,7 +1007,7 @@ mod tests {
         // rtk cargo test my_test -- --nocapture → clap gives ["my_test", "--nocapture"]
         let args: Vec<String> = vec!["my_test".into(), "--nocapture".into()];
         let raw = vec![
-            "tokenzip".into(),
+            "contextzip".into(),
             "cargo".into(),
             "test".into(),
             "my_test".into(),
@@ -1023,7 +1023,7 @@ mod tests {
         // rtk cargo test my_test → no --, args unchanged
         let args: Vec<String> = vec!["my_test".into()];
         let raw = vec![
-            "tokenzip".into(),
+            "contextzip".into(),
             "cargo".into(),
             "test".into(),
             "my_test".into(),
@@ -1035,7 +1035,7 @@ mod tests {
     #[test]
     fn test_restore_double_dash_empty_args() {
         let args: Vec<String> = vec![];
-        let raw = vec!["tokenzip".into(), "cargo".into(), "test".into()];
+        let raw = vec!["contextzip".into(), "cargo".into(), "test".into()];
         let result = restore_double_dash_with_raw(&args, &raw);
         assert!(result.is_empty());
     }
@@ -1045,7 +1045,7 @@ mod tests {
         // rtk cargo clippy -- -D warnings → clap gives ["-D", "warnings"]
         let args: Vec<String> = vec!["-D".into(), "warnings".into()];
         let raw = vec![
-            "tokenzip".into(),
+            "contextzip".into(),
             "cargo".into(),
             "clippy".into(),
             "--".into(),
@@ -1071,7 +1071,7 @@ mod tests {
             "warnings".into(),
         ];
         let raw = vec![
-            "tokenzip".into(),
+            "contextzip".into(),
             "cargo".into(),
             "clippy".into(),
             "-p".into(),
@@ -1360,11 +1360,11 @@ warning: `rtk` (bin) generated 2 warnings
    Compiling rtk v0.11.0
     Finished `release` profile [optimized] target(s) in 45.23s
   Replacing /Users/user/.cargo/bin/rtk
-   Replaced package `tokenzip v0.9.4` with `tokenzip v0.11.0` (/Users/user/.cargo/bin/rtk)
+   Replaced package `contextzip v0.9.4` with `contextzip v0.11.0` (/Users/user/.cargo/bin/rtk)
 "#;
         let result = filter_cargo_install(output);
         assert!(result.contains("cargo install"), "got: {}", result);
-        assert!(result.contains("tokenzip v0.11.0"), "got: {}", result);
+        assert!(result.contains("contextzip v0.11.0"), "got: {}", result);
         assert!(result.contains("5 deps compiled"), "got: {}", result);
         assert!(result.contains("Replaced"), "got: {}", result);
         assert!(!result.contains("Compiling"), "got: {}", result);
@@ -1377,7 +1377,7 @@ warning: `rtk` (bin) generated 2 warnings
    Compiling rtk v0.11.0
     Finished `release` profile [optimized] target(s) in 10.0s
   Replacing /Users/user/.cargo/bin/rtk
-   Replaced package `tokenzip v0.9.4` with `tokenzip v0.11.0` (/Users/user/.cargo/bin/rtk)
+   Replaced package `contextzip v0.9.4` with `contextzip v0.11.0` (/Users/user/.cargo/bin/rtk)
 "#;
         let result = filter_cargo_install(output);
         assert!(result.contains("cargo install"), "got: {}", result);
@@ -1406,11 +1406,11 @@ error: aborting due to 1 previous error
 
     #[test]
     fn test_filter_cargo_install_already_installed() {
-        let output = r#"  Ignored package `tokenzip v0.11.0`, is already installed
+        let output = r#"  Ignored package `contextzip v0.11.0`, is already installed
 "#;
         let result = filter_cargo_install(output);
         assert!(result.contains("already installed"), "got: {}", result);
-        assert!(result.contains("tokenzip v0.11.0"), "got: {}", result);
+        assert!(result.contains("contextzip v0.11.0"), "got: {}", result);
     }
 
     #[test]
@@ -1435,7 +1435,7 @@ error: aborting due to 1 previous error
    Compiling rtk v0.11.0
     Finished `release` profile [optimized] target(s) in 10.0s
   Replacing /Users/user/.cargo/bin/rtk
-   Replaced package `tokenzip v0.9.4` with `tokenzip v0.11.0` (/Users/user/.cargo/bin/rtk)
+   Replaced package `contextzip v0.9.4` with `contextzip v0.11.0` (/Users/user/.cargo/bin/rtk)
 warning: be sure to add `/Users/user/.cargo/bin` to your PATH
 "#;
         let result = filter_cargo_install(output);
@@ -1510,10 +1510,10 @@ error: aborting due to 2 previous errors
     #[test]
     fn test_format_crate_info() {
         assert_eq!(
-            format_crate_info("tokenzip", "v0.11.0", ""),
-            "tokenzip v0.11.0"
+            format_crate_info("contextzip", "v0.11.0", ""),
+            "contextzip v0.11.0"
         );
-        assert_eq!(format_crate_info("tokenzip", "", ""), "tokenzip");
+        assert_eq!(format_crate_info("contextzip", "", ""), "contextzip");
         assert_eq!(format_crate_info("", "", "package"), "package");
         assert_eq!(format_crate_info("", "v0.1.0", "fallback"), "fallback");
     }

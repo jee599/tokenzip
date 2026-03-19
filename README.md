@@ -1,4 +1,4 @@
-# TokenZip
+# ContextZip
 
 **Your Claude Code is wasting tokens on noise. Fix it in 5 seconds.**
 
@@ -10,10 +10,10 @@
 
 ```bash
 # Homebrew (macOS/Linux)
-brew install jee599/tap/tokenzip
+brew install jee599/tap/contextzip
 
 # or curl
-curl -fsSL https://raw.githubusercontent.com/jee599/tokenzip/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/jee599/contextzip/main/install.sh | bash
 ```
 
 Restart Claude Code. Done. Every command is now compressed automatically.
@@ -28,7 +28,7 @@ Every time Claude Code runs `git status`, `npm install`, or `cargo test`, the ra
 
 ## The Fix
 
-TokenZip intercepts CLI output and strips noise before it reaches Claude's context. Zero config. Zero overhead (<10ms).
+ContextZip intercepts CLI output and strips noise before it reaches Claude's context. Zero config. Zero overhead (<10ms).
 
 ### Real Examples
 
@@ -53,7 +53,7 @@ no changes added to commit
 ```
 (12 lines, ~200 tokens)
 
-After (tokenzip):
+After (contextzip):
 ```
 * main...origin/main
 M src/api/users.ts
@@ -164,16 +164,16 @@ Tested with production-like inputs across 7 categories. [Full results →](docs/
 $ git status
 * main...origin/main
 M src/api/users.ts
-💾 tokenzip: 200 → 40 tokens (saved 80%)
+💾 contextzip: 200 → 40 tokens (saved 80%)
 ```
 
 Track your total savings anytime:
 
 ```bash
-tokenzip gain                  # Total savings dashboard
-tokenzip gain --by-feature     # Which filters save most
-tokenzip gain --graph          # Daily savings chart
-tokenzip gain --history        # Recent command details
+contextzip gain                  # Total savings dashboard
+contextzip gain --by-feature     # Which filters save most
+contextzip gain --graph          # Daily savings chart
+contextzip gain --history        # Recent command details
 ```
 
 ---
@@ -182,26 +182,26 @@ tokenzip gain --history        # Recent command details
 
 ```bash
 # These happen automatically via hook:
-git status          # → tokenzip git status (compressed)
-cargo test          # → tokenzip cargo test (failures only)
-npm install         # → tokenzip npm install (noise removed)
-docker build .      # → tokenzip docker build (summarized)
+git status          # → contextzip git status (compressed)
+cargo test          # → contextzip cargo test (failures only)
+npm install         # → contextzip npm install (noise removed)
+docker build .      # → contextzip docker build (summarized)
 
 # Manual commands:
-tokenzip web https://docs.example.com    # Extract page content
-tokenzip err node server.js              # Error-focused output
+contextzip web https://docs.example.com    # Extract page content
+contextzip err node server.js              # Error-focused output
 
 # Analytics:
-tokenzip gain                  # Savings dashboard
-tokenzip gain --by-feature     # By filter type
-tokenzip gain --graph          # Daily chart
-tokenzip gain --history        # Recent commands
+contextzip gain                  # Savings dashboard
+contextzip gain --by-feature     # By filter type
+contextzip gain --graph          # Daily chart
+contextzip gain --history        # Recent commands
 
 # Setup:
-tokenzip init -g --auto-patch  # Install hook (done by installer)
-tokenzip init --show           # Check installation
-tokenzip update                # Self-update
-tokenzip uninstall             # Clean removal
+contextzip init -g --auto-patch  # Install hook (done by installer)
+contextzip init --show           # Check installation
+contextzip update                # Self-update
+contextzip uninstall             # Clean removal
 ```
 
 ---
@@ -209,7 +209,7 @@ tokenzip uninstall             # Clean removal
 ## How It Works
 
 1. Claude Code hook intercepts bash commands
-2. TokenZip compresses the output (ANSI → command filter → error post-processor)
+2. ContextZip compresses the output (ANSI → command filter → error post-processor)
 3. Compressed result goes to Claude's context
 4. You see savings after each command
 
@@ -219,4 +219,4 @@ tokenzip uninstall             # Clean removal
 
 ## Built on RTK
 
-TokenZip is a fork of [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk) with 6 additional noise filters. All 34 RTK commands included. MIT License.
+ContextZip is a fork of [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk) with 6 additional noise filters. All 34 RTK commands included. MIT License.

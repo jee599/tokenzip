@@ -44,7 +44,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("{} {}", base_cmd, args.join(" ")),
-        &format!("tokenzip {} {}", base_cmd, args.join(" ")),
+        &format!("contextzip {} {}", base_cmd, args.join(" ")),
         &cmd_str,
         &filtered,
     );

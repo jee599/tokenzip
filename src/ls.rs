@@ -112,7 +112,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
     print!("{}", filtered);
     timer.track(
         &format!("ls -la {}", target_display),
-        "tokenzip ls",
+        "contextzip ls",
         &raw,
         &filtered,
     );

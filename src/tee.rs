@@ -34,7 +34,7 @@ fn sanitize_slug(slug: &str) -> String {
 /// Get the tee directory, respecting config and env overrides.
 fn get_tee_dir(config: &Config) -> Option<PathBuf> {
     // Env var override
-    if let Ok(dir) = std::env::var("TOKENZIP_TEE_DIR") {
+    if let Ok(dir) = std::env::var("CONTEXTZIP_TEE_DIR") {
         return Some(PathBuf::from(dir));
     }
 
@@ -44,7 +44,7 @@ fn get_tee_dir(config: &Config) -> Option<PathBuf> {
     }
 
     // Default: ~/.local/share/rtk/tee/
-    dirs::data_local_dir().map(|d| d.join("tokenzip").join("tee"))
+    dirs::data_local_dir().map(|d| d.join("contextzip").join("tee"))
 }
 
 /// Rotate old tee files: keep only the last `max_files`, delete oldest.
@@ -140,8 +140,8 @@ fn write_tee_file(
 /// Write raw output to tee file if conditions are met.
 /// Returns file path on success, None if skipped/failed.
 pub fn tee_raw(raw: &str, command_slug: &str, exit_code: i32) -> Option<PathBuf> {
-    // Check TOKENZIP_TEE=0 env override (disable)
-    if std::env::var("TOKENZIP_TEE").ok().as_deref() == Some("0") {
+    // Check CONTEXTZIP_TEE=0 env override (disable)
+    if std::env::var("CONTEXTZIP_TEE").ok().as_deref() == Some("0") {
         return None;
     }
 

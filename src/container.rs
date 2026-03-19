@@ -45,7 +45,7 @@ fn docker_ps(_verbose: u8) -> Result<()> {
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         eprint!("{}", stderr);
-        timer.track("docker ps", "tokenzip docker ps", &raw, &raw);
+        timer.track("docker ps", "contextzip docker ps", &raw, &raw);
         std::process::exit(output.status.code().unwrap_or(1));
     }
 
@@ -55,7 +55,7 @@ fn docker_ps(_verbose: u8) -> Result<()> {
     if stdout.trim().is_empty() {
         rtk.push_str("[docker] 0 containers");
         println!("{}", rtk);
-        timer.track("docker ps", "tokenzip docker ps", &raw, &rtk);
+        timer.track("docker ps", "contextzip docker ps", &raw, &rtk);
         return Ok(());
     }
 
@@ -89,7 +89,7 @@ fn docker_ps(_verbose: u8) -> Result<()> {
     }
 
     print!("{}", rtk);
-    timer.track("docker ps", "tokenzip docker ps", &raw, &rtk);
+    timer.track("docker ps", "contextzip docker ps", &raw, &rtk);
     Ok(())
 }
 
@@ -110,7 +110,7 @@ fn docker_images(_verbose: u8) -> Result<()> {
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         eprint!("{}", stderr);
-        timer.track("docker images", "tokenzip docker images", &raw, &raw);
+        timer.track("docker images", "contextzip docker images", &raw, &raw);
         std::process::exit(output.status.code().unwrap_or(1));
     }
 
@@ -121,7 +121,7 @@ fn docker_images(_verbose: u8) -> Result<()> {
     if lines.is_empty() {
         rtk.push_str("[docker] 0 images");
         println!("{}", rtk);
-        timer.track("docker images", "tokenzip docker images", &raw, &rtk);
+        timer.track("docker images", "contextzip docker images", &raw, &rtk);
         return Ok(());
     }
 
@@ -170,7 +170,7 @@ fn docker_images(_verbose: u8) -> Result<()> {
     }
 
     print!("{}", rtk);
-    timer.track("docker images", "tokenzip docker images", &raw, &rtk);
+    timer.track("docker images", "contextzip docker images", &raw, &rtk);
     Ok(())
 }
 
@@ -198,7 +198,7 @@ fn docker_logs(args: &[String], _verbose: u8) -> Result<()> {
         }
         timer.track(
             &format!("docker logs {}", container),
-            "tokenzip docker logs",
+            "contextzip docker logs",
             &raw,
             &raw,
         );
@@ -210,7 +210,7 @@ fn docker_logs(args: &[String], _verbose: u8) -> Result<()> {
     println!("{}", rtk);
     timer.track(
         &format!("docker logs {}", container),
-        "tokenzip docker logs",
+        "contextzip docker logs",
         &raw,
         &rtk,
     );
@@ -235,7 +235,7 @@ fn kubectl_pods(args: &[String], _verbose: u8) -> Result<()> {
         if !stderr.trim().is_empty() {
             eprint!("{}", stderr);
         }
-        timer.track("kubectl get pods", "tokenzip kubectl pods", &raw, &raw);
+        timer.track("kubectl get pods", "contextzip kubectl pods", &raw, &raw);
         std::process::exit(output.status.code().unwrap_or(1));
     }
 
@@ -244,7 +244,7 @@ fn kubectl_pods(args: &[String], _verbose: u8) -> Result<()> {
         Err(_) => {
             rtk.push_str("No pods found");
             println!("{}", rtk);
-            timer.track("kubectl get pods", "tokenzip kubectl pods", &raw, &rtk);
+            timer.track("kubectl get pods", "contextzip kubectl pods", &raw, &rtk);
             return Ok(());
         }
     };
@@ -252,7 +252,7 @@ fn kubectl_pods(args: &[String], _verbose: u8) -> Result<()> {
     let Some(pods) = json["items"].as_array().filter(|a| !a.is_empty()) else {
         rtk.push_str("No pods found");
         println!("{}", rtk);
-        timer.track("kubectl get pods", "tokenzip kubectl pods", &raw, &rtk);
+        timer.track("kubectl get pods", "contextzip kubectl pods", &raw, &rtk);
         return Ok(());
     };
     let (mut running, mut pending, mut failed, mut restarts_total) = (0, 0, 0, 0i64);
@@ -320,7 +320,7 @@ fn kubectl_pods(args: &[String], _verbose: u8) -> Result<()> {
     }
 
     print!("{}", rtk);
-    timer.track("kubectl get pods", "tokenzip kubectl pods", &raw, &rtk);
+    timer.track("kubectl get pods", "contextzip kubectl pods", &raw, &rtk);
     Ok(())
 }
 
@@ -342,7 +342,7 @@ fn kubectl_services(args: &[String], _verbose: u8) -> Result<()> {
         if !stderr.trim().is_empty() {
             eprint!("{}", stderr);
         }
-        timer.track("kubectl get svc", "tokenzip kubectl svc", &raw, &raw);
+        timer.track("kubectl get svc", "contextzip kubectl svc", &raw, &raw);
         std::process::exit(output.status.code().unwrap_or(1));
     }
 
@@ -351,7 +351,7 @@ fn kubectl_services(args: &[String], _verbose: u8) -> Result<()> {
         Err(_) => {
             rtk.push_str("No services found");
             println!("{}", rtk);
-            timer.track("kubectl get svc", "tokenzip kubectl svc", &raw, &rtk);
+            timer.track("kubectl get svc", "contextzip kubectl svc", &raw, &rtk);
             return Ok(());
         }
     };
@@ -359,7 +359,7 @@ fn kubectl_services(args: &[String], _verbose: u8) -> Result<()> {
     let Some(services) = json["items"].as_array().filter(|a| !a.is_empty()) else {
         rtk.push_str("No services found");
         println!("{}", rtk);
-        timer.track("kubectl get svc", "tokenzip kubectl svc", &raw, &rtk);
+        timer.track("kubectl get svc", "contextzip kubectl svc", &raw, &rtk);
         return Ok(());
     };
     rtk.push_str(&format!("{} services:\n", services.len()));
@@ -400,7 +400,7 @@ fn kubectl_services(args: &[String], _verbose: u8) -> Result<()> {
     }
 
     print!("{}", rtk);
-    timer.track("kubectl get svc", "tokenzip kubectl svc", &raw, &rtk);
+    timer.track("kubectl get svc", "contextzip kubectl svc", &raw, &rtk);
     Ok(())
 }
 
@@ -429,7 +429,7 @@ fn kubectl_logs(args: &[String], _verbose: u8) -> Result<()> {
         }
         timer.track(
             &format!("kubectl logs {}", pod),
-            "tokenzip kubectl logs",
+            "contextzip kubectl logs",
             &raw,
             &raw,
         );
@@ -441,7 +441,7 @@ fn kubectl_logs(args: &[String], _verbose: u8) -> Result<()> {
     println!("{}", rtk);
     timer.track(
         &format!("kubectl logs {}", pod),
-        "tokenzip kubectl logs",
+        "contextzip kubectl logs",
         &raw,
         &rtk,
     );
@@ -600,7 +600,7 @@ pub fn run_docker_passthrough(args: &[OsString], verbose: u8) -> Result<()> {
     let args_str = tracking::args_display(args);
     timer.track_passthrough(
         &format!("docker {}", args_str),
-        &format!("tokenzip docker {} (passthrough)", args_str),
+        &format!("contextzip docker {} (passthrough)", args_str),
     );
 
     if !status.success() {
@@ -652,7 +652,7 @@ pub fn run_compose_ps(verbose: u8) -> Result<()> {
     println!("{}", rtk);
     timer.track(
         "docker compose ps",
-        "tokenzip docker compose ps",
+        "contextzip docker compose ps",
         &raw,
         &rtk,
     );
@@ -690,7 +690,7 @@ pub fn run_compose_logs(service: Option<&str>, verbose: u8) -> Result<()> {
     let svc_label = service.unwrap_or("all");
     timer.track(
         &format!("docker compose logs {}", svc_label),
-        "tokenzip docker compose logs",
+        "contextzip docker compose logs",
         &raw,
         &rtk,
     );
@@ -728,7 +728,7 @@ pub fn run_compose_build(service: Option<&str>, verbose: u8) -> Result<()> {
     let svc_label = service.unwrap_or("all");
     timer.track(
         &format!("docker compose build {}", svc_label),
-        "tokenzip docker compose build",
+        "contextzip docker compose build",
         &raw,
         &rtk,
     );
@@ -751,7 +751,7 @@ pub fn run_compose_passthrough(args: &[OsString], verbose: u8) -> Result<()> {
     let args_str = tracking::args_display(args);
     timer.track_passthrough(
         &format!("docker compose {}", args_str),
-        &format!("tokenzip docker compose {} (passthrough)", args_str),
+        &format!("contextzip docker compose {} (passthrough)", args_str),
     );
 
     if !status.success() {
@@ -775,7 +775,7 @@ pub fn run_kubectl_passthrough(args: &[OsString], verbose: u8) -> Result<()> {
     let args_str = tracking::args_display(args);
     timer.track_passthrough(
         &format!("kubectl {}", args_str),
-        &format!("tokenzip kubectl {} (passthrough)", args_str),
+        &format!("contextzip kubectl {} (passthrough)", args_str),
     );
 
     if !status.success() {

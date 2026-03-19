@@ -318,7 +318,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("playwright {}", args.join(" ")),
-        &format!("tokenzip playwright {}", args.join(" ")),
+        &format!("contextzip playwright {}", args.join(" ")),
         &raw,
         &filtered,
     );

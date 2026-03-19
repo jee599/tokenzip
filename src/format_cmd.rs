@@ -130,7 +130,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("{} {}", formatter, user_args.join(" ")),
-        &format!("tokenzip format {} {}", formatter, user_args.join(" ")),
+        &format!("contextzip format {} {}", formatter, user_args.join(" ")),
         &raw,
         &filtered,
     );

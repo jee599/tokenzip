@@ -1,12 +1,12 @@
 #!/bin/sh
-# tokenzip installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/jee599/tokenzip/main/install.sh | sh
+# contextzip installer
+# Usage: curl -fsSL https://raw.githubusercontent.com/jee599/contextzip/main/install.sh | sh
 set -e
 
-REPO="jee599/tokenzip"
-BINARY_NAME="tokenzip"
+REPO="jee599/contextzip"
+BINARY_NAME="contextzip"
 INSTALL_DIR="$HOME/.local/bin"
-VERSION="${TOKENZIP_VERSION:-latest}"
+VERSION="${CONTEXTZIP_VERSION:-latest}"
 
 # Colors
 RED='\033[0;31m'
@@ -37,7 +37,7 @@ detect_platform() {
         *)             error "Unsupported architecture: $ARCH" ;;
     esac
 
-    TARGET="tokenzip-${PLATFORM}-${ARCH}"
+    TARGET="contextzip-${PLATFORM}-${ARCH}"
 }
 
 # --- Download ---
@@ -63,7 +63,7 @@ download_binary() {
     chmod +x "${INSTALL_DIR}/${BINARY_NAME}"
     rm -rf "$TEMP_DIR"
 
-    info "tokenzip installed to ~/.local/bin/tokenzip"
+    info "contextzip installed to ~/.local/bin/contextzip"
 }
 
 # --- PATH check ---
@@ -98,7 +98,7 @@ detect_rtk() {
     fi
 
     printf "\n${YELLOW}Existing RTK installation detected.${NC}\n"
-    printf "  1) Replace RTK with tokenzip (recommended)\n"
+    printf "  1) Replace RTK with contextzip (recommended)\n"
     printf "  2) Keep both (coexist)\n"
     printf "  3) Cancel installation\n"
     printf "Choose [1/2/3]: "
@@ -113,10 +113,10 @@ detect_rtk() {
 
     case "$CHOICE" in
         1)
-            # Replace: swap rtk-rewrite.sh → tokenzip-rewrite.sh in settings
+            # Replace: swap rtk-rewrite.sh → contextzip-rewrite.sh in settings
             if [ -f "$RTK_SETTINGS" ]; then
-                sed -i.bak 's/rtk-rewrite\.sh/tokenzip-rewrite.sh/g' "$RTK_SETTINGS" 2>/dev/null || \
-                sed -i '' 's/rtk-rewrite\.sh/tokenzip-rewrite.sh/g' "$RTK_SETTINGS" 2>/dev/null || true
+                sed -i.bak 's/rtk-rewrite\.sh/contextzip-rewrite.sh/g' "$RTK_SETTINGS" 2>/dev/null || \
+                sed -i '' 's/rtk-rewrite\.sh/contextzip-rewrite.sh/g' "$RTK_SETTINGS" 2>/dev/null || true
                 rm -f "${RTK_SETTINGS}.bak"
             fi
             # Remove old rtk hook if it exists
@@ -125,10 +125,10 @@ detect_rtk() {
                 rm -f "$OLD_HOOK"
                 info "Removed old RTK hook"
             fi
-            info "Replaced RTK with tokenzip"
+            info "Replaced RTK with contextzip"
             ;;
         2)
-            info "Keeping both RTK and tokenzip"
+            info "Keeping both RTK and contextzip"
             ;;
         3)
             printf "Installation cancelled.\n"
@@ -151,12 +151,12 @@ install_hook() {
 
 print_success() {
     printf "\n"
-    info "tokenzip installed to ~/.local/bin/tokenzip"
+    info "contextzip installed to ~/.local/bin/contextzip"
     info "Claude Code hook installed"
     info "Ready! Restart Claude Code to activate."
     printf "\n"
-    printf "  Quick check:  ${BOLD}tokenzip gain${NC}\n"
-    printf "  Full status:  ${BOLD}tokenzip init --show${NC}\n"
+    printf "  Quick check:  ${BOLD}contextzip gain${NC}\n"
+    printf "  Full status:  ${BOLD}contextzip init --show${NC}\n"
     printf "\n"
 }
 

@@ -69,7 +69,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     timer.track(
         &format!("pytest {}", args.join(" ")),
-        &format!("tokenzip pytest {}", args.join(" ")),
+        &format!("contextzip pytest {}", args.join(" ")),
         &raw,
         &filtered,
     );

@@ -64,18 +64,18 @@ jobs:
       - name: Rename binary (Unix)
         if: matrix.os != 'windows-latest'
         run: |
-          cp target/${{ matrix.target }}/release/tokenzip tokenzip-${{ matrix.name }}
+          cp target/${{ matrix.target }}/release/contextzip contextzip-${{ matrix.name }}
 
       - name: Rename binary (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          cp target/${{ matrix.target }}/release/tokenzip.exe tokenzip-${{ matrix.name }}.exe
+          cp target/${{ matrix.target }}/release/contextzip.exe contextzip-${{ matrix.name }}.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tokenzip-${{ matrix.name }}
-          path: tokenzip-${{ matrix.name }}*
+          name: contextzip-${{ matrix.name }}
+          path: contextzip-${{ matrix.name }}*
 
   checksums:
     name: Generate checksums
@@ -90,7 +90,7 @@ jobs:
       - name: Generate SHA256 checksums
         run: |
           mkdir -p release
-          find artifacts -type f \( -name "tokenzip-*" \) -exec cp {} release/ \;
+          find artifacts -type f \( -name "contextzip-*" \) -exec cp {} release/ \;
           cd release
           sha256sum * > checksums-sha256.txt
 

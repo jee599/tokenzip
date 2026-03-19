@@ -85,14 +85,14 @@ pub fn run(args: &[String], verbose: u8, skip_env: bool) -> Result<()> {
         .unwrap_or(false);
 
     let effective_args = if is_run_explicit {
-        // "tokenzip npm run build" → "npm run build"
+        // "contextzip npm run build" → "npm run build"
         cmd.arg("run");
         &args[1..]
     } else if is_npm_subcommand {
-        // "tokenzip npm install express" → "npm install express"
+        // "contextzip npm install express" → "npm install express"
         args
     } else {
-        // "tokenzip npm build" → "npm run build" (assume script name)
+        // "contextzip npm build" → "npm run build" (assume script name)
         cmd.arg("run");
         args
     };
@@ -125,7 +125,7 @@ pub fn run(args: &[String], verbose: u8, skip_env: bool) -> Result<()> {
 
     timer.track(
         &format!("npm {}", args.join(" ")),
-        &format!("tokenzip npm {}", args.join(" ")),
+        &format!("contextzip npm {}", args.join(" ")),
         &raw,
         &filtered,
     );

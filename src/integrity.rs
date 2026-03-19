@@ -1,6 +1,6 @@
 //! Hook integrity verification via SHA-256.
 //!
-//! RTK installs a PreToolUse hook (`tokenzip-rewrite.sh`) that auto-approves
+//! RTK installs a PreToolUse hook (`contextzip-rewrite.sh`) that auto-approves
 //! rewritten commands with `permissionDecision: "allow"`. Because this
 //! hook bypasses Claude Code's permission prompts, any unauthorized
 //! modification represents a command injection vector.
@@ -8,7 +8,7 @@
 //! This module provides:
 //! - SHA-256 hash computation and storage at install time
 //! - Runtime verification before command execution
-//! - Manual verification via `tokenzip verify`
+//! - Manual verification via `contextzip verify`
 //!
 //! Reference: SA-2025-RTK-001 (Finding F-01)
 
@@ -18,14 +18,14 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 /// Filename for the stored hash (dotfile alongside hook)
-const HASH_FILENAME: &str = ".tokenzip-hook.sha256";
+const HASH_FILENAME: &str = ".contextzip-hook.sha256";
 
 /// Result of hook integrity verification
 #[derive(Debug, PartialEq)]
 pub enum IntegrityStatus {
     /// Hash matches — hook is unmodified since last install/update
     Verified,
-    /// Hash mismatch — hook has been modified outside of `tokenzip init`
+    /// Hash mismatch — hook has been modified outside of `contextzip init`
     Tampered { expected: String, actual: String },
     /// Hook exists but no stored hash (installed before integrity checks)
     NoBaseline,
@@ -56,7 +56,7 @@ fn hash_path(hook_path: &Path) -> PathBuf {
 ///
 /// Format is compatible with `sha256sum -c`:
 /// ```text
-/// <hex_hash>  tokenzip-rewrite.sh
+/// <hex_hash>  contextzip-rewrite.sh
 /// ```
 ///
 /// The hash file is set to read-only (0o444) as a speed bump
@@ -69,7 +69,7 @@ pub fn store_hash(hook_path: &Path) -> Result<()> {
     let filename = hook_path
         .file_name()
         .and_then(|n| n.to_str())
-        .unwrap_or("tokenzip-rewrite.sh");
+        .unwrap_or("contextzip-rewrite.sh");
 
     let content = format!("{}  {}\n", hash, filename);
 
@@ -178,14 +178,14 @@ fn read_stored_hash(path: &Path) -> Result<String> {
     Ok(hash.to_string())
 }
 
-/// Resolve the default hook path (~/.claude/hooks/tokenzip-rewrite.sh)
+/// Resolve the default hook path (~/.claude/hooks/contextzip-rewrite.sh)
 pub fn resolve_hook_path() -> Result<PathBuf> {
     dirs::home_dir()
-        .map(|h| h.join(".claude").join("hooks").join("tokenzip-rewrite.sh"))
+        .map(|h| h.join(".claude").join("hooks").join("contextzip-rewrite.sh"))
         .context("Cannot determine home directory. Is $HOME set?")
 }
 
-/// Run integrity check and print results (for `tokenzip verify` subcommand)
+/// Run integrity check and print results (for `contextzip verify` subcommand)
 pub fn run_verify(verbose: u8) -> Result<()> {
     let hook_path = resolve_hook_path()?;
     let hash_file = hash_path(&hook_path);
@@ -208,25 +208,25 @@ pub fn run_verify(verbose: u8) -> Result<()> {
             eprintln!("  Expected: {}", expected);
             eprintln!("  Actual:   {}", actual);
             eprintln!();
-            eprintln!("  The hook file has been modified outside of `tokenzip init`.");
+            eprintln!("  The hook file has been modified outside of `contextzip init`.");
             eprintln!("  This could indicate tampering or a manual edit.");
             eprintln!();
-            eprintln!("  To restore: tokenzip init -g --auto-patch");
+            eprintln!("  To restore: contextzip init -g --auto-patch");
             eprintln!("  To inspect: cat {}", hook_path.display());
             std::process::exit(1);
         }
         IntegrityStatus::NoBaseline => {
             println!("WARN  no baseline hash found");
             println!("      Hook exists but was installed before integrity checks.");
-            println!("      Run `tokenzip init -g` to establish baseline.");
+            println!("      Run `contextzip init -g` to establish baseline.");
         }
         IntegrityStatus::NotInstalled => {
             println!("SKIP  RTK hook not installed");
-            println!("      Run `tokenzip init -g` to install.");
+            println!("      Run `contextzip init -g` to install.");
         }
         IntegrityStatus::OrphanedHash => {
             eprintln!("WARN  hash file exists but hook is missing");
-            eprintln!("      Run `tokenzip init -g` to reinstall.");
+            eprintln!("      Run `contextzip init -g` to reinstall.");
         }
     }
 
@@ -241,7 +241,7 @@ pub fn run_verify(verbose: u8) -> Result<()> {
 /// - `OrphanedHash`: warn to stderr, continue
 ///
 /// No env-var bypass is provided — if the hook is legitimately modified,
-/// re-run `tokenzip init -g --auto-patch` to re-establish the baseline.
+/// re-run `contextzip init -g --auto-patch` to re-establish the baseline.
 pub fn runtime_check() -> Result<()> {
     match verify_hook()? {
         IntegrityStatus::Verified | IntegrityStatus::NotInstalled => {
@@ -252,7 +252,7 @@ pub fn runtime_check() -> Result<()> {
             // Silently skip to avoid noise for users who haven't re-run init
         }
         IntegrityStatus::Tampered { expected, actual } => {
-            eprintln!("tokenzip: hook integrity check FAILED");
+            eprintln!("contextzip: hook integrity check FAILED");
             eprintln!(
                 "  Expected hash: {}...",
                 expected.get(..16).unwrap_or(&expected)
@@ -262,16 +262,16 @@ pub fn runtime_check() -> Result<()> {
                 actual.get(..16).unwrap_or(&actual)
             );
             eprintln!();
-            eprintln!("  The hook at ~/.claude/hooks/tokenzip-rewrite.sh has been modified.");
+            eprintln!("  The hook at ~/.claude/hooks/contextzip-rewrite.sh has been modified.");
             eprintln!("  This may indicate tampering. RTK will not execute.");
             eprintln!();
-            eprintln!("  To restore:  tokenzip init -g --auto-patch");
+            eprintln!("  To restore:  contextzip init -g --auto-patch");
             eprintln!("  To inspect:  rtk verify");
             std::process::exit(1);
         }
         IntegrityStatus::OrphanedHash => {
-            eprintln!("tokenzip: warning: hash file exists but hook is missing");
-            eprintln!("  Run `tokenzip init -g` to reinstall.");
+            eprintln!("contextzip: warning: hash file exists but hook is missing");
+            eprintln!("  Run `contextzip init -g` to reinstall.");
             // Don't block — hook is gone, nothing to exploit
         }
     }
@@ -315,7 +315,7 @@ mod tests {
     #[test]
     fn test_store_and_verify_ok() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
+        let hook = temp.path().join("contextzip-rewrite.sh");
         fs::write(&hook, "#!/bin/bash\necho test\n").unwrap();
 
         store_hash(&hook).unwrap();
@@ -327,7 +327,7 @@ mod tests {
     #[test]
     fn test_verify_detects_tampering() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
+        let hook = temp.path().join("contextzip-rewrite.sh");
         fs::write(&hook, "#!/bin/bash\necho original\n").unwrap();
 
         store_hash(&hook).unwrap();
@@ -349,7 +349,7 @@ mod tests {
     #[test]
     fn test_verify_no_baseline() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
+        let hook = temp.path().join("contextzip-rewrite.sh");
         fs::write(&hook, "#!/bin/bash\necho test\n").unwrap();
 
         // No hash file stored
@@ -360,7 +360,7 @@ mod tests {
     #[test]
     fn test_verify_not_installed() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
+        let hook = temp.path().join("contextzip-rewrite.sh");
         // Don't create hook file
 
         let status = verify_hook_at(&hook).unwrap();
@@ -370,13 +370,13 @@ mod tests {
     #[test]
     fn test_verify_orphaned_hash() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
-        let hash_file = temp.path().join(".tokenzip-hook.sha256");
+        let hook = temp.path().join("contextzip-rewrite.sh");
+        let hash_file = temp.path().join(".contextzip-hook.sha256");
 
         // Create hash but no hook
         fs::write(
             &hash_file,
-            "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2  tokenzip-rewrite.sh\n",
+            "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2  contextzip-rewrite.sh\n",
         )
         .unwrap();
 
@@ -387,27 +387,27 @@ mod tests {
     #[test]
     fn test_store_hash_creates_sha256sum_format() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
+        let hook = temp.path().join("contextzip-rewrite.sh");
         fs::write(&hook, "test content").unwrap();
 
         store_hash(&hook).unwrap();
 
-        let hash_file = temp.path().join(".tokenzip-hook.sha256");
+        let hash_file = temp.path().join(".contextzip-hook.sha256");
         assert!(hash_file.exists());
 
         let content = fs::read_to_string(&hash_file).unwrap();
-        // Format: "<64 hex chars>  tokenzip-rewrite.sh\n"
-        assert!(content.ends_with("  tokenzip-rewrite.sh\n"));
+        // Format: "<64 hex chars>  contextzip-rewrite.sh\n"
+        assert!(content.ends_with("  contextzip-rewrite.sh\n"));
         let parts: Vec<&str> = content.trim().splitn(2, "  ").collect();
         assert_eq!(parts.len(), 2);
         assert_eq!(parts[0].len(), 64);
-        assert_eq!(parts[1], "tokenzip-rewrite.sh");
+        assert_eq!(parts[1], "contextzip-rewrite.sh");
     }
 
     #[test]
     fn test_store_hash_overwrites_existing() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
+        let hook = temp.path().join("contextzip-rewrite.sh");
 
         fs::write(&hook, "version 1").unwrap();
         store_hash(&hook).unwrap();
@@ -430,12 +430,12 @@ mod tests {
         use std::os::unix::fs::PermissionsExt;
 
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
+        let hook = temp.path().join("contextzip-rewrite.sh");
         fs::write(&hook, "test").unwrap();
 
         store_hash(&hook).unwrap();
 
-        let hash_file = temp.path().join(".tokenzip-hook.sha256");
+        let hash_file = temp.path().join(".contextzip-hook.sha256");
         let perms = fs::metadata(&hash_file).unwrap().permissions();
         assert_eq!(perms.mode() & 0o777, 0o444, "Hash file should be read-only");
     }
@@ -443,11 +443,11 @@ mod tests {
     #[test]
     fn test_remove_hash() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
+        let hook = temp.path().join("contextzip-rewrite.sh");
         fs::write(&hook, "test").unwrap();
 
         store_hash(&hook).unwrap();
-        let hash_file = temp.path().join(".tokenzip-hook.sha256");
+        let hash_file = temp.path().join(".contextzip-hook.sha256");
         assert!(hash_file.exists());
 
         let removed = remove_hash(&hook).unwrap();
@@ -458,7 +458,7 @@ mod tests {
     #[test]
     fn test_remove_hash_not_found() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
+        let hook = temp.path().join("contextzip-rewrite.sh");
 
         let removed = remove_hash(&hook).unwrap();
         assert!(!removed);
@@ -467,11 +467,11 @@ mod tests {
     #[test]
     fn test_invalid_hash_file_rejected() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
-        let hash_file = temp.path().join(".tokenzip-hook.sha256");
+        let hook = temp.path().join("contextzip-rewrite.sh");
+        let hash_file = temp.path().join(".contextzip-hook.sha256");
 
         fs::write(&hook, "test").unwrap();
-        fs::write(&hash_file, "not-a-valid-hash  tokenzip-rewrite.sh\n").unwrap();
+        fs::write(&hash_file, "not-a-valid-hash  contextzip-rewrite.sh\n").unwrap();
 
         let result = verify_hook_at(&hook);
         assert!(result.is_err(), "Should reject invalid hash format");
@@ -480,8 +480,8 @@ mod tests {
     #[test]
     fn test_hash_only_no_filename_rejected() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
-        let hash_file = temp.path().join(".tokenzip-hook.sha256");
+        let hook = temp.path().join("contextzip-rewrite.sh");
+        let hash_file = temp.path().join(".contextzip-hook.sha256");
 
         fs::write(&hook, "test").unwrap();
         // Hash with no two-space separator and filename
@@ -501,14 +501,14 @@ mod tests {
     #[test]
     fn test_wrong_separator_rejected() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
-        let hash_file = temp.path().join(".tokenzip-hook.sha256");
+        let hook = temp.path().join("contextzip-rewrite.sh");
+        let hash_file = temp.path().join(".contextzip-hook.sha256");
 
         fs::write(&hook, "test").unwrap();
         // Single space instead of two-space separator
         fs::write(
             &hash_file,
-            "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2 tokenzip-rewrite.sh\n",
+            "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2 contextzip-rewrite.sh\n",
         )
         .unwrap();
 
@@ -519,12 +519,12 @@ mod tests {
     #[test]
     fn test_hash_format_compatible_with_sha256sum() {
         let temp = TempDir::new().unwrap();
-        let hook = temp.path().join("tokenzip-rewrite.sh");
+        let hook = temp.path().join("contextzip-rewrite.sh");
         fs::write(&hook, "#!/bin/bash\necho hello\n").unwrap();
 
         store_hash(&hook).unwrap();
 
-        let hash_file = temp.path().join(".tokenzip-hook.sha256");
+        let hash_file = temp.path().join(".contextzip-hook.sha256");
         let content = fs::read_to_string(&hash_file).unwrap();
 
         // Should be parseable by sha256sum -c
@@ -532,6 +532,6 @@ mod tests {
         let parts: Vec<&str> = content.trim().splitn(2, "  ").collect();
         assert_eq!(parts.len(), 2);
         assert_eq!(parts[0].len(), 64);
-        assert_eq!(parts[1], "tokenzip-rewrite.sh");
+        assert_eq!(parts[1], "contextzip-rewrite.sh");
     }
 }

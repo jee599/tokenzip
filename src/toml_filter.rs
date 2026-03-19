@@ -2,12 +2,12 @@
 ///
 /// Provides a declarative pipeline of 8 stages that can be configured
 /// via TOML files. Lookup priority (first match wins):
-///   1. `.tokenzip/filters.toml`              — project-local, committable with the repo
+///   1. `.contextzip/filters.toml`              — project-local, committable with the repo
 ///   2. `~/.config/rtk/filters.toml`     — user-global, applies to all projects
 ///   3. Built-in TOML                     — `src/filters/*.toml`, concatenated by build.rs and embedded at compile time
 ///   4. Passthrough                       — no match, handled by caller
 ///
-/// `tokenzip init` generates a commented template for both levels (project or global).
+/// `contextzip init` generates a commented template for both levels (project or global).
 ///
 /// Environment variables:
 ///   - `RTK_NO_TOML=1`     — bypass TOML engine entirely
@@ -147,7 +147,7 @@ pub struct CompiledFilter {
 }
 
 // ---------------------------------------------------------------------------
-// Results for `tokenzip verify`
+// Results for `contextzip verify`
 // ---------------------------------------------------------------------------
 
 /// Outcome of running a single inline test.
@@ -181,8 +181,8 @@ impl TomlFilterRegistry {
     fn load() -> Self {
         let mut filters = Vec::new();
 
-        // Priority 1: project-local .tokenzip/filters.toml (trust-gated)
-        let project_filter_path = std::path::Path::new(".tokenzip/filters.toml");
+        // Priority 1: project-local .contextzip/filters.toml (trust-gated)
+        let project_filter_path = std::path::Path::new(".contextzip/filters.toml");
         if project_filter_path.exists() {
             let trust_status = crate::trust::check_trust(project_filter_path)
                 .unwrap_or(crate::trust::TrustStatus::Untrusted);
@@ -193,31 +193,31 @@ impl TomlFilterRegistry {
                         match Self::parse_and_compile(&content, "project") {
                             Ok(f) => filters.extend(f),
                             Err(e) => {
-                                eprintln!("[tokenzip] warning: .tokenzip/filters.toml: {}", e)
+                                eprintln!("[contextzip] warning: .contextzip/filters.toml: {}", e)
                             }
                         }
                     }
                 }
                 crate::trust::TrustStatus::Untrusted => {
                     eprintln!(
-                        "[tokenzip] WARNING: untrusted project filters (.tokenzip/filters.toml)"
+                        "[contextzip] WARNING: untrusted project filters (.contextzip/filters.toml)"
                     );
-                    eprintln!("[tokenzip] Filters NOT applied. Run `tokenzip trust` to review and enable.");
+                    eprintln!("[contextzip] Filters NOT applied. Run `contextzip trust` to review and enable.");
                 }
                 crate::trust::TrustStatus::ContentChanged { .. } => {
-                    eprintln!("[tokenzip] WARNING: .tokenzip/filters.toml changed since trusted.");
-                    eprintln!("[tokenzip] Filters NOT applied. Run `tokenzip trust` to re-review.");
+                    eprintln!("[contextzip] WARNING: .contextzip/filters.toml changed since trusted.");
+                    eprintln!("[contextzip] Filters NOT applied. Run `contextzip trust` to re-review.");
                 }
             }
         }
 
         // Priority 2: user-global ~/.config/rtk/filters.toml
         if let Some(config_dir) = dirs::config_dir() {
-            let global_path = config_dir.join("tokenzip").join("filters.toml");
+            let global_path = config_dir.join("contextzip").join("filters.toml");
             if let Ok(content) = std::fs::read_to_string(&global_path) {
                 match Self::parse_and_compile(&content, "user-global") {
                     Ok(f) => filters.extend(f),
-                    Err(e) => eprintln!("[tokenzip] warning: {}: {}", global_path.display(), e),
+                    Err(e) => eprintln!("[contextzip] warning: {}: {}", global_path.display(), e),
                 }
             }
         }
@@ -226,7 +226,7 @@ impl TomlFilterRegistry {
         let builtin = BUILTIN_TOML;
         match Self::parse_and_compile(builtin, "builtin") {
             Ok(f) => filters.extend(f),
-            Err(e) => eprintln!("[tokenzip] warning: builtin filters: {}", e),
+            Err(e) => eprintln!("[contextzip] warning: builtin filters: {}", e),
         }
 
         TomlFilterRegistry { filters }
@@ -247,7 +247,7 @@ impl TomlFilterRegistry {
         for (name, def) in file.filters {
             match compile_filter(name.clone(), def) {
                 Ok(f) => compiled.push(f),
-                Err(e) => eprintln!("[tokenzip] warning: filter '{}' in {}: {}", name, source, e),
+                Err(e) => eprintln!("[contextzip] warning: filter '{}' in {}: {}", name, source, e),
             }
         }
         Ok(compiled)
@@ -323,7 +323,7 @@ fn compile_filter(name: String, def: TomlFilterDef) -> Result<CompiledFilter, St
     for cmd in RUST_HANDLED_COMMANDS {
         if match_regex.is_match(cmd) {
             eprintln!(
-                "[tokenzip] warning: filter '{}' match_command matches '{}' which is already \
+                "[contextzip] warning: filter '{}' match_command matches '{}' which is already \
                  handled by a Rust module — this filter will never activate for that command",
                 name, cmd
             );
@@ -552,7 +552,7 @@ pub fn run_filter_tests(filter_name_opt: Option<&str>) -> VerifyResults {
     );
 
     // Trust-gated: only verify project-local filters if trusted (SA-2025-RTK-002)
-    let project_path = std::path::Path::new(".tokenzip/filters.toml");
+    let project_path = std::path::Path::new(".contextzip/filters.toml");
     if project_path.exists() {
         let trust_status =
             crate::trust::check_trust(project_path).unwrap_or(crate::trust::TrustStatus::Untrusted);
@@ -569,7 +569,7 @@ pub fn run_filter_tests(filter_name_opt: Option<&str>) -> VerifyResults {
                 }
             }
             _ => {
-                eprintln!("[tokenzip] WARNING: untrusted project filters skipped in verify");
+                eprintln!("[contextzip] WARNING: untrusted project filters skipped in verify");
             }
         }
     }
@@ -599,7 +599,7 @@ fn collect_test_outcomes(
     let file: TomlFilterFile = match toml::from_str(content) {
         Ok(f) => f,
         Err(e) => {
-            eprintln!("[tokenzip] warning: TOML parse error during verify: {}", e);
+            eprintln!("[contextzip] warning: TOML parse error during verify: {}", e);
             return;
         }
     };
@@ -613,7 +613,7 @@ fn collect_test_outcomes(
                 compiled_filters.insert(name, f);
             }
             Err(e) => eprintln!(
-                "[tokenzip] warning: filter '{}' compilation error: {}",
+                "[contextzip] warning: filter '{}' compilation error: {}",
                 name, e
             ),
         }
@@ -633,7 +633,7 @@ fn collect_test_outcomes(
             Some(f) => f,
             None => {
                 eprintln!(
-                    "[tokenzip] warning: [[tests.{}]] references unknown filter",
+                    "[contextzip] warning: [[tests.{}]] references unknown filter",
                     filter_name
                 );
                 continue;
@@ -665,7 +665,7 @@ fn collect_test_outcomes(
 pub fn find_matching_filter(command: &str) -> Option<&'static CompiledFilter> {
     if std::env::var("RTK_TOML_DEBUG").is_ok() {
         eprintln!(
-            "[tokenzip:toml] looking up filter for: {:?} ({} filters loaded)",
+            "[contextzip:toml] looking up filter for: {:?} ({} filters loaded)",
             command,
             REGISTRY.filters.len()
         );
@@ -673,8 +673,8 @@ pub fn find_matching_filter(command: &str) -> Option<&'static CompiledFilter> {
     let result = find_filter_in(command, &REGISTRY.filters);
     if std::env::var("RTK_TOML_DEBUG").is_ok() {
         match result {
-            Some(f) => eprintln!("[tokenzip:toml] matched filter: '{}'", f.name),
-            None => eprintln!("[tokenzip:toml] no filter matched — passthrough"),
+            Some(f) => eprintln!("[contextzip:toml] matched filter: '{}'", f.name),
+            None => eprintln!("[contextzip:toml] no filter matched — passthrough"),
         }
     }
     result
