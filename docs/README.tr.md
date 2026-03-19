@@ -5,8 +5,8 @@
 </h1>
 
 <h3 align="center">
-  Claude 的输出充满了无用噪音。<br>
-  ContextZip 压缩 60-90%。<code>npx contextzip</code> → 5 秒（首次运行下载二进制文件）。
+  Claude'un çıktısı gereksiz gürültüyle dolu.<br>
+  ContextZip bunu %60-90 sıkıştırır. <code>npx contextzip</code> → 5 saniye (ilk çalıştırmada binary indirilir).
 </h3>
 
 <p align="center">
@@ -18,43 +18,43 @@
 </p>
 
 <p align="center">
-  <a href="#-立即安装">安装</a> •
-  <a href="#-看看区别">Before/After</a> •
-  <a href="#-数字说明一切">基准测试</a> •
+  <a href="#-hemen-kur">Kurulum</a> •
+  <a href="#-farkı-gör">Before/After</a> •
+  <a href="#-rakamlar-yalan-söylemez">Benchmark</a> •
   <a href="../README.md">English</a> •
   <a href="README.ko.md">한국어</a> •
   <a href="README.ja.md">日本語</a> •
-  中文 •
+  <a href="README.zh.md">中文</a> •
   <a href="README.es.md">Español</a> •
   <a href="README.pt.md">Português</a> •
   <a href="README.hi.md">हिन्दी</a> •
   <a href="README.fr.md">Français</a> •
   <a href="README.de.md">Deutsch</a> •
   <a href="README.ru.md">Русский</a> •
-  <a href="README.tr.md">Türkçe</a> •
+  Türkçe •
   <a href="README.vi.md">Tiếng Việt</a>
 </p>
 
 ---
 
 ```
-  30 行 node_modules 堆栈帧           →    3 行
-  150 行 npm deprecated 警告          →    3 行
-  50 行 Docker 构建哈希               →    1 行
-  ANSI 颜色、加载动画、进度条          →    删除
+  30 satır node_modules stack trace          →    3 satır
+  150 satır npm deprecated uyarısı           →    3 satır
+  50 satır Docker build hash'i               →    1 satır
+  ANSI renkleri, spinner'lar, ilerleme çubuğu →   kaldırıldı
 ```
 
-<h3 align="center">⬇️ 一行搞定。</h3>
+<h3 align="center">⬇️ Tek satır. Hepsi bu.</h3>
 
 ```bash
 npx contextzip
 ```
 
-<p align="center">重启 Claude Code。所有命令自动压缩。零配置。<br>
+<p align="center">Claude Code'u yeniden başlatın. Her komut otomatik sıkıştırılır. Sıfır yapılandırma.<br>
 <b>macOS · Linux · Windows</b></p>
 
 <details>
-<summary>其他安装方式</summary>
+<summary>Diğer kurulum yöntemleri</summary>
 
 ```bash
 # macOS / Linux
@@ -64,7 +64,7 @@ brew install jee599/tap/contextzip
 # Windows (PowerShell)
 npx contextzip
 
-# Rust 开发者
+# Rust geliştiricileri
 cargo install --git https://github.com/jee599/contextzip
 ```
 
@@ -72,9 +72,9 @@ cargo install --git https://github.com/jee599/contextzip
 
 ---
 
-## 👀 看看区别
+## 👀 Farkı Gör
 
-### 💥 Node.js 报错 — 30 行 → 3 行（节省 92%）
+### 💥 Node.js Hatası — 30 satır → 3 satır (%92 tasarruf)
 
 <table>
 <tr>
@@ -115,7 +115,7 @@ TypeError: Cannot read properties
 </tr>
 </table>
 
-### 📦 npm install — 150 行 → 3 行（节省 58-95%，因警告数量而异）
+### 📦 npm install — 150 satır → 3 satır (%58-95 tasarruf, uyarı sayısına göre değişir)
 
 <table>
 <tr>
@@ -149,7 +149,7 @@ added 847 packages, audited 848
 
 
 
-Security kept. Noise gone.
+Güvenlik korundu. Gürültü temizlendi.
 
 💾 saved 95%
 ```
@@ -158,7 +158,7 @@ Security kept. Noise gone.
 </tr>
 </table>
 
-### 🐳 Docker 构建 — 50 行 → 1 行（节省 96%）
+### 🐳 Docker Build — 50 satır → 1 satır (%96 tasarruf)
 
 <table>
 <tr>
@@ -190,8 +190,8 @@ Successfully tagged my-app:latest
 
 
 
-安全信息保留。噪音删除。
 
+Güvenlik korundu. Gürültü temizlendi.
 
 💾 saved 96%
 ```
@@ -200,7 +200,7 @@ Successfully tagged my-app:latest
 </tr>
 </table>
 
-### 🐍 Python Traceback — 隐藏框架帧（节省 72%）
+### 🐍 Python Traceback — framework frame'leri gizlendi (%72 tasarruf)
 
 <table>
 <tr>
@@ -241,7 +241,7 @@ ValueError: invalid literal for int()
 </tr>
 </table>
 
-### 🦀 Rust Panic — 移除 std/tokio（err 过滤器节省 2-7%）
+### 🦀 Rust Panic — std/tokio kaldırıldı (err filtresiyle %2-7 tasarruf)
 
 <table>
 <tr>
@@ -277,14 +277,14 @@ thread 'main' panicked at
   (+ 2 framework frames hidden)
 
 
-💾 saved 2-7% (err 过滤器; Rust panic 格式尚未优化)
+💾 saved 2-7% (err filtresi; Rust panic formatı henüz optimize edilmedi)
 ```
 
 </td>
 </tr>
 </table>
 
-### 🔨 TypeScript 构建 — 40 个错误分组（节省 81%）
+### 🔨 TypeScript Build — 40 hata gruplanmış (%81 tasarruf)
 
 <table>
 <tr>
@@ -325,13 +325,13 @@ All line numbers preserved.
 </tr>
 </table>
 
-### 🌐 网页 — 去除 nav/footer/广告（节省 73%）
+### 🌐 Web Sayfası — nav/footer/reklamlar kaldırıldı (%73 tasarruf)
 
 <table>
 <tr>
 <td width="50%">
 
-**❌ Before (curl 输出)**
+**❌ Before (curl çıktısı)**
 ```
 [Skip to content]
 [Nav: Products, Pricing, Docs, Blog]
@@ -362,8 +362,8 @@ Use supabase.auth.signInWithPassword
 
 
 
-Nav、footer、sidebar、newsletter、
-社交链接 — 全部移除。
+Nav, footer, sidebar, newsletter,
+sosyal bağlantılar — hepsi kaldırıldı.
 💾 saved 73%
 ```
 
@@ -371,7 +371,7 @@ Nav、footer、sidebar、newsletter、
 </tr>
 </table>
 
-### 🎨 ANSI / 加载动画 — 移除不可见噪音（节省 83%）
+### 🎨 ANSI / Spinner — görünmez gürültü kaldırıldı (%83 tasarruf)
 
 <table>
 <tr>
@@ -405,7 +405,7 @@ Done.
 
 
 
-只保留最终状态。
+Sadece son durumlar korundu.
 
 💾 saved 83%
 ```
@@ -415,7 +415,7 @@ Done.
 </table>
 
 <details>
-<summary><b>🐳 Docker 失败 — 保留上下文</b></summary>
+<summary><b>🐳 Docker hatası — bağlam korundu</b></summary>
 
 ```
 ✗ Docker build failed at step 7/12
@@ -427,14 +427,14 @@ Step 7/12 : RUN npm run build        ← FAILED
   Exit code: 1
 ```
 
-> 失败步骤 + 前 2 步 + 错误信息 + 退出码。始终保留。
+> Başarısız adım + önceki 2 adım + hata mesajı + çıkış kodu. Her zaman.
 
 </details>
 
 <details>
-<summary><b>☕ Java / 🐹 Go 堆栈</b></summary>
+<summary><b>☕ Java / 🐹 Go stack trace'leri</b></summary>
 
-**Java** — 移除 `java.lang.reflect`、`sun.reflect`、`org.springframework`、`org.apache`、`jdk.internal`：
+**Java** — `java.lang.reflect`, `sun.reflect`, `org.springframework`, `org.apache`, `jdk.internal` kaldırır:
 ```diff
 - java.lang.NullPointerException: Cannot invoke method on null
 -   at com.myapp.UserService.getUser(UserService.java:42)
@@ -450,7 +450,7 @@ Step 7/12 : RUN npm run build        ← FAILED
 +   (+ 4 framework frames hidden)
 ```
 
-**Go** — 移除 `runtime/`、`runtime.gopanic`、`runtime.main`：
+**Go** — `runtime/`, `runtime.gopanic`, `runtime.main` kaldırır:
 ```diff
 - goroutine 1 [running]:
 - runtime/debug.Stack()
@@ -473,28 +473,28 @@ Step 7/12 : RUN npm run build        ← FAILED
 
 ---
 
-## 📊 数字说明一切
+## 📊 Rakamlar Yalan Söylemez
 
-> **102 个实战测试。没有挑选。**
+> **102 gerçek test. Cherry-picking yok.**
 
-| 类别 | 测试 | 平均节省 | 🏆 最高 | 💀 最低 |
+| Kategori | Test | Ort. Tasarruf | 🏆 En İyi | 💀 En Kötü |
 |:---------|------:|:----------:|:-------:|:-------:|
-| 🐳 Docker 构建 | 10 | **88%** | 97% | 77% |
-| 🎨 ANSI/加载动画 | 15 | **83%** | 98% | 0% |
-| 💥 错误堆栈 | 20 | **59%** | 97% | -12% |
-| 🔨 构建错误 | 15 | **56%** | 90% | -10% |
-| 🌐 网页 | 15 | **43%** | 64% | 5% |
-| 💻 CLI 命令 | 12 | **42%** | 99% | -56% |
-| 📦 包安装 | 15 | **39%** | 99% | 2% |
+| 🐳 Docker build | 10 | **88%** | 97% | 77% |
+| 🎨 ANSI/spinner | 15 | **83%** | 98% | 0% |
+| 💥 Hata izleri | 20 | **59%** | 97% | -12% |
+| 🔨 Build hataları | 15 | **56%** | 90% | -10% |
+| 🌐 Web sayfaları | 15 | **43%** | 64% | 5% |
+| 💻 CLI komutları | 12 | **42%** | 99% | -56% |
+| 📦 Paket kurulumu | 15 | **39%** | 99% | 2% |
 
-**加权平均: 61% 节省** → 326K chars in, 127K chars out
+**Ağırlıklı toplam: %61 tasarruf** → 326K chars in, 127K chars out
 
 > [!NOTE]
-> 负数 = 输出增大。极小输入时发生。最低值也如实公开，因为隐瞒是不诚实的。[完整基准测试 →](benchmark-results.md)
+> Negatif = çıktı büyüdü. Çok küçük girdilerde olur. En kötü rakamları tabloya koyuyoruz çünkü gizlemek dürüst olmaz. [Tam benchmark →](benchmark-results.md)
 
 ---
 
-## 🏎️ 工作原理
+## 🏎️ Nasıl Çalışır
 
 ```
   ┌─────────────────────────────────────────────┐
@@ -516,24 +516,24 @@ Step 7/12 : RUN npm run build        ← FAILED
 
 ---
 
-## 🆚 为什么不只用 RTK？
+## 🆚 Neden Sadece RTK Değil?
 
-基于 [RTK](https://github.com/rtk-ai/rtk)（28k⭐）。包含 RTK 全部 34 个命令。**额外功能：**
+[RTK](https://github.com/rtk-ai/rtk) (28k⭐) üzerine kurulu. RTK'nın 34 komutunun tamamı dahil. **Ek olarak:**
 
 | | RTK | ContextZip |
 |:---|:---:|:---:|
-| CLI 压缩 (git, test, ls) | ✅ | ✅ |
-| 错误堆栈 (Node/Python/Rust/Go/Java) | ❌ | ✅ |
-| 网页内容提取 | ❌ | ✅ |
-| ANSI / 加载动画 / 装饰移除 | 🟡 | ✅ |
-| 构建错误分组 (tsc/eslint/cargo) | 🟡 | ✅ |
-| 包安装噪音 (npm/pip/cargo) | ❌ | ✅ |
-| Docker 构建压缩 | 🟡 | ✅ |
-| 逐命令节省量显示 | ❌ | ✅ |
+| CLI sıkıştırma (git, test, ls) | ✅ | ✅ |
+| Hata stack trace'leri (Node/Python/Rust/Go/Java) | ❌ | ✅ |
+| Web sayfası içerik çıkarma | ❌ | ✅ |
+| ANSI / spinner / dekorasyon kaldırma | 🟡 | ✅ |
+| Build hata gruplama (tsc/eslint/cargo) | 🟡 | ✅ |
+| Paket kurulum gürültüsü (npm/pip/cargo) | ❌ | ✅ |
+| Docker build sıkıştırma | 🟡 | ✅ |
+| Komut başına tasarruf gösterimi | ❌ | ✅ |
 
 ---
 
-## 📈 追踪一切
+## 📈 Her Şeyi Takip Et
 
 ```bash
 $ contextzip gain
@@ -554,52 +554,52 @@ docker         22        0.2M     85%
 ```
 
 <p align="center">
-  <code>--graph</code> 每日图表 &nbsp;•&nbsp; <code>--history</code> 最近命令
+  <code>--graph</code> günlük grafik &nbsp;•&nbsp; <code>--history</code> son komutlar
 </p>
 
 ---
 
-## 🛡️ 重要信息绝不丢失
+## 🛡️ Önemli Hiçbir Şey Kaybolmaz
 
 | | |
 |:---|:---|
-| 🔴 错误信息 | **始终**保留 |
-| 📍 构建错误的文件:行号 | **绝不**移除 |
-| 🔒 安全警告 (CVE, GHSA) | **始终**保留 |
-| 🐳 Docker 失败上下文 | **始终**保留 |
-| ⏎ 退出码 | **始终**传播 |
+| 🔴 Hata mesajları | **HER ZAMAN** korunur |
+| 📍 Build hatalarında dosya:satır | **ASLA** kaldırılmaz |
+| 🔒 Güvenlik uyarıları (CVE, GHSA) | **HER ZAMAN** tutulur |
+| 🐳 Docker hata bağlamı | **HER ZAMAN** korunur |
+| ⏎ Çıkış kodları | **HER ZAMAN** iletilir |
 
 > [!IMPORTANT]
-> ContextZip 只移除**已确认的噪音**。不确定时，原始输出原样通过。
+> ContextZip yalnızca **doğrulanmış gürültüyü** kaldırır. Şüphe durumunda → passthrough.
 
 ---
 
-## 🔧 命令
+## 🔧 Komutlar
 
 ```bash
-# 自动（hook 转换 — 无需前缀）：
+# Otomatik (hook dönüştürür — önek gerekmez):
 git status              npm install             cargo test
 docker build .          pip install flask        go test ./...
 
-# 手动：
-contextzip web https://docs.example.com    # 页面 → 仅内容
-contextzip err node server.js              # 错误聚焦输出
+# Manuel:
+contextzip web https://docs.example.com    # sayfa → yalnızca içerik
+contextzip err node server.js              # hata odaklı çıktı
 
-# 分析：
-contextzip gain                  # 仪表盘
-contextzip gain --by-feature     # 按过滤器统计
-contextzip gain --graph          # 每日图表
-contextzip gain --history        # 最近命令
+# Analitik:
+contextzip gain                  # gösterge paneli
+contextzip gain --by-feature     # filtre başına istatistik
+contextzip gain --graph          # günlük grafik
+contextzip gain --history        # son komutlar
 
-# 管理：
-contextzip init --show           # 检查安装状态
-contextzip update                # 自更新
-contextzip uninstall             # 干净卸载
+# Yönetim:
+contextzip init --show           # kurulumu kontrol et
+contextzip update                # kendini güncelle
+contextzip uninstall             # temiz kaldırma
 ```
 
 ---
 
-## 🤝 贡献
+## 🤝 Katkıda Bulun
 
 ```bash
 git clone https://github.com/jee599/contextzip.git && cd contextzip
@@ -607,26 +607,26 @@ cargo test         # 1,056 tests
 cargo clippy       # lint
 ```
 
-## 📡 遥测
+## 📡 Telemetri
 
-ContextZip 收集匿名使用统计（命令数、节省率）以改进工具。不传输个人信息或命令内容。
+ContextZip, aracı iyileştirmek için anonim kullanım istatistikleri (komut sayısı, tasarruf yüzdesi) toplar. Kişisel veri veya komut içeriği iletilmez.
 
-**禁用：**
+**Devre dışı bırak:**
 ```bash
 export CONTEXTZIP_TELEMETRY_DISABLED=1
-# 或在 ~/.config/contextzip/config.toml:
+# veya ~/.config/contextzip/config.toml dosyasında:
 # [telemetry]
 # enabled = false
 ```
 
-## 📜 许可证
+## 📜 Lisans
 
-MIT — [RTK](https://github.com/rtk-ai/rtk) by rtk-ai 的 fork。
+MIT — rtk-ai tarafından geliştirilen [RTK](https://github.com/rtk-ai/rtk)'nın fork'u.
 
 ---
 
 <p align="center">
-  <b>⚡ 减少噪音，专注代码，更快交付。</b>
+  <b>⚡ Daha az gürültü. Daha çok kod. Daha hızlı deploy.</b>
 </p>
 
 <p align="center">

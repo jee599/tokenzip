@@ -5,8 +5,8 @@
 </h1>
 
 <h3 align="center">
-  Claude 的输出充满了无用噪音。<br>
-  ContextZip 压缩 60-90%。<code>npx contextzip</code> → 5 秒（首次运行下载二进制文件）。
+  Claude का आउटपुट अनावश्यक शोर से भरा है।<br>
+  ContextZip इसे 60-90% तक कम करता है। <code>npx contextzip</code> → 5 सेकंड (पहली बार बाइनरी डाउनलोड होती है)।
 </h3>
 
 <p align="center">
@@ -18,16 +18,16 @@
 </p>
 
 <p align="center">
-  <a href="#-立即安装">安装</a> •
-  <a href="#-看看区别">Before/After</a> •
-  <a href="#-数字说明一切">基准测试</a> •
+  <a href="#-अभी-इंस्टॉल-करें">इंस्टॉल</a> •
+  <a href="#-अंतर-देखें">Before/After</a> •
+  <a href="#-नंबर-झूठ-नहीं-बोलते">बेंचमार्क</a> •
   <a href="../README.md">English</a> •
   <a href="README.ko.md">한국어</a> •
   <a href="README.ja.md">日本語</a> •
-  中文 •
+  <a href="README.zh.md">中文</a> •
   <a href="README.es.md">Español</a> •
   <a href="README.pt.md">Português</a> •
-  <a href="README.hi.md">हिन्दी</a> •
+  हिन्दी •
   <a href="README.fr.md">Français</a> •
   <a href="README.de.md">Deutsch</a> •
   <a href="README.ru.md">Русский</a> •
@@ -38,23 +38,23 @@
 ---
 
 ```
-  30 行 node_modules 堆栈帧           →    3 行
-  150 行 npm deprecated 警告          →    3 行
-  50 行 Docker 构建哈希               →    1 行
-  ANSI 颜色、加载动画、进度条          →    删除
+  30 लाइनें node_modules स्टैकट्रेस       →    3 लाइनें
+  150 लाइनें npm deprecated चेतावनियाँ     →    3 लाइनें
+  50 लाइनें Docker बिल्ड हैश              →    1 लाइन
+  ANSI कलर, स्पिनर, प्रोग्रेस बार        →    हटा दिए
 ```
 
-<h3 align="center">⬇️ 一行搞定。</h3>
+<h3 align="center">⬇️ एक लाइन। बस इतना ही।</h3>
 
 ```bash
 npx contextzip
 ```
 
-<p align="center">重启 Claude Code。所有命令自动压缩。零配置。<br>
+<p align="center">Claude Code रीस्टार्ट करें। हर कमांड अपने आप कंप्रेस होता है। कोई कॉन्फ़िगरेशन नहीं।<br>
 <b>macOS · Linux · Windows</b></p>
 
 <details>
-<summary>其他安装方式</summary>
+<summary>अन्य इंस्टॉलेशन विधियाँ</summary>
 
 ```bash
 # macOS / Linux
@@ -64,7 +64,7 @@ brew install jee599/tap/contextzip
 # Windows (PowerShell)
 npx contextzip
 
-# Rust 开发者
+# Rust डेवलपर्स
 cargo install --git https://github.com/jee599/contextzip
 ```
 
@@ -72,9 +72,9 @@ cargo install --git https://github.com/jee599/contextzip
 
 ---
 
-## 👀 看看区别
+## 👀 अंतर देखें
 
-### 💥 Node.js 报错 — 30 行 → 3 行（节省 92%）
+### 💥 Node.js एरर — 30 लाइनें → 3 लाइनें (92% बचत)
 
 <table>
 <tr>
@@ -115,7 +115,7 @@ TypeError: Cannot read properties
 </tr>
 </table>
 
-### 📦 npm install — 150 行 → 3 行（节省 58-95%，因警告数量而异）
+### 📦 npm install — 150 लाइनें → 3 लाइनें (58-95% बचत, चेतावनियों की संख्या के अनुसार)
 
 <table>
 <tr>
@@ -149,7 +149,7 @@ added 847 packages, audited 848
 
 
 
-Security kept. Noise gone.
+सुरक्षा जानकारी सुरक्षित। शोर हटाया गया।
 
 💾 saved 95%
 ```
@@ -158,7 +158,7 @@ Security kept. Noise gone.
 </tr>
 </table>
 
-### 🐳 Docker 构建 — 50 行 → 1 行（节省 96%）
+### 🐳 Docker बिल्ड — 50 लाइनें → 1 लाइन (96% बचत)
 
 <table>
 <tr>
@@ -190,8 +190,8 @@ Successfully tagged my-app:latest
 
 
 
-安全信息保留。噪音删除。
 
+सुरक्षा जानकारी सुरक्षित। शोर हटाया गया।
 
 💾 saved 96%
 ```
@@ -200,7 +200,7 @@ Successfully tagged my-app:latest
 </tr>
 </table>
 
-### 🐍 Python Traceback — 隐藏框架帧（节省 72%）
+### 🐍 Python Traceback — फ्रेमवर्क फ़्रेम छुपाए गए (72% बचत)
 
 <table>
 <tr>
@@ -241,7 +241,7 @@ ValueError: invalid literal for int()
 </tr>
 </table>
 
-### 🦀 Rust Panic — 移除 std/tokio（err 过滤器节省 2-7%）
+### 🦀 Rust Panic — std/tokio हटाए गए (err फ़िल्टर से 2-7% बचत)
 
 <table>
 <tr>
@@ -277,14 +277,14 @@ thread 'main' panicked at
   (+ 2 framework frames hidden)
 
 
-💾 saved 2-7% (err 过滤器; Rust panic 格式尚未优化)
+💾 saved 2-7% (err फ़िल्टर; Rust panic फ़ॉर्मेट अभी ऑप्टिमाइज़्ड नहीं)
 ```
 
 </td>
 </tr>
 </table>
 
-### 🔨 TypeScript 构建 — 40 个错误分组（节省 81%）
+### 🔨 TypeScript बिल्ड — 40 एरर ग्रुप किए गए (81% बचत)
 
 <table>
 <tr>
@@ -325,13 +325,13 @@ All line numbers preserved.
 </tr>
 </table>
 
-### 🌐 网页 — 去除 nav/footer/广告（节省 73%）
+### 🌐 वेब पेज — nav/footer/विज्ञापन हटाए गए (73% बचत)
 
 <table>
 <tr>
 <td width="50%">
 
-**❌ Before (curl 输出)**
+**❌ Before (curl आउटपुट)**
 ```
 [Skip to content]
 [Nav: Products, Pricing, Docs, Blog]
@@ -362,8 +362,8 @@ Use supabase.auth.signInWithPassword
 
 
 
-Nav、footer、sidebar、newsletter、
-社交链接 — 全部移除。
+Nav, footer, sidebar, newsletter,
+सोशल लिंक — सब हटा दिए।
 💾 saved 73%
 ```
 
@@ -371,7 +371,7 @@ Nav、footer、sidebar、newsletter、
 </tr>
 </table>
 
-### 🎨 ANSI / 加载动画 — 移除不可见噪音（节省 83%）
+### 🎨 ANSI / स्पिनर — अदृश्य शोर हटाया गया (83% बचत)
 
 <table>
 <tr>
@@ -405,7 +405,7 @@ Done.
 
 
 
-只保留最终状态。
+केवल अंतिम स्थितियाँ रखी गईं।
 
 💾 saved 83%
 ```
@@ -415,7 +415,7 @@ Done.
 </table>
 
 <details>
-<summary><b>🐳 Docker 失败 — 保留上下文</b></summary>
+<summary><b>🐳 Docker विफलता — संदर्भ संरक्षित</b></summary>
 
 ```
 ✗ Docker build failed at step 7/12
@@ -427,14 +427,14 @@ Step 7/12 : RUN npm run build        ← FAILED
   Exit code: 1
 ```
 
-> 失败步骤 + 前 2 步 + 错误信息 + 退出码。始终保留。
+> विफल चरण + पिछले 2 चरण + एरर मैसेज + एग्ज़िट कोड। हमेशा।
 
 </details>
 
 <details>
-<summary><b>☕ Java / 🐹 Go 堆栈</b></summary>
+<summary><b>☕ Java / 🐹 Go स्टैकट्रेस</b></summary>
 
-**Java** — 移除 `java.lang.reflect`、`sun.reflect`、`org.springframework`、`org.apache`、`jdk.internal`：
+**Java** — `java.lang.reflect`, `sun.reflect`, `org.springframework`, `org.apache`, `jdk.internal` हटाता है:
 ```diff
 - java.lang.NullPointerException: Cannot invoke method on null
 -   at com.myapp.UserService.getUser(UserService.java:42)
@@ -450,7 +450,7 @@ Step 7/12 : RUN npm run build        ← FAILED
 +   (+ 4 framework frames hidden)
 ```
 
-**Go** — 移除 `runtime/`、`runtime.gopanic`、`runtime.main`：
+**Go** — `runtime/`, `runtime.gopanic`, `runtime.main` हटाता है:
 ```diff
 - goroutine 1 [running]:
 - runtime/debug.Stack()
@@ -473,28 +473,28 @@ Step 7/12 : RUN npm run build        ← FAILED
 
 ---
 
-## 📊 数字说明一切
+## 📊 नंबर झूठ नहीं बोलते
 
-> **102 个实战测试。没有挑选。**
+> **102 वास्तविक परीक्षण। कोई चेरी-पिकिंग नहीं।**
 
-| 类别 | 测试 | 平均节省 | 🏆 最高 | 💀 最低 |
+| श्रेणी | परीक्षण | औसत बचत | 🏆 सर्वश्रेष्ठ | 💀 सबसे खराब |
 |:---------|------:|:----------:|:-------:|:-------:|
-| 🐳 Docker 构建 | 10 | **88%** | 97% | 77% |
-| 🎨 ANSI/加载动画 | 15 | **83%** | 98% | 0% |
-| 💥 错误堆栈 | 20 | **59%** | 97% | -12% |
-| 🔨 构建错误 | 15 | **56%** | 90% | -10% |
-| 🌐 网页 | 15 | **43%** | 64% | 5% |
-| 💻 CLI 命令 | 12 | **42%** | 99% | -56% |
-| 📦 包安装 | 15 | **39%** | 99% | 2% |
+| 🐳 Docker बिल्ड | 10 | **88%** | 97% | 77% |
+| 🎨 ANSI/स्पिनर | 15 | **83%** | 98% | 0% |
+| 💥 एरर ट्रेस | 20 | **59%** | 97% | -12% |
+| 🔨 बिल्ड एरर | 15 | **56%** | 90% | -10% |
+| 🌐 वेब पेज | 15 | **43%** | 64% | 5% |
+| 💻 CLI कमांड | 12 | **42%** | 99% | -56% |
+| 📦 पैकेज इंस्टॉल | 15 | **39%** | 99% | 2% |
 
-**加权平均: 61% 节省** → 326K chars in, 127K chars out
+**भारित कुल: 61% बचत** → 326K chars in, 127K chars out
 
 > [!NOTE]
-> 负数 = 输出增大。极小输入时发生。最低值也如实公开，因为隐瞒是不诚实的。[完整基准测试 →](benchmark-results.md)
+> नकारात्मक = आउटपुट बढ़ गया। बहुत छोटे इनपुट पर ऐसा होता है। सबसे खराब नंबर भी दिखाते हैं क्योंकि छुपाना ईमानदारी नहीं होगी। [पूरा बेंचमार्क →](benchmark-results.md)
 
 ---
 
-## 🏎️ 工作原理
+## 🏎️ यह कैसे काम करता है
 
 ```
   ┌─────────────────────────────────────────────┐
@@ -516,24 +516,24 @@ Step 7/12 : RUN npm run build        ← FAILED
 
 ---
 
-## 🆚 为什么不只用 RTK？
+## 🆚 सिर्फ RTK क्यों नहीं?
 
-基于 [RTK](https://github.com/rtk-ai/rtk)（28k⭐）。包含 RTK 全部 34 个命令。**额外功能：**
+[RTK](https://github.com/rtk-ai/rtk) (28k⭐) पर आधारित। RTK के सभी 34 कमांड शामिल। **इसके अलावा:**
 
 | | RTK | ContextZip |
 |:---|:---:|:---:|
-| CLI 压缩 (git, test, ls) | ✅ | ✅ |
-| 错误堆栈 (Node/Python/Rust/Go/Java) | ❌ | ✅ |
-| 网页内容提取 | ❌ | ✅ |
-| ANSI / 加载动画 / 装饰移除 | 🟡 | ✅ |
-| 构建错误分组 (tsc/eslint/cargo) | 🟡 | ✅ |
-| 包安装噪音 (npm/pip/cargo) | ❌ | ✅ |
-| Docker 构建压缩 | 🟡 | ✅ |
-| 逐命令节省量显示 | ❌ | ✅ |
+| CLI कंप्रेशन (git, test, ls) | ✅ | ✅ |
+| एरर स्टैकट्रेस (Node/Python/Rust/Go/Java) | ❌ | ✅ |
+| वेब पेज कंटेंट एक्सट्रैक्शन | ❌ | ✅ |
+| ANSI / स्पिनर / डेकोरेशन हटाना | 🟡 | ✅ |
+| बिल्ड एरर ग्रुपिंग (tsc/eslint/cargo) | 🟡 | ✅ |
+| पैकेज इंस्टॉल शोर (npm/pip/cargo) | ❌ | ✅ |
+| Docker बिल्ड कंप्रेशन | 🟡 | ✅ |
+| प्रति-कमांड बचत प्रदर्शन | ❌ | ✅ |
 
 ---
 
-## 📈 追踪一切
+## 📈 सब कुछ ट्रैक करें
 
 ```bash
 $ contextzip gain
@@ -554,52 +554,52 @@ docker         22        0.2M     85%
 ```
 
 <p align="center">
-  <code>--graph</code> 每日图表 &nbsp;•&nbsp; <code>--history</code> 最近命令
+  <code>--graph</code> दैनिक चार्ट &nbsp;•&nbsp; <code>--history</code> हाल के कमांड
 </p>
 
 ---
 
-## 🛡️ 重要信息绝不丢失
+## 🛡️ कुछ भी ज़रूरी नहीं खोता
 
 | | |
 |:---|:---|
-| 🔴 错误信息 | **始终**保留 |
-| 📍 构建错误的文件:行号 | **绝不**移除 |
-| 🔒 安全警告 (CVE, GHSA) | **始终**保留 |
-| 🐳 Docker 失败上下文 | **始终**保留 |
-| ⏎ 退出码 | **始终**传播 |
+| 🔴 एरर मैसेज | **हमेशा** सुरक्षित |
+| 📍 बिल्ड एरर में फ़ाइल:लाइन | **कभी नहीं** हटाए जाते |
+| 🔒 सुरक्षा चेतावनियाँ (CVE, GHSA) | **हमेशा** रखी जाती हैं |
+| 🐳 Docker विफलता का संदर्भ | **हमेशा** सुरक्षित |
+| ⏎ एग्ज़िट कोड | **हमेशा** प्रसारित |
 
 > [!IMPORTANT]
-> ContextZip 只移除**已确认的噪音**。不确定时，原始输出原样通过。
+> ContextZip केवल **पुष्ट शोर** हटाता है। संदेह होने पर → passthrough।
 
 ---
 
-## 🔧 命令
+## 🔧 कमांड
 
 ```bash
-# 自动（hook 转换 — 无需前缀）：
+# स्वचालित (हुक ट्रांसफ़ॉर्म करता है — प्रीफ़िक्स की ज़रूरत नहीं):
 git status              npm install             cargo test
 docker build .          pip install flask        go test ./...
 
-# 手动：
-contextzip web https://docs.example.com    # 页面 → 仅内容
-contextzip err node server.js              # 错误聚焦输出
+# मैनुअल:
+contextzip web https://docs.example.com    # पेज → केवल कंटेंट
+contextzip err node server.js              # एरर-केंद्रित आउटपुट
 
-# 分析：
-contextzip gain                  # 仪表盘
-contextzip gain --by-feature     # 按过滤器统计
-contextzip gain --graph          # 每日图表
-contextzip gain --history        # 最近命令
+# एनालिटिक्स:
+contextzip gain                  # डैशबोर्ड
+contextzip gain --by-feature     # फ़िल्टर-वार आँकड़े
+contextzip gain --graph          # दैनिक चार्ट
+contextzip gain --history        # हाल के कमांड
 
-# 管理：
-contextzip init --show           # 检查安装状态
-contextzip update                # 自更新
-contextzip uninstall             # 干净卸载
+# प्रबंधन:
+contextzip init --show           # सेटअप जाँचें
+contextzip update                # सेल्फ़-अपडेट
+contextzip uninstall             # साफ़ अनइंस्टॉल
 ```
 
 ---
 
-## 🤝 贡献
+## 🤝 योगदान करें
 
 ```bash
 git clone https://github.com/jee599/contextzip.git && cd contextzip
@@ -607,26 +607,26 @@ cargo test         # 1,056 tests
 cargo clippy       # lint
 ```
 
-## 📡 遥测
+## 📡 टेलीमेट्री
 
-ContextZip 收集匿名使用统计（命令数、节省率）以改进工具。不传输个人信息或命令内容。
+ContextZip टूल को बेहतर बनाने के लिए अनाम उपयोग आँकड़े (कमांड गणना, बचत प्रतिशत) एकत्र करता है। कोई व्यक्तिगत डेटा या कमांड सामग्री प्रेषित नहीं की जाती।
 
-**禁用：**
+**अक्षम करें:**
 ```bash
 export CONTEXTZIP_TELEMETRY_DISABLED=1
-# 或在 ~/.config/contextzip/config.toml:
+# या ~/.config/contextzip/config.toml में:
 # [telemetry]
 # enabled = false
 ```
 
-## 📜 许可证
+## 📜 लाइसेंस
 
-MIT — [RTK](https://github.com/rtk-ai/rtk) by rtk-ai 的 fork。
+MIT — rtk-ai द्वारा [RTK](https://github.com/rtk-ai/rtk) का Fork।
 
 ---
 
 <p align="center">
-  <b>⚡ 减少噪音，专注代码，更快交付。</b>
+  <b>⚡ कम शोर। ज़्यादा कोड। तेज़ डिलीवरी।</b>
 </p>
 
 <p align="center">

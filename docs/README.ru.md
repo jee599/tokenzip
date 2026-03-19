@@ -5,8 +5,8 @@
 </h1>
 
 <h3 align="center">
-  Claude 的输出充满了无用噪音。<br>
-  ContextZip 压缩 60-90%。<code>npx contextzip</code> → 5 秒（首次运行下载二进制文件）。
+  Вывод Claude полон ненужного шума.<br>
+  ContextZip сжимает его на 60-90%. <code>npx contextzip</code> → 5 секунд (первый запуск скачивает бинарник).
 </h3>
 
 <p align="center">
@@ -18,19 +18,19 @@
 </p>
 
 <p align="center">
-  <a href="#-立即安装">安装</a> •
-  <a href="#-看看区别">Before/After</a> •
-  <a href="#-数字说明一切">基准测试</a> •
+  <a href="#-установить-сейчас">Установка</a> •
+  <a href="#-посмотрите-разницу">Before/After</a> •
+  <a href="#-цифры-не-врут">Бенчмарк</a> •
   <a href="../README.md">English</a> •
   <a href="README.ko.md">한국어</a> •
   <a href="README.ja.md">日本語</a> •
-  中文 •
+  <a href="README.zh.md">中文</a> •
   <a href="README.es.md">Español</a> •
   <a href="README.pt.md">Português</a> •
   <a href="README.hi.md">हिन्दी</a> •
   <a href="README.fr.md">Français</a> •
   <a href="README.de.md">Deutsch</a> •
-  <a href="README.ru.md">Русский</a> •
+  Русский •
   <a href="README.tr.md">Türkçe</a> •
   <a href="README.vi.md">Tiếng Việt</a>
 </p>
@@ -38,23 +38,23 @@
 ---
 
 ```
-  30 行 node_modules 堆栈帧           →    3 行
-  150 行 npm deprecated 警告          →    3 行
-  50 行 Docker 构建哈希               →    1 行
-  ANSI 颜色、加载动画、进度条          →    删除
+  30 строк стектрейса node_modules          →    3 строки
+  150 строк предупреждений npm deprecated   →    3 строки
+  50 строк хешей Docker build               →    1 строка
+  ANSI-цвета, спиннеры, прогресс-бары       →    удалены
 ```
 
-<h3 align="center">⬇️ 一行搞定。</h3>
+<h3 align="center">⬇️ Одна строка. Всё.</h3>
 
 ```bash
 npx contextzip
 ```
 
-<p align="center">重启 Claude Code。所有命令自动压缩。零配置。<br>
+<p align="center">Перезапустите Claude Code. Каждая команда сжимается автоматически. Без настройки.<br>
 <b>macOS · Linux · Windows</b></p>
 
 <details>
-<summary>其他安装方式</summary>
+<summary>Другие способы установки</summary>
 
 ```bash
 # macOS / Linux
@@ -64,7 +64,7 @@ brew install jee599/tap/contextzip
 # Windows (PowerShell)
 npx contextzip
 
-# Rust 开发者
+# Разработчики на Rust
 cargo install --git https://github.com/jee599/contextzip
 ```
 
@@ -72,9 +72,9 @@ cargo install --git https://github.com/jee599/contextzip
 
 ---
 
-## 👀 看看区别
+## 👀 Посмотрите Разницу
 
-### 💥 Node.js 报错 — 30 行 → 3 行（节省 92%）
+### 💥 Ошибка Node.js — 30 строк → 3 строки (92% экономии)
 
 <table>
 <tr>
@@ -115,7 +115,7 @@ TypeError: Cannot read properties
 </tr>
 </table>
 
-### 📦 npm install — 150 行 → 3 行（节省 58-95%，因警告数量而异）
+### 📦 npm install — 150 строк → 3 строки (58-95% экономии, зависит от количества предупреждений)
 
 <table>
 <tr>
@@ -149,7 +149,7 @@ added 847 packages, audited 848
 
 
 
-Security kept. Noise gone.
+Безопасность сохранена. Шум удалён.
 
 💾 saved 95%
 ```
@@ -158,7 +158,7 @@ Security kept. Noise gone.
 </tr>
 </table>
 
-### 🐳 Docker 构建 — 50 行 → 1 行（节省 96%）
+### 🐳 Docker Build — 50 строк → 1 строка (96% экономии)
 
 <table>
 <tr>
@@ -190,8 +190,8 @@ Successfully tagged my-app:latest
 
 
 
-安全信息保留。噪音删除。
 
+Безопасность сохранена. Шум удалён.
 
 💾 saved 96%
 ```
@@ -200,7 +200,7 @@ Successfully tagged my-app:latest
 </tr>
 </table>
 
-### 🐍 Python Traceback — 隐藏框架帧（节省 72%）
+### 🐍 Python Traceback — фреймворк-фреймы скрыты (72% экономии)
 
 <table>
 <tr>
@@ -241,7 +241,7 @@ ValueError: invalid literal for int()
 </tr>
 </table>
 
-### 🦀 Rust Panic — 移除 std/tokio（err 过滤器节省 2-7%）
+### 🦀 Rust Panic — std/tokio удалены (2-7% экономии через err-фильтр)
 
 <table>
 <tr>
@@ -277,14 +277,14 @@ thread 'main' panicked at
   (+ 2 framework frames hidden)
 
 
-💾 saved 2-7% (err 过滤器; Rust panic 格式尚未优化)
+💾 saved 2-7% (err-фильтр; формат Rust panic ещё не оптимизирован)
 ```
 
 </td>
 </tr>
 </table>
 
-### 🔨 TypeScript 构建 — 40 个错误分组（节省 81%）
+### 🔨 TypeScript Build — 40 ошибок сгруппировано (81% экономии)
 
 <table>
 <tr>
@@ -325,13 +325,13 @@ All line numbers preserved.
 </tr>
 </table>
 
-### 🌐 网页 — 去除 nav/footer/广告（节省 73%）
+### 🌐 Веб-страница — nav/footer/реклама удалены (73% экономии)
 
 <table>
 <tr>
 <td width="50%">
 
-**❌ Before (curl 输出)**
+**❌ Before (вывод curl)**
 ```
 [Skip to content]
 [Nav: Products, Pricing, Docs, Blog]
@@ -362,8 +362,8 @@ Use supabase.auth.signInWithPassword
 
 
 
-Nav、footer、sidebar、newsletter、
-社交链接 — 全部移除。
+Nav, footer, sidebar, newsletter,
+соцсети — всё удалено.
 💾 saved 73%
 ```
 
@@ -371,7 +371,7 @@ Nav、footer、sidebar、newsletter、
 </tr>
 </table>
 
-### 🎨 ANSI / 加载动画 — 移除不可见噪音（节省 83%）
+### 🎨 ANSI / Спиннеры — невидимый шум удалён (83% экономии)
 
 <table>
 <tr>
@@ -405,7 +405,7 @@ Done.
 
 
 
-只保留最终状态。
+Только финальные состояния сохранены.
 
 💾 saved 83%
 ```
@@ -415,7 +415,7 @@ Done.
 </table>
 
 <details>
-<summary><b>🐳 Docker 失败 — 保留上下文</b></summary>
+<summary><b>🐳 Сбой Docker — контекст сохранён</b></summary>
 
 ```
 ✗ Docker build failed at step 7/12
@@ -427,14 +427,14 @@ Step 7/12 : RUN npm run build        ← FAILED
   Exit code: 1
 ```
 
-> 失败步骤 + 前 2 步 + 错误信息 + 退出码。始终保留。
+> Упавший шаг + 2 предыдущих шага + сообщение об ошибке + код выхода. Всегда.
 
 </details>
 
 <details>
-<summary><b>☕ Java / 🐹 Go 堆栈</b></summary>
+<summary><b>☕ Java / 🐹 Go стектрейсы</b></summary>
 
-**Java** — 移除 `java.lang.reflect`、`sun.reflect`、`org.springframework`、`org.apache`、`jdk.internal`：
+**Java** — удаляет `java.lang.reflect`, `sun.reflect`, `org.springframework`, `org.apache`, `jdk.internal`:
 ```diff
 - java.lang.NullPointerException: Cannot invoke method on null
 -   at com.myapp.UserService.getUser(UserService.java:42)
@@ -450,7 +450,7 @@ Step 7/12 : RUN npm run build        ← FAILED
 +   (+ 4 framework frames hidden)
 ```
 
-**Go** — 移除 `runtime/`、`runtime.gopanic`、`runtime.main`：
+**Go** — удаляет `runtime/`, `runtime.gopanic`, `runtime.main`:
 ```diff
 - goroutine 1 [running]:
 - runtime/debug.Stack()
@@ -473,28 +473,28 @@ Step 7/12 : RUN npm run build        ← FAILED
 
 ---
 
-## 📊 数字说明一切
+## 📊 Цифры Не Врут
 
-> **102 个实战测试。没有挑选。**
+> **102 реальных теста. Без подтасовки.**
 
-| 类别 | 测试 | 平均节省 | 🏆 最高 | 💀 最低 |
+| Категория | Тесты | Средняя экономия | 🏆 Лучший | 💀 Худший |
 |:---------|------:|:----------:|:-------:|:-------:|
-| 🐳 Docker 构建 | 10 | **88%** | 97% | 77% |
-| 🎨 ANSI/加载动画 | 15 | **83%** | 98% | 0% |
-| 💥 错误堆栈 | 20 | **59%** | 97% | -12% |
-| 🔨 构建错误 | 15 | **56%** | 90% | -10% |
-| 🌐 网页 | 15 | **43%** | 64% | 5% |
-| 💻 CLI 命令 | 12 | **42%** | 99% | -56% |
-| 📦 包安装 | 15 | **39%** | 99% | 2% |
+| 🐳 Docker build | 10 | **88%** | 97% | 77% |
+| 🎨 ANSI/спиннеры | 15 | **83%** | 98% | 0% |
+| 💥 Трассировки ошибок | 20 | **59%** | 97% | -12% |
+| 🔨 Ошибки сборки | 15 | **56%** | 90% | -10% |
+| 🌐 Веб-страницы | 15 | **43%** | 64% | 5% |
+| 💻 CLI-команды | 12 | **42%** | 99% | -56% |
+| 📦 Установка пакетов | 15 | **39%** | 99% | 2% |
 
-**加权平均: 61% 节省** → 326K chars in, 127K chars out
+**Взвешенный итог: 61% экономии** → 326K chars in, 127K chars out
 
 > [!NOTE]
-> 负数 = 输出增大。极小输入时发生。最低值也如实公开，因为隐瞒是不诚实的。[完整基准测试 →](benchmark-results.md)
+> Отрицательные = вывод увеличился. Бывает на крошечных входных данных. Худшие цифры в таблице, потому что скрывать их было бы нечестно. [Полный бенчмарк →](benchmark-results.md)
 
 ---
 
-## 🏎️ 工作原理
+## 🏎️ Как Это Работает
 
 ```
   ┌─────────────────────────────────────────────┐
@@ -516,24 +516,24 @@ Step 7/12 : RUN npm run build        ← FAILED
 
 ---
 
-## 🆚 为什么不只用 RTK？
+## 🆚 Почему Не Просто RTK?
 
-基于 [RTK](https://github.com/rtk-ai/rtk)（28k⭐）。包含 RTK 全部 34 个命令。**额外功能：**
+Построен на [RTK](https://github.com/rtk-ai/rtk) (28k⭐). Все 34 команды RTK включены. **Плюс:**
 
 | | RTK | ContextZip |
 |:---|:---:|:---:|
-| CLI 压缩 (git, test, ls) | ✅ | ✅ |
-| 错误堆栈 (Node/Python/Rust/Go/Java) | ❌ | ✅ |
-| 网页内容提取 | ❌ | ✅ |
-| ANSI / 加载动画 / 装饰移除 | 🟡 | ✅ |
-| 构建错误分组 (tsc/eslint/cargo) | 🟡 | ✅ |
-| 包安装噪音 (npm/pip/cargo) | ❌ | ✅ |
-| Docker 构建压缩 | 🟡 | ✅ |
-| 逐命令节省量显示 | ❌ | ✅ |
+| Сжатие CLI (git, test, ls) | ✅ | ✅ |
+| Стектрейсы ошибок (Node/Python/Rust/Go/Java) | ❌ | ✅ |
+| Извлечение контента веб-страниц | ❌ | ✅ |
+| Удаление ANSI / спиннеров / декораций | 🟡 | ✅ |
+| Группировка ошибок сборки (tsc/eslint/cargo) | 🟡 | ✅ |
+| Шум установки пакетов (npm/pip/cargo) | ❌ | ✅ |
+| Сжатие Docker build | 🟡 | ✅ |
+| Экономия по каждой команде | ❌ | ✅ |
 
 ---
 
-## 📈 追踪一切
+## 📈 Отслеживайте Всё
 
 ```bash
 $ contextzip gain
@@ -554,52 +554,52 @@ docker         22        0.2M     85%
 ```
 
 <p align="center">
-  <code>--graph</code> 每日图表 &nbsp;•&nbsp; <code>--history</code> 最近命令
+  <code>--graph</code> дневной график &nbsp;•&nbsp; <code>--history</code> последние команды
 </p>
 
 ---
 
-## 🛡️ 重要信息绝不丢失
+## 🛡️ Ничего Важного Не Теряется
 
 | | |
 |:---|:---|
-| 🔴 错误信息 | **始终**保留 |
-| 📍 构建错误的文件:行号 | **绝不**移除 |
-| 🔒 安全警告 (CVE, GHSA) | **始终**保留 |
-| 🐳 Docker 失败上下文 | **始终**保留 |
-| ⏎ 退出码 | **始终**传播 |
+| 🔴 Сообщения об ошибках | **ВСЕГДА** сохраняются |
+| 📍 Файл:строка в ошибках сборки | **НИКОГДА** не удаляются |
+| 🔒 Предупреждения безопасности (CVE, GHSA) | **ВСЕГДА** сохраняются |
+| 🐳 Контекст сбоя Docker | **ВСЕГДА** сохраняется |
+| ⏎ Коды выхода | **ВСЕГДА** передаются |
 
 > [!IMPORTANT]
-> ContextZip 只移除**已确认的噪音**。不确定时，原始输出原样通过。
+> ContextZip удаляет только **подтверждённый шум**. При сомнении → passthrough.
 
 ---
 
-## 🔧 命令
+## 🔧 Команды
 
 ```bash
-# 自动（hook 转换 — 无需前缀）：
+# Автоматически (хук преобразует — без префикса):
 git status              npm install             cargo test
 docker build .          pip install flask        go test ./...
 
-# 手动：
-contextzip web https://docs.example.com    # 页面 → 仅内容
-contextzip err node server.js              # 错误聚焦输出
+# Вручную:
+contextzip web https://docs.example.com    # страница → только контент
+contextzip err node server.js              # вывод с фокусом на ошибки
 
-# 分析：
-contextzip gain                  # 仪表盘
-contextzip gain --by-feature     # 按过滤器统计
-contextzip gain --graph          # 每日图表
-contextzip gain --history        # 最近命令
+# Аналитика:
+contextzip gain                  # дашборд
+contextzip gain --by-feature     # статистика по фильтрам
+contextzip gain --graph          # дневной график
+contextzip gain --history        # последние команды
 
-# 管理：
-contextzip init --show           # 检查安装状态
-contextzip update                # 自更新
-contextzip uninstall             # 干净卸载
+# Управление:
+contextzip init --show           # проверить настройку
+contextzip update                # обновить
+contextzip uninstall             # чистое удаление
 ```
 
 ---
 
-## 🤝 贡献
+## 🤝 Внести Вклад
 
 ```bash
 git clone https://github.com/jee599/contextzip.git && cd contextzip
@@ -607,26 +607,26 @@ cargo test         # 1,056 tests
 cargo clippy       # lint
 ```
 
-## 📡 遥测
+## 📡 Телеметрия
 
-ContextZip 收集匿名使用统计（命令数、节省率）以改进工具。不传输个人信息或命令内容。
+ContextZip собирает анонимную статистику использования (количество команд, процент экономии) для улучшения инструмента. Личные данные и содержимое команд не передаются.
 
-**禁用：**
+**Отключить:**
 ```bash
 export CONTEXTZIP_TELEMETRY_DISABLED=1
-# 或在 ~/.config/contextzip/config.toml:
+# или в ~/.config/contextzip/config.toml:
 # [telemetry]
 # enabled = false
 ```
 
-## 📜 许可证
+## 📜 Лицензия
 
-MIT — [RTK](https://github.com/rtk-ai/rtk) by rtk-ai 的 fork。
+MIT — Fork [RTK](https://github.com/rtk-ai/rtk) от rtk-ai.
 
 ---
 
 <p align="center">
-  <b>⚡ 减少噪音，专注代码，更快交付。</b>
+  <b>⚡ Меньше шума. Больше кода. Деплой быстрее.</b>
 </p>
 
 <p align="center">

@@ -21,9 +21,18 @@
   <a href="#-install-it-now">Install</a> •
   <a href="#-see-the-difference">Before/After</a> •
   <a href="#-the-numbers-dont-lie">Benchmark</a> •
+  English •
   <a href="docs/README.ko.md">한국어</a> •
   <a href="docs/README.ja.md">日本語</a> •
-  <a href="docs/README.zh.md">中文</a>
+  <a href="docs/README.zh.md">中文</a> •
+  <a href="docs/README.es.md">Español</a> •
+  <a href="docs/README.pt.md">Português</a> •
+  <a href="docs/README.hi.md">हिन्दी</a> •
+  <a href="docs/README.fr.md">Français</a> •
+  <a href="docs/README.de.md">Deutsch</a> •
+  <a href="docs/README.ru.md">Русский</a> •
+  <a href="docs/README.tr.md">Türkçe</a> •
+  <a href="docs/README.vi.md">Tiếng Việt</a>
 </p>
 
 ---
