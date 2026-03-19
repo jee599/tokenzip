@@ -1,6 +1,6 @@
 //! Utility functions for text processing and command execution.
 //!
-//! Provides common helpers used across rtk commands:
+//! Provides common helpers used across contextzip commands:
 //! - ANSI color code stripping
 //! - Text truncation
 //! - Command execution with error context
@@ -18,7 +18,7 @@ use std::process::Command;
 ///
 /// # Examples
 /// ```
-/// use rtk::utils::truncate;
+/// use contextzip::utils::truncate;
 /// assert_eq!(truncate("hello world", 8), "hello...");
 /// assert_eq!(truncate("hi", 10), "hi");
 /// ```
@@ -41,7 +41,7 @@ pub fn truncate(s: &str, max_len: usize) -> String {
 ///
 /// # Examples
 /// ```
-/// use rtk::utils::strip_ansi;
+/// use contextzip::utils::strip_ansi;
 /// let colored = "\x1b[31mError\x1b[0m";
 /// assert_eq!(strip_ansi(colored), "Error");
 /// ```
@@ -63,7 +63,7 @@ pub fn strip_ansi(text: &str) -> String {
 ///
 /// # Examples
 /// ```no_run
-/// use rtk::utils::execute_command;
+/// use contextzip::utils::execute_command;
 /// let (stdout, stderr, code) = execute_command("echo", &["test"]).unwrap();
 /// assert_eq!(code, 0);
 /// ```
@@ -91,7 +91,7 @@ pub fn execute_command(cmd: &str, args: &[&str]) -> Result<(String, String, i32)
 ///
 /// # Examples
 /// ```
-/// use rtk::utils::format_tokens;
+/// use contextzip::utils::format_tokens;
 /// assert_eq!(format_tokens(1_234_567), "1.2M");
 /// assert_eq!(format_tokens(59_234), "59.2K");
 /// assert_eq!(format_tokens(694), "694");
@@ -116,7 +116,7 @@ pub fn format_tokens(n: usize) -> String {
 ///
 /// # Examples
 /// ```
-/// use rtk::utils::format_usd;
+/// use contextzip::utils::format_usd;
 /// assert_eq!(format_usd(1234.567), "$1234.57");
 /// assert_eq!(format_usd(12.345), "$12.35");
 /// assert_eq!(format_usd(0.123), "$0.12");
@@ -143,7 +143,7 @@ pub fn format_usd(amount: f64) -> String {
 ///
 /// # Examples
 /// ```
-/// use rtk::utils::format_cpt;
+/// use contextzip::utils::format_cpt;
 /// assert_eq!(format_cpt(0.000003), "$3.00/MTok");
 /// assert_eq!(format_cpt(0.0000038), "$3.80/MTok");
 /// assert_eq!(format_cpt(0.00000386), "$3.86/MTok");
@@ -160,7 +160,7 @@ pub fn format_cpt(cpt: f64) -> String {
 ///
 /// # Examples
 /// ```
-/// use rtk::utils::join_with_overflow;
+/// use contextzip::utils::join_with_overflow;
 /// let items = vec!["a".to_string(), "b".to_string()];
 /// assert_eq!(join_with_overflow(&items, 5, 3, "items"), "a\nb\n... +2 more items");
 /// assert_eq!(join_with_overflow(&items, 2, 3, "items"), "a\nb");
@@ -177,7 +177,7 @@ pub fn join_with_overflow(items: &[String], total: usize, max: usize, label: &st
 ///
 /// # Examples
 /// ```
-/// use rtk::utils::truncate_iso_date;
+/// use contextzip::utils::truncate_iso_date;
 /// assert_eq!(truncate_iso_date("2024-01-15T10:30:00Z"), "2024-01-15");
 /// assert_eq!(truncate_iso_date("2024-01-15"), "2024-01-15");
 /// assert_eq!(truncate_iso_date("short"), "short");
@@ -195,7 +195,7 @@ pub fn truncate_iso_date(date: &str) -> &str {
 ///
 /// # Examples
 /// ```
-/// use rtk::utils::ok_confirmation;
+/// use contextzip::utils::ok_confirmation;
 /// assert_eq!(ok_confirmation("merged", "#42"), "ok merged #42");
 /// assert_eq!(ok_confirmation("created", "PR #5 https://..."), "ok created PR #5 https://...");
 /// ```
@@ -212,7 +212,7 @@ pub fn ok_confirmation(action: &str, detail: &str) -> String {
 ///
 /// # Examples
 /// ```no_run
-/// use rtk::utils::detect_package_manager;
+/// use contextzip::utils::detect_package_manager;
 /// let pm = detect_package_manager();
 /// // Returns "pnpm" if pnpm-lock.yaml exists, "yarn" if yarn.lock, else "npm"
 /// ```
@@ -457,7 +457,7 @@ mod tests {
 
     #[test]
     fn test_detect_package_manager_default() {
-        // In the test environment (rtk repo), there's no JS lockfile
+        // In the test environment (contextzip repo), there's no JS lockfile
         // so it should default to "npm"
         let pm = detect_package_manager();
         assert!(["pnpm", "yarn", "npm"].contains(&pm));

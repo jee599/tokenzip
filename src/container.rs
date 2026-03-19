@@ -50,17 +50,17 @@ fn docker_ps(_verbose: u8) -> Result<()> {
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let mut rtk = String::new();
+    let mut compressed = String::new();
 
     if stdout.trim().is_empty() {
-        rtk.push_str("[docker] 0 containers");
-        println!("{}", rtk);
-        timer.track("docker ps", "contextzip docker ps", &raw, &rtk);
+        compressed.push_str("[docker] 0 containers");
+        println!("{}", compressed);
+        timer.track("docker ps", "contextzip docker ps", &raw, &compressed);
         return Ok(());
     }
 
     let count = stdout.lines().count();
-    rtk.push_str(&format!("[docker] {} containers:\n", count));
+    compressed.push_str(&format!("[docker] {} containers:\n", count));
 
     for line in stdout.lines().take(15) {
         let parts: Vec<&str> = line.split('\t').collect();
@@ -75,9 +75,9 @@ fn docker_ps(_verbose: u8) -> Result<()> {
                 .unwrap_or("");
             let ports = compact_ports(parts.get(4).unwrap_or(&""));
             if ports == "-" {
-                rtk.push_str(&format!("  {} {} ({})\n", id, name, short_image));
+                compressed.push_str(&format!("  {} {} ({})\n", id, name, short_image));
             } else {
-                rtk.push_str(&format!(
+                compressed.push_str(&format!(
                     "  {} {} ({}) [{}]\n",
                     id, name, short_image, ports
                 ));
@@ -85,11 +85,11 @@ fn docker_ps(_verbose: u8) -> Result<()> {
         }
     }
     if count > 15 {
-        rtk.push_str(&format!("  ... +{} more", count - 15));
+        compressed.push_str(&format!("  ... +{} more", count - 15));
     }
 
-    print!("{}", rtk);
-    timer.track("docker ps", "contextzip docker ps", &raw, &rtk);
+    print!("{}", compressed);
+    timer.track("docker ps", "contextzip docker ps", &raw, &compressed);
     Ok(())
 }
 
@@ -116,12 +116,12 @@ fn docker_images(_verbose: u8) -> Result<()> {
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let lines: Vec<&str> = stdout.lines().collect();
-    let mut rtk = String::new();
+    let mut compressed = String::new();
 
     if lines.is_empty() {
-        rtk.push_str("[docker] 0 images");
-        println!("{}", rtk);
-        timer.track("docker images", "contextzip docker images", &raw, &rtk);
+        compressed.push_str("[docker] 0 images");
+        println!("{}", compressed);
+        timer.track("docker images", "contextzip docker images", &raw, &compressed);
         return Ok(());
     }
 
@@ -146,7 +146,7 @@ fn docker_images(_verbose: u8) -> Result<()> {
     } else {
         format!("{:.0}MB", total_size_mb)
     };
-    rtk.push_str(&format!(
+    compressed.push_str(&format!(
         "[docker] {} images ({})\n",
         lines.len(),
         total_display
@@ -162,15 +162,15 @@ fn docker_images(_verbose: u8) -> Result<()> {
             } else {
                 image.to_string()
             };
-            rtk.push_str(&format!("  {} [{}]\n", short, size));
+            compressed.push_str(&format!("  {} [{}]\n", short, size));
         }
     }
     if lines.len() > 15 {
-        rtk.push_str(&format!("  ... +{} more", lines.len() - 15));
+        compressed.push_str(&format!("  ... +{} more", lines.len() - 15));
     }
 
-    print!("{}", rtk);
-    timer.track("docker images", "contextzip docker images", &raw, &rtk);
+    print!("{}", compressed);
+    timer.track("docker images", "contextzip docker images", &raw, &compressed);
     Ok(())
 }
 
@@ -179,7 +179,7 @@ fn docker_logs(args: &[String], _verbose: u8) -> Result<()> {
 
     let container = args.first().map(|s| s.as_str()).unwrap_or("");
     if container.is_empty() {
-        println!("Usage: rtk docker logs <container>");
+        println!("Usage: contextzip docker logs <container>");
         return Ok(());
     }
 
@@ -206,13 +206,13 @@ fn docker_logs(args: &[String], _verbose: u8) -> Result<()> {
     }
 
     let analyzed = crate::log_cmd::run_stdin_str(&raw);
-    let rtk = format!("[docker] Logs for {}:\n{}", container, analyzed);
-    println!("{}", rtk);
+    let compressed = format!("[docker] Logs for {}:\n{}", container, analyzed);
+    println!("{}", compressed);
     timer.track(
         &format!("docker logs {}", container),
         "contextzip docker logs",
         &raw,
-        &rtk,
+        &compressed,
     );
     Ok(())
 }
@@ -228,7 +228,7 @@ fn kubectl_pods(args: &[String], _verbose: u8) -> Result<()> {
 
     let output = cmd.output().context("Failed to run kubectl get pods")?;
     let raw = String::from_utf8_lossy(&output.stdout).to_string();
-    let mut rtk = String::new();
+    let mut compressed = String::new();
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -242,17 +242,17 @@ fn kubectl_pods(args: &[String], _verbose: u8) -> Result<()> {
     let json: serde_json::Value = match serde_json::from_str(&raw) {
         Ok(v) => v,
         Err(_) => {
-            rtk.push_str("No pods found");
-            println!("{}", rtk);
-            timer.track("kubectl get pods", "contextzip kubectl pods", &raw, &rtk);
+            compressed.push_str("No pods found");
+            println!("{}", compressed);
+            timer.track("kubectl get pods", "contextzip kubectl pods", &raw, &compressed);
             return Ok(());
         }
     };
 
     let Some(pods) = json["items"].as_array().filter(|a| !a.is_empty()) else {
-        rtk.push_str("No pods found");
-        println!("{}", rtk);
-        timer.track("kubectl get pods", "contextzip kubectl pods", &raw, &rtk);
+        compressed.push_str("No pods found");
+        println!("{}", compressed);
+        timer.track("kubectl get pods", "contextzip kubectl pods", &raw, &compressed);
         return Ok(());
     };
     let (mut running, mut pending, mut failed, mut restarts_total) = (0, 0, 0, 0i64);
@@ -308,19 +308,19 @@ fn kubectl_pods(args: &[String], _verbose: u8) -> Result<()> {
         parts.push(format!("{} restarts", restarts_total));
     }
 
-    rtk.push_str(&format!("{} pods: {}\n", pods.len(), parts.join(", ")));
+    compressed.push_str(&format!("{} pods: {}\n", pods.len(), parts.join(", ")));
     if !issues.is_empty() {
-        rtk.push_str("[warn] Issues:\n");
+        compressed.push_str("[warn] Issues:\n");
         for issue in issues.iter().take(10) {
-            rtk.push_str(&format!("  {}\n", issue));
+            compressed.push_str(&format!("  {}\n", issue));
         }
         if issues.len() > 10 {
-            rtk.push_str(&format!("  ... +{} more", issues.len() - 10));
+            compressed.push_str(&format!("  ... +{} more", issues.len() - 10));
         }
     }
 
-    print!("{}", rtk);
-    timer.track("kubectl get pods", "contextzip kubectl pods", &raw, &rtk);
+    print!("{}", compressed);
+    timer.track("kubectl get pods", "contextzip kubectl pods", &raw, &compressed);
     Ok(())
 }
 
@@ -335,7 +335,7 @@ fn kubectl_services(args: &[String], _verbose: u8) -> Result<()> {
 
     let output = cmd.output().context("Failed to run kubectl get services")?;
     let raw = String::from_utf8_lossy(&output.stdout).to_string();
-    let mut rtk = String::new();
+    let mut compressed = String::new();
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -349,20 +349,20 @@ fn kubectl_services(args: &[String], _verbose: u8) -> Result<()> {
     let json: serde_json::Value = match serde_json::from_str(&raw) {
         Ok(v) => v,
         Err(_) => {
-            rtk.push_str("No services found");
-            println!("{}", rtk);
-            timer.track("kubectl get svc", "contextzip kubectl svc", &raw, &rtk);
+            compressed.push_str("No services found");
+            println!("{}", compressed);
+            timer.track("kubectl get svc", "contextzip kubectl svc", &raw, &compressed);
             return Ok(());
         }
     };
 
     let Some(services) = json["items"].as_array().filter(|a| !a.is_empty()) else {
-        rtk.push_str("No services found");
-        println!("{}", rtk);
-        timer.track("kubectl get svc", "contextzip kubectl svc", &raw, &rtk);
+        compressed.push_str("No services found");
+        println!("{}", compressed);
+        timer.track("kubectl get svc", "contextzip kubectl svc", &raw, &compressed);
         return Ok(());
     };
-    rtk.push_str(&format!("{} services:\n", services.len()));
+    compressed.push_str(&format!("{} services:\n", services.len()));
 
     for svc in services.iter().take(15) {
         let ns = svc["metadata"]["namespace"].as_str().unwrap_or("-");
@@ -387,7 +387,7 @@ fn kubectl_services(args: &[String], _verbose: u8) -> Result<()> {
                     .collect()
             })
             .unwrap_or_default();
-        rtk.push_str(&format!(
+        compressed.push_str(&format!(
             "  {}/{} {} [{}]\n",
             ns,
             name,
@@ -396,11 +396,11 @@ fn kubectl_services(args: &[String], _verbose: u8) -> Result<()> {
         ));
     }
     if services.len() > 15 {
-        rtk.push_str(&format!("  ... +{} more", services.len() - 15));
+        compressed.push_str(&format!("  ... +{} more", services.len() - 15));
     }
 
-    print!("{}", rtk);
-    timer.track("kubectl get svc", "contextzip kubectl svc", &raw, &rtk);
+    print!("{}", compressed);
+    timer.track("kubectl get svc", "contextzip kubectl svc", &raw, &compressed);
     Ok(())
 }
 
@@ -409,7 +409,7 @@ fn kubectl_logs(args: &[String], _verbose: u8) -> Result<()> {
 
     let pod = args.first().map(|s| s.as_str()).unwrap_or("");
     if pod.is_empty() {
-        println!("Usage: rtk kubectl logs <pod>");
+        println!("Usage: contextzip kubectl logs <pod>");
         return Ok(());
     }
 
@@ -437,13 +437,13 @@ fn kubectl_logs(args: &[String], _verbose: u8) -> Result<()> {
     }
 
     let analyzed = crate::log_cmd::run_stdin_str(&raw);
-    let rtk = format!("Logs for {}:\n{}", pod, analyzed);
-    println!("{}", rtk);
+    let compressed = format!("Logs for {}:\n{}", pod, analyzed);
+    println!("{}", compressed);
     timer.track(
         &format!("kubectl logs {}", pod),
         "contextzip kubectl logs",
         &raw,
-        &rtk,
+        &compressed,
     );
     Ok(())
 }
@@ -648,13 +648,13 @@ pub fn run_compose_ps(verbose: u8) -> Result<()> {
         eprintln!("raw docker compose ps:\n{}", raw);
     }
 
-    let rtk = format_compose_ps(&structured);
-    println!("{}", rtk);
+    let compressed = format_compose_ps(&structured);
+    println!("{}", compressed);
     timer.track(
         "docker compose ps",
         "contextzip docker compose ps",
         &raw,
-        &rtk,
+        &compressed,
     );
     Ok(())
 }
@@ -685,14 +685,14 @@ pub fn run_compose_logs(service: Option<&str>, verbose: u8) -> Result<()> {
         eprintln!("raw docker compose logs:\n{}", raw);
     }
 
-    let rtk = format_compose_logs(&raw);
-    println!("{}", rtk);
+    let compressed = format_compose_logs(&raw);
+    println!("{}", compressed);
     let svc_label = service.unwrap_or("all");
     timer.track(
         &format!("docker compose logs {}", svc_label),
         "contextzip docker compose logs",
         &raw,
-        &rtk,
+        &compressed,
     );
     Ok(())
 }
@@ -723,14 +723,14 @@ pub fn run_compose_build(service: Option<&str>, verbose: u8) -> Result<()> {
         eprintln!("raw docker compose build:\n{}", raw);
     }
 
-    let rtk = format_compose_build(&raw);
-    println!("{}", rtk);
+    let compressed = format_compose_build(&raw);
+    println!("{}", compressed);
     let svc_label = service.unwrap_or("all");
     timer.track(
         &format!("docker compose build {}", svc_label),
         "contextzip docker compose build",
         &raw,
-        &rtk,
+        &compressed,
     );
     Ok(())
 }

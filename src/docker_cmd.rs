@@ -68,7 +68,6 @@ pub fn compress_docker_log(input: &str) -> String {
                 total,
                 instruction,
                 cached: false,
-                _failed: false,
                 error_lines: Vec::new(),
             });
         } else if let Some(ref mut step) = current_step {
@@ -120,7 +119,6 @@ struct StepInfo {
     total: usize,
     instruction: String,
     cached: bool,
-    _failed: bool,
     error_lines: Vec<String>,
 }
 

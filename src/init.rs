@@ -16,7 +16,7 @@ const OPENCODE_PLUGIN: &str = include_str!("../hooks/opencode-contextzip.ts");
 const CONTEXTZIP_SLIM: &str = include_str!("../hooks/contextzip-awareness.md");
 
 /// Template written by `contextzip init` when no filters.toml exists yet.
-const FILTERS_TEMPLATE: &str = r#"# Project-local RTK filters — commit this file with your repo.
+const FILTERS_TEMPLATE: &str = r#"# Project-local ContextZip filters — commit this file with your repo.
 # Filters here override user-global and built-in filters.
 # Docs: https://github.com/rtk-ai/rtk#custom-filters
 schema_version = 1
@@ -32,7 +32,7 @@ schema_version = 1
 "#;
 
 /// Template for user-global filters (~/.config/contextzip/filters.toml).
-const FILTERS_GLOBAL_TEMPLATE: &str = r#"# User-global RTK filters — apply to all your projects.
+const FILTERS_GLOBAL_TEMPLATE: &str = r#"# User-global ContextZip filters — apply to all your projects.
 # Project-local .contextzip/filters.toml takes precedence over these.
 # Docs: https://github.com/rtk-ai/rtk#custom-filters
 schema_version = 1

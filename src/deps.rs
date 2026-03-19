@@ -1,8 +1,17 @@
 use crate::tracking;
 use anyhow::Result;
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::fs;
 use std::path::Path;
+
+lazy_static! {
+    static ref CARGO_DEP_RE: Regex =
+        Regex::new(r#"^([a-zA-Z0-9_-]+)\s*=\s*(?:"([^"]+)"|.*version\s*=\s*"([^"]+)")"#).unwrap();
+    static ref CARGO_SECTION_RE: Regex = Regex::new(r"^\[([^\]]+)\]").unwrap();
+    static ref REQUIREMENTS_DEP_RE: Regex =
+        Regex::new(r"^([a-zA-Z0-9_-]+)([=<>!~]+.*)?$").unwrap();
+}
 
 /// Summarize project dependencies
 pub fn run(path: &Path, verbose: u8) -> Result<()> {
@@ -19,75 +28,72 @@ pub fn run(path: &Path, verbose: u8) -> Result<()> {
     }
 
     let mut found = false;
-    let mut rtk = String::new();
+    let mut output = String::new();
     let mut raw = String::new();
 
     let cargo_path = dir.join("Cargo.toml");
     if cargo_path.exists() {
         found = true;
         raw.push_str(&fs::read_to_string(&cargo_path).unwrap_or_default());
-        rtk.push_str("Rust (Cargo.toml):\n");
-        rtk.push_str(&summarize_cargo_str(&cargo_path)?);
+        output.push_str("Rust (Cargo.toml):\n");
+        output.push_str(&summarize_cargo_str(&cargo_path)?);
     }
 
     let package_path = dir.join("package.json");
     if package_path.exists() {
         found = true;
         raw.push_str(&fs::read_to_string(&package_path).unwrap_or_default());
-        rtk.push_str("Node.js (package.json):\n");
-        rtk.push_str(&summarize_package_json_str(&package_path)?);
+        output.push_str("Node.js (package.json):\n");
+        output.push_str(&summarize_package_json_str(&package_path)?);
     }
 
     let requirements_path = dir.join("requirements.txt");
     if requirements_path.exists() {
         found = true;
         raw.push_str(&fs::read_to_string(&requirements_path).unwrap_or_default());
-        rtk.push_str("Python (requirements.txt):\n");
-        rtk.push_str(&summarize_requirements_str(&requirements_path)?);
+        output.push_str("Python (requirements.txt):\n");
+        output.push_str(&summarize_requirements_str(&requirements_path)?);
     }
 
     let pyproject_path = dir.join("pyproject.toml");
     if pyproject_path.exists() {
         found = true;
         raw.push_str(&fs::read_to_string(&pyproject_path).unwrap_or_default());
-        rtk.push_str("Python (pyproject.toml):\n");
-        rtk.push_str(&summarize_pyproject_str(&pyproject_path)?);
+        output.push_str("Python (pyproject.toml):\n");
+        output.push_str(&summarize_pyproject_str(&pyproject_path)?);
     }
 
     let gomod_path = dir.join("go.mod");
     if gomod_path.exists() {
         found = true;
         raw.push_str(&fs::read_to_string(&gomod_path).unwrap_or_default());
-        rtk.push_str("Go (go.mod):\n");
-        rtk.push_str(&summarize_gomod_str(&gomod_path)?);
+        output.push_str("Go (go.mod):\n");
+        output.push_str(&summarize_gomod_str(&gomod_path)?);
     }
 
     if !found {
-        rtk.push_str(&format!("No dependency files found in {}", dir.display()));
+        output.push_str(&format!("No dependency files found in {}", dir.display()));
     }
 
-    print!("{}", rtk);
-    timer.track("cat */deps", "contextzip deps", &raw, &rtk);
+    print!("{}", output);
+    timer.track("cat */deps", "contextzip deps", &raw, &output);
     Ok(())
 }
 
 fn summarize_cargo_str(path: &Path) -> Result<String> {
     let content = fs::read_to_string(path)?;
-    let dep_re =
-        Regex::new(r#"^([a-zA-Z0-9_-]+)\s*=\s*(?:"([^"]+)"|.*version\s*=\s*"([^"]+)")"#).unwrap();
-    let section_re = Regex::new(r"^\[([^\]]+)\]").unwrap();
     let mut current_section = String::new();
     let mut deps = Vec::new();
     let mut dev_deps = Vec::new();
     let mut out = String::new();
 
     for line in content.lines() {
-        if let Some(caps) = section_re.captures(line) {
+        if let Some(caps) = CARGO_SECTION_RE.captures(line) {
             current_section = caps
                 .get(1)
                 .map(|m| m.as_str().to_string())
                 .unwrap_or_default();
-        } else if let Some(caps) = dep_re.captures(line) {
+        } else if let Some(caps) = CARGO_DEP_RE.captures(line) {
             let name = caps.get(1).map(|m| m.as_str()).unwrap_or("");
             let version = caps
                 .get(2)
@@ -162,7 +168,6 @@ fn summarize_package_json_str(path: &Path) -> Result<String> {
 
 fn summarize_requirements_str(path: &Path) -> Result<String> {
     let content = fs::read_to_string(path)?;
-    let dep_re = Regex::new(r"^([a-zA-Z0-9_-]+)([=<>!~]+.*)?$").unwrap();
     let mut deps = Vec::new();
     let mut out = String::new();
 
@@ -171,7 +176,7 @@ fn summarize_requirements_str(path: &Path) -> Result<String> {
         if line.is_empty() || line.starts_with('#') {
             continue;
         }
-        if let Some(caps) = dep_re.captures(line) {
+        if let Some(caps) = REQUIREMENTS_DEP_RE.captures(line) {
             let name = caps.get(1).map(|m| m.as_str()).unwrap_or("");
             let version = caps.get(2).map(|m| m.as_str()).unwrap_or("");
             deps.push(format!("{}{}", name, version));
