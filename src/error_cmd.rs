@@ -23,14 +23,20 @@ lazy_static! {
     // Python
     static ref PYTHON_FRAMEWORK_RE: Regex = Regex::new(r"site-packages/|/usr/lib/python|importlib|_bootstrap").unwrap();
     // Java
-    static ref JAVA_FRAMEWORK_RE: Regex = Regex::new(r"java\.lang\.reflect\.|sun\.reflect\.|org\.springframework\.").unwrap();
+    static ref JAVA_FRAMEWORK_RE: Regex = Regex::new(r"java\.lang\.reflect\.|sun\.reflect\.|org\.springframework\.|java\.util\.concurrent\.|jdk\.internal\.|java\.net\.|sun\.net\.|org\.apache\.").unwrap();
     // Go
     static ref GO_FRAMEWORK_RE: Regex = Regex::new(r"^\s*(runtime/|runtime/debug\.|net/http\.)").unwrap();
     static ref GO_FRAME_RE: Regex = Regex::new(r"^\s+.+\.go:\d+").unwrap();
     static ref GO_FUNC_RE: Regex = Regex::new(r"^[\w./]+\(").unwrap();
     // Rust
-    static ref RUST_FRAMEWORK_RE: Regex = Regex::new(r"std::rt::|tokio::runtime::|std::panicking::").unwrap();
-    static ref RUST_BACKTRACE_FRAME_RE: Regex = Regex::new(r"^\s+\d+:").unwrap();
+    static ref RUST_FRAMEWORK_RE: Regex = Regex::new(
+        r"std::rt::|tokio::runtime::|std::panicking::|std::sys::|core::panicking::|core::ops::function::|__rust_begin_short_backtrace|__rust_end_short_backtrace"
+    ).unwrap();
+    static ref RUST_RUSTC_PATH_RE: Regex = Regex::new(r"/rustc/").unwrap();
+    static ref RUST_BACKTRACE_FRAME_RE: Regex = Regex::new(r"^\s+\d+:\s+").unwrap();
+    static ref RUST_BACKTRACE_AT_RE: Regex = Regex::new(r"^\s+at\s+(.+)").unwrap();
+    static ref RUST_FRAME_EXTRACT_RE: Regex = Regex::new(r"^\s+\d+:\s+(.+)").unwrap();
+    static ref RUST_LOCATION_RE: Regex = Regex::new(r"^\s+at\s+(.+):(\d+):\d+").unwrap();
 
     // Extract function name and location from various frame formats
     static ref NODE_EXTRACT_RE: Regex = Regex::new(r"^\s+at\s+(?:(.+?)\s+\()?(.+):(\d+):\d+\)?").unwrap();
@@ -236,24 +242,83 @@ fn compress_python(input: &str) -> String {
 }
 
 fn compress_rust(input: &str) -> String {
+    let lines: Vec<&str> = input.lines().collect();
     let mut result = Vec::new();
     let mut hidden_count = 0;
+    let mut i = 0;
 
-    for line in input.lines() {
+    while i < lines.len() {
+        let line = lines[i];
+
+        // Match numbered backtrace frame line (e.g. "   3: myapp::handler::process")
         if RUST_BACKTRACE_FRAME_RE.is_match(line) {
-            if RUST_FRAMEWORK_RE.is_match(line) {
+            // Extract function name from this line
+            let func_name = RUST_FRAME_EXTRACT_RE
+                .captures(line)
+                .and_then(|c| c.get(1))
+                .map(|m| m.as_str().trim())
+                .unwrap_or("");
+
+            // Check if next line is an "at" continuation line
+            let at_line = if i + 1 < lines.len() && RUST_BACKTRACE_AT_RE.is_match(lines[i + 1]) {
+                Some(lines[i + 1])
+            } else {
+                None
+            };
+
+            // Determine if this is a framework frame
+            let is_framework = RUST_FRAMEWORK_RE.is_match(line)
+                || at_line.map_or(false, |l| RUST_RUSTC_PATH_RE.is_match(l))
+                || at_line.map_or(false, |l| RUST_FRAMEWORK_RE.is_match(l));
+
+            if is_framework {
                 hidden_count += 1;
-                continue;
+                // Skip the "at" continuation line too
+                if at_line.is_some() {
+                    i += 1;
+                }
+            } else {
+                // User code frame -- format nicely
+                let location = at_line.and_then(|l| {
+                    RUST_LOCATION_RE.captures(l).map(|c| {
+                        let file = c.get(1).map(|m| m.as_str()).unwrap_or("?");
+                        let line_num = c.get(2).map(|m| m.as_str()).unwrap_or("?");
+                        format!("{}:{}", file, line_num)
+                    })
+                });
+
+                if let Some(loc) = location {
+                    result.push(format!(
+                        "  \u{2192} {:<16} {}()",
+                        loc, func_name
+                    ));
+                } else {
+                    result.push(format!("  \u{2192} {}", func_name));
+                }
+
+                // Skip the "at" continuation line
+                if at_line.is_some() {
+                    i += 1;
+                }
             }
-            // User code frame
-            result.push(format!("  → {}", line.trim()));
+        } else if RUST_BACKTRACE_AT_RE.is_match(line) {
+            // Orphan "at" line (shouldn't happen normally, but handle gracefully)
+            // If it's a rustc internal path, hide it
+            if RUST_RUSTC_PATH_RE.is_match(line) {
+                hidden_count += 1;
+            } else {
+                result.push(line.to_string());
+            }
         } else {
+            // Non-frame line (panic message, "stack backtrace:", etc.)
             if hidden_count > 0 {
                 result.push(format!("  (+ {} framework frames hidden)", hidden_count));
                 hidden_count = 0;
             }
             result.push(line.to_string());
         }
+
+        i += 1;
     }
 
     if hidden_count > 0 {
@@ -307,29 +372,34 @@ fn compress_java(input: &str) -> String {
                 continue;
             }
 
-            // User code frame
-            if let Some(caps) = JAVA_EXTRACT_RE.captures(line) {
-                let method = caps.get(1).map(|m| m.as_str()).unwrap_or("?");
-                let file = caps.get(2).map(|m| m.as_str()).unwrap_or("?");
-                let line_num = caps.get(3).map(|m| m.as_str()).unwrap_or("?");
-                result.push(format!("  → {}:{}         {}()", file, line_num, method));
-            } else {
-                result.push(format!("  → {}", line.trim()));
-            }
+            // User code frame — keep original format (no reformatting to avoid inflation)
+            flush_java_hidden(&mut result, &mut hidden_count);
+            result.push(line.to_string());
         } else {
-            if hidden_count > 0 {
-                result.push(format!("  (+ {} framework frames hidden)", hidden_count));
-                hidden_count = 0;
-            }
+            flush_java_hidden(&mut result, &mut hidden_count);
             result.push(line.to_string());
         }
     }
 
-    if hidden_count > 0 {
-        result.push(format!("  (+ {} framework frames hidden)", hidden_count));
+    flush_java_hidden(&mut result, &mut hidden_count);
+
+    let compressed = result.join("\n");
+
+    // Guard: if compressed output is not shorter, return input unchanged
+    if compressed.len() >= input.len() {
+        return input.to_string();
     }
 
-    result.join("\n")
+    compressed
+}
+
+/// Flush hidden frame count for Java compression.
+/// Only emits a summary line when 2+ frames were hidden (avoids overhead for 0-1).
+fn flush_java_hidden(result: &mut Vec<String>, hidden_count: &mut usize) {
+    if *hidden_count >= 2 {
+        result.push(format!("\t(+ {} framework frames hidden)", *hidden_count));
+    }
+    *hidden_count = 0;
 }
 
 #[cfg(test)]
@@ -412,7 +482,66 @@ stack backtrace:
         // Must remove framework frames
         assert!(!result.contains("std::panicking::begin_panic_handler"));
         assert!(!result.contains("std::rt::lang_start"));
+        assert!(!result.contains("core::panicking::panic_fmt"));
+        assert!(!result.contains("core::panicking::panic_bounds_check"));
         // Must show hidden count
+        assert!(result.contains("framework frames hidden"));
+    }
+
+    #[test]
+    fn test_rust_panic_multiline_frames() {
+        let input = "thread 'main' panicked at 'index out of bounds', src/handler.rs:42:5\n\
+stack backtrace:\n\
+   0: std::panicking::begin_panic\n\
+             at /rustc/abc123/library/std/src/panicking.rs:616:12\n\
+   1: std::rt::lang_start_internal\n\
+             at /rustc/abc123/library/std/src/rt.rs:148:20\n\
+   2: tokio::runtime::enter\n\
+             at /home/user/.cargo/registry/src/tokio-1.0/runtime/enter.rs:55:8\n\
+   3: myapp::handler::process\n\
+             at ./src/handler.rs:42:5\n\
+   4: myapp::main\n\
+             at ./src/main.rs:15:3\n\
+   5: std::rt::lang_start\n\
+             at /rustc/abc123/library/std/src/rt.rs:166:17";
+
+        let result = compress_errors(input);
+
+        eprintln!("=== MULTILINE RESULT ===\n{}\n=== END ===", result);
+
+        // Must preserve panic message
+        assert!(result.contains("panicked at"));
+        // Must keep user frames with file info
+        assert!(result.contains("src/handler.rs:42"));
+        assert!(result.contains("myapp::handler::process"));
+        assert!(result.contains("src/main.rs:15"));
+        assert!(result.contains("myapp::main"));
+        // Must remove framework frames
+        assert!(!result.contains("std::panicking::begin_panic"));
+        assert!(!result.contains("std::rt::lang_start_internal"));
+        assert!(!result.contains("std::rt::lang_start"));
+        assert!(!result.contains("tokio::runtime::enter"));
+        // Must not contain /rustc/ paths
+        assert!(!result.contains("/rustc/"));
+        // Must show hidden count
+        assert!(result.contains("framework frames hidden"));
+    }
+
+    #[test]
+    fn test_rust_panic_with_short_backtrace_markers() {
+        let input = "thread 'main' panicked at 'error', src/main.rs:10:5\n\
+stack backtrace:\n\
+   0: __rust_begin_short_backtrace\n\
+   1: myapp::run\n\
+   2: __rust_end_short_backtrace\n\
+   3: std::sys::backtrace::__rust_begin_short_backtrace";
+
+        let result = compress_errors(input);
+
+        assert!(result.contains("myapp::run"));
+        assert!(!result.contains("__rust_begin_short_backtrace"));
+        assert!(!result.contains("__rust_end_short_backtrace"));
+        assert!(!result.contains("std::sys::"));
         assert!(result.contains("framework frames hidden"));
     }
 
@@ -511,6 +640,75 @@ Request failed"#;
         // Must remove framework frames
         assert!(!result.contains("node_modules"));
         assert!(!result.contains("node:internal"));
+    }
+
+    #[test]
+    fn test_java_no_negative_savings() {
+        // Small Java stacktrace with only 1 framework frame
+        let input = r#"java.lang.NullPointerException
+	at com.myapp.Main.run(Main.java:10)
+	at java.lang.reflect.Method.invoke(Method.java:566)"#;
+
+        let result = compress_errors(input);
+
+        // Compressed output must never be longer than input
+        assert!(
+            result.len() <= input.len(),
+            "Compressed output must not be longer than input. Input: {} bytes, output: {} bytes",
+            input.len(),
+            result.len()
+        );
+    }
+
+    #[test]
+    fn test_java_extended_framework_patterns() {
+        let input = r#"java.io.IOException: Connection refused
+	at com.myapp.service.ApiClient.call(ApiClient.java:55)
+	at java.lang.reflect.Method.invoke(Method.java:566)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:897)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.net.SocketInputStream.read(SocketInputStream.java:182)
+	at sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1580)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:342)"#;
+
+        let result = compress_errors(input);
+
+        // Must keep user code
+        assert!(result.contains("ApiClient.java:55"));
+        // Must remove all framework frames
+        assert!(!result.contains("java.lang.reflect"));
+        assert!(!result.contains("sun.reflect"));
+        assert!(!result.contains("org.springframework"));
+        assert!(!result.contains("java.util.concurrent"));
+        assert!(!result.contains("jdk.internal"));
+        assert!(!result.contains("java.net"));
+        assert!(!result.contains("sun.net"));
+        assert!(!result.contains("org.apache"));
+        // Must show hidden count (8 frames hidden)
+        assert!(result.contains("framework frames hidden"));
+        // Must be shorter than input
+        assert!(result.len() < input.len());
+    }
+
+    #[test]
+    fn test_java_few_hidden_no_summary_line() {
+        // When only 1 framework frame is hidden, don't emit summary line
+        let input = r#"java.lang.NullPointerException
+	at com.myapp.Main.run(Main.java:10)
+	at com.myapp.Main.main(Main.java:5)
+	at java.lang.reflect.Method.invoke(Method.java:566)"#;
+
+        let result = compress_errors(input);
+
+        // 1 frame hidden, below threshold — no summary line
+        assert!(!result.contains("framework frames hidden"));
+        // User frames preserved
+        assert!(result.contains("Main.java:10"));
+        assert!(result.contains("Main.java:5"));
+        // Framework frame removed
+        assert!(!result.contains("java.lang.reflect"));
     }
 
     #[test]
