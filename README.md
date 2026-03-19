@@ -41,15 +41,22 @@
 npx contextzip
 ```
 
-<p align="center">Restart Claude Code. Every command is now compressed. Zero config.</p>
+<p align="center">Restart Claude Code. Every command is now compressed. Zero config.<br>
+<b>macOS · Linux · Windows</b></p>
 
 <details>
-<summary>curl / brew / cargo install</summary>
+<summary>Other install methods</summary>
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jee599/contextzip/main/install.sh | bash   # curl
-brew install jee599/tap/contextzip          # Homebrew
-cargo install --git https://github.com/jee599/contextzip   # Cargo
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/jee599/contextzip/main/install.sh | bash
+brew install jee599/tap/contextzip
+
+# Windows (PowerShell)
+npx contextzip
+
+# Rust developers
+cargo install --git https://github.com/jee599/contextzip
 ```
 
 </details>
