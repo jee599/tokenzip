@@ -1,22 +1,26 @@
-<p align="center">
-  <h1 align="center">⚡ ContextZip</h1>
-</p>
+<h1 align="center">
+  <br>
+  ⚡ ContextZip
+  <br>
+</h1>
+
+<h3 align="center">
+  Claudeの出力は不要なノイズだらけ。<br>
+  ContextZipが60-90%圧縮する。<code>npx contextzip</code> → 5秒（初回はバイナリをダウンロード）。
+</h3>
 
 <p align="center">
-  <strong>Claude Codeのコンテキストを60-90%圧縮。RTKにない6つのノイズフィルター。</strong>
-</p>
-
-<p align="center">
-  <a href="https://github.com/jee599/contextzip/releases"><img src="https://img.shields.io/github/v/release/jee599/contextzip?style=flat-square" alt="Release" /></a>
+  <a href="https://github.com/jee599/contextzip/releases"><img src="https://img.shields.io/github/v/release/jee599/contextzip?style=flat-square&color=blue" alt="Release" /></a>
   <a href="https://github.com/jee599/contextzip/actions"><img src="https://img.shields.io/github/actions/workflow/status/jee599/contextzip/ci.yml?style=flat-square" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/tests-1%2C056_passing-brightgreen?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/benchmarks-102_cases-orange?style=flat-square" alt="Benchmarks" />
   <a href="LICENSE"><img src="https://img.shields.io/github/license/jee599/contextzip?style=flat-square" alt="License" /></a>
-  <a href="https://github.com/jee599/contextzip/stargazers"><img src="https://img.shields.io/github/stars/jee599/contextzip?style=flat-square" alt="Stars" /></a>
 </p>
 
 <p align="center">
-  <a href="#-5秒セットアップ">インストール</a> •
-  <a href="#-before--after">使用例</a> •
-  <a href="#-ベンチマーク102テスト">ベンチマーク</a> •
+  <a href="#-今すぐインストール">インストール</a> •
+  <a href="#-違いを見よ">Before/After</a> •
+  <a href="#-数字が証明する">ベンチマーク</a> •
   <a href="../README.md">English</a> •
   <a href="README.ko.md">한국어</a> •
   日本語 •
@@ -25,135 +29,385 @@
 
 ---
 
-## 🔥 問題
-
-Claude Codeは`git status`、`npm install`、`cargo test`を実行し、**生の出力**をコンテキストウィンドウにそのまま流し込む。
-
-- `node_modules`のスタックトレース30行。意味があるのは3行だけ。
-- `npm warn deprecated`が150行。意味があるのは0行。
-- ANSIカラーコード、スピナー、プログレスバー。情報量ゼロ。
-
-**結果：** コンテキスト上限に早く到達する。Claudeがコードを忘れる。コストが増える。
-
-## ⚡ 解決策
-
-ContextZipはCLI出力をインターセプトしてノイズを除去する。設定不要。オーバーヘッド<10ms。
-
 ```
-Without ContextZip:          With ContextZip:
-─────────────────────        ─────────────────────
-Input: 2,000 tokens          Input: 2,000 tokens
-       ↓                            ↓
-Claude reads all 2,000       ContextZip filters
-       ↓                            ↓
-Context: 2,000 tokens        Context: 200 tokens
-                              (saved 90%)
+  30行のnode_modulesスタックトレース    →    3行
+  150行のnpm deprecatedの警告          →    3行
+  50行のDockerビルドハッシュ            →    1行
+  ANSIカラー、スピナー、プログレスバー  →    削除
 ```
 
----
-
-## 📦 5秒セットアップ
+<h3 align="center">⬇️ 1行で完了。</h3>
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jee599/contextzip/main/install.sh | bash
+npx contextzip
 ```
 
-Claude Codeを再起動。完了。
+<p align="center">Claude Codeを再起動。すべてのコマンドが自動圧縮される。設定不要。<br>
+<b>macOS · Linux · Windows</b></p>
 
 <details>
-<summary><b>その他のインストール方法</b></summary>
+<summary>他のインストール方法</summary>
 
 ```bash
-# Homebrew (macOS/Linux)
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/jee599/contextzip/main/install.sh | bash
 brew install jee599/tap/contextzip
 
-# Cargo (Rust developers)
+# Windows (PowerShell)
+npx contextzip
+
+# Rust開発者
 cargo install --git https://github.com/jee599/contextzip
 ```
 
 </details>
 
-> [!TIP]
-> 確認: `contextzip --version` → `contextzip 0.1.0 (based on rtk 0.30.1)`
-
 ---
 
-## 🚀 Quickstart
+## 👀 違いを見よ
 
-インストール後、すべてのコマンドがフック経由で自動的に圧縮される：
+### 💥 Node.jsエラー — 30行 → 3行（93%削減）
 
-```bash
-$ git status
-* main...origin/main
-M src/api/users.ts
-💾 contextzip: 200 → 40 tokens (saved 80%)
+<table>
+<tr>
+<td width="50%">
+
+**❌ Before**
+```
+TypeError: Cannot read properties
+  of undefined (reading 'id')
+    at getUserProfile (users.ts:47)
+    at processAuth (auth.ts:12)
+    at Layer.handle (node_modules/
+      express/lib/router/layer.js:95)
+    at next (node_modules/express/
+      lib/router/route.js:144)
+    at Route.dispatch (node_modules/
+      express/lib/router/route.js:114)
+    ... 25 more node_modules lines
 ```
 
-プレフィックス不要。フックが`git status` → `contextzip git status`に透過的に変換する。
+</td>
+<td width="50%">
 
----
+**✅ After**
+```
+TypeError: Cannot read properties
+  of undefined (reading 'id')
+  → users.ts:47    getUserProfile()
+  → auth.ts:12     processAuth()
+  (+ 27 framework frames hidden)
 
-## 🔬 Before / After
 
-**Node.jsエラー** — 30行 → 3行
 
-```diff
-- TypeError: Cannot read properties of undefined (reading 'id')
--     at getUserProfile (/app/src/api/users.ts:47:23)
--     at processAuth (/app/src/middleware/auth.ts:12:5)
--     at Layer.handle (/app/node_modules/express/lib/router/layer.js:95:5)
--     at next (/app/node_modules/express/lib/router/route.js:144:13)
--     ... 25 more node_modules frames
-
-+ TypeError: Cannot read properties of undefined (reading 'id')
-+   → src/api/users.ts:47         getUserProfile()
-+   → src/middleware/auth.ts:12   processAuth()
-+   (+ 27 framework frames hidden)
+💾 saved 93%
 ```
 
-**93%削減。** エラーメッセージ + 自分のコード。Expressの内部ではない。
+</td>
+</tr>
+</table>
+
+### 📦 npm install — 150行 → 3行（95%削減）
+
+<table>
+<tr>
+<td width="50%">
+
+**❌ Before**
+```
+npm warn deprecated inflight@1.0.6
+npm warn deprecated rimraf@3.0.2
+npm warn deprecated glob@7.2.3
+npm warn deprecated bcrypt@3.0.0:
+  security vulnerability CVE-2023-31484
+... 45 more deprecated warnings
+added 847 packages, audited 848
+143 packages looking for funding
+  run `npm fund` for details
+8 vulnerabilities (2 moderate, 6 high)
+  To address issues: npm audit fix
+  ... 20 more lines
+```
+
+</td>
+<td width="50%">
+
+**✅ After**
+```
+✓ 847 packages (32s)
+⚠ 8 vulnerabilities (6 high, 2 mod)
+⚠ bcrypt@3.0.0: CVE-2023-31484
+
+
+
+
+Security kept. Noise gone.
+
+💾 saved 95%
+```
+
+</td>
+</tr>
+</table>
+
+### 🐳 Dockerビルド — 50行 → 1行（96%削減）
+
+<table>
+<tr>
+<td width="50%">
+
+**❌ Before**
+```
+Step 1/12 : FROM node:20-alpine
+ ---> abc123def456
+Step 2/12 : WORKDIR /app
+ ---> Using cache
+ ---> 789ghi012jkl
+Step 3/12 : COPY package*.json ./
+ ---> Using cache
+... 8 more steps with hashes
+Removing intermediate container xyz
+Successfully built abc123final
+Successfully tagged my-app:latest
+```
+
+</td>
+<td width="50%">
+
+**✅ After**
+```
+✓ built my-app:latest (12 steps, 8 cached)
+
+
+
+
+
+セキュリティ情報は保持。残りは削除。
+
+
+💾 saved 96%
+```
+
+</td>
+</tr>
+</table>
+
+### 🐍 Python Traceback — フレームワークフレームを非表示（72%削減）
+
+<table>
+<tr>
+<td width="50%">
+
+**❌ Before**
+```
+Traceback (most recent call last):
+  File "/app/main.py", line 10,
+    in handler
+    process(data)
+  File "/usr/lib/python3.11/
+    importlib/__init__.py", line 126
+  File "/app/venv/lib/site-packages/
+    flask/app.py", line 1498
+  File "/app/venv/lib/site-packages/
+    flask/app.py", line 1476
+ValueError: invalid literal for int()
+```
+
+</td>
+<td width="50%">
+
+**✅ After**
+```
+Traceback (most recent call last):
+  → /app/main.py:10  process(data)
+  (+ 3 framework frames hidden)
+ValueError: invalid literal for int()
+
+
+
+
+💾 saved 72%
+```
+
+</td>
+</tr>
+</table>
+
+### 🦀 Rust Panic — std/tokioを除去（80%削減）
+
+<table>
+<tr>
+<td width="50%">
+
+**❌ Before**
+```
+thread 'main' panicked at
+  'index out of bounds',
+  src/handler.rs:42:5
+stack backtrace:
+   0: std::panicking::begin_panic
+   1: core::panicking::panic_fmt
+   2: myapp::handler::process
+        at ./src/handler.rs:42:5
+   3: myapp::main
+        at ./src/main.rs:15:3
+   4: std::rt::lang_start
+   5: tokio::runtime::enter
+```
+
+</td>
+<td width="50%">
+
+**✅ After**
+```
+thread 'main' panicked at
+  'index out of bounds',
+  src/handler.rs:42:5
+  (+ 2 framework frames hidden)
+  → handler.rs:42  process()
+  → main.rs:15     main()
+  (+ 2 framework frames hidden)
+
+
+💾 saved 80%
+```
+
+</td>
+</tr>
+</table>
+
+### 🔨 TypeScriptビルド — 40エラーをグループ化（81%削減）
+
+<table>
+<tr>
+<td width="50%">
+
+**❌ Before**
+```
+src/api/users.ts:47:5 - error TS2322:
+  Type 'string' not assignable to 'number'
+src/api/users.ts:83:5 - error TS2322:
+  Type 'string' not assignable to 'number'
+src/api/orders.ts:12:5 - error TS2322:
+  Type 'string' not assignable to 'number'
+src/api/orders.ts:45:5 - error TS2322:
+  Type 'string' not assignable to 'number'
+... 36 more identical errors
+Found 40 errors in 8 files.
+```
+
+</td>
+<td width="50%">
+
+**✅ After**
+```
+TS2322: Type 'string' not assignable
+        to type 'number' (×40)
+  src/api/users.ts    :47, :83
+  src/api/orders.ts   :12, :45, :67
+  src/api/products.ts :23, :89
+  src/lib/helpers.ts  :156
+  ... +4 files (28 occurrences)
+
+All line numbers preserved.
+💾 saved 81%
+```
+
+</td>
+</tr>
+</table>
+
+### 🌐 Webページ — nav/footer/広告を除去（73%削減）
+
+<table>
+<tr>
+<td width="50%">
+
+**❌ Before (curl出力)**
+```
+[Skip to content]
+[Nav: Products, Pricing, Docs, Blog]
+[Sidebar: Getting Started, Auth,
+  Database, Storage, Functions]
+# Email/Password Authentication
+Use supabase.auth.signInWithPassword
+  to sign in users...
+[code example]
+[code example]
+[Footer: © 2026 Supabase Inc]
+[Terms | Privacy | Status]
+[Newsletter: Subscribe for updates]
+[Social: Twitter GitHub Discord]
+```
+
+</td>
+<td width="50%">
+
+**✅ After**
+```
+# Email/Password Authentication
+Use supabase.auth.signInWithPassword
+  to sign in users...
+[code example]
+[code example]
+
+
+
+
+Nav、footer、sidebar、newsletter、
+ソーシャルリンク — すべて除去。
+💾 saved 73%
+```
+
+</td>
+</tr>
+</table>
+
+### 🎨 ANSI / スピナー — 見えないノイズを除去（83%削減）
+
+<table>
+<tr>
+<td width="50%">
+
+**❌ Before (raw terminal)**
+```
+\033[32m✓ Success\033[0m
+\033[31m✗ Error\033[0m
+⠋ Installing dependencies...
+⠙ Installing dependencies...
+⠹ Installing dependencies...
+⠸ Installing dependencies...
+████░░░░░░ 40%
+████████░░ 80%
+██████████ 100%
+═══════════════════════
+Done.
+```
+
+</td>
+<td width="50%">
+
+**✅ After**
+```
+✓ Success
+✗ Error
+██████████ 100%
+Done.
+
+
+
+
+最終状態のみ保持。
+
+💾 saved 83%
+```
+
+</td>
+</tr>
+</table>
 
 <details>
-<summary><b>📦 その他の例</b></summary>
-
-**`npm install`** — 150行 → 3行
-
-```diff
-- npm warn deprecated inflight@1.0.6: This module is not supported
-- npm warn deprecated rimraf@3.0.2: Rimraf v3 is no longer supported
-- ... 47 more deprecated warnings
-- added 847 packages, and audited 848 packages in 32s
-- 143 packages are looking for funding
-- 8 vulnerabilities (2 moderate, 6 high)
-
-+ ✓ 847 packages (32s)
-+ ⚠ 8 vulnerabilities (6 high, 2 moderate)
-+ ⚠ deprecated bcrypt@3.0.0: security vulnerability (CVE-2023-31484)
-```
-
-**95%削減。** セキュリティ警告は保持。ノイズは削除。
-
----
-
-**Dockerビルド（成功）** — 50行 → 1行
-
-```diff
-- Step 1/12 : FROM node:20-alpine
--  ---> abc123def456
-- Step 2/12 : WORKDIR /app
--  ---> Using cache
-- ... 10 more steps with hashes and cache lines
-- Successfully built abc123final
-- Successfully tagged my-app:latest
-
-+ ✓ built my-app:latest (12 steps, 8 cached)
-```
-
-**96%削減。**
-
----
-
-**Dockerビルド（失敗）** — 重要な情報だけ保持：
+<summary><b>🐳 Docker失敗 — コンテキスト保持</b></summary>
 
 ```
 ✗ Docker build failed at step 7/12
@@ -165,114 +419,121 @@ Step 7/12 : RUN npm run build        ← FAILED
   Exit code: 1
 ```
 
----
+> 失敗ステップ + 前2ステップ + エラーメッセージ + 終了コード。常に。
 
-**Python Traceback** — フレームワークフレームを非表示：
+</details>
 
+<details>
+<summary><b>☕ Java / 🐹 Goスタックトレース</b></summary>
+
+**Java** — `java.lang.reflect`、`sun.reflect`、`org.springframework`、`org.apache`、`jdk.internal`を除去：
 ```diff
-- Traceback (most recent call last):
--   File "/app/main.py", line 10, in handler
--     process(data)
--   File "/usr/lib/python3.11/importlib/__init__.py", line 126, in import_module
--   File "/app/venv/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
-- ValueError: invalid literal for int()
+- java.lang.NullPointerException: Cannot invoke method on null
+-   at com.myapp.UserService.getUser(UserService.java:42)
+-   at com.myapp.Controller.handle(Controller.java:15)
+-   at java.lang.reflect.Method.invoke(Method.java:498)
+-   at sun.reflect.DelegatingMethodAccessorImpl.invoke(...)
+-   at org.springframework.web.servlet.FrameworkServlet.service(...)
+-   at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(...)
 
-+ Traceback (most recent call last):
-+   → /app/main.py:10         process(data)
-+   (+ 2 framework frames hidden)
-+ ValueError: invalid literal for int()
++ java.lang.NullPointerException: Cannot invoke method on null
++   at com.myapp.UserService.getUser(UserService.java:42)
++   at com.myapp.Controller.handle(Controller.java:15)
++   (+ 4 framework frames hidden)
 ```
 
----
-
-**Rust Panic** — std/tokioフレームを除去：
-
+**Go** — `runtime/`、`runtime.gopanic`、`runtime.main`を除去：
 ```diff
-- thread 'main' panicked at 'index out of bounds', src/handler.rs:42:5
-- stack backtrace:
--    0: std::panicking::begin_panic
--    1: core::panicking::panic_fmt
--    2: myapp::handler::process at ./src/handler.rs:42:5
--    3: myapp::main at ./src/main.rs:15:3
--    4: std::rt::lang_start
--    5: tokio::runtime::enter
+- goroutine 1 [running]:
+- runtime/debug.Stack()
+-   /usr/local/go/src/runtime/debug/stack.go:24
+- runtime.gopanic({0x1234, 0x5678})
+-   /usr/local/go/src/runtime/panic.go:884
+- main.handler()
+-   /app/handler.go:42 +0x1a4
+- main.main()
+-   /app/main.go:15 +0x58
 
-+ thread 'main' panicked at 'index out of bounds', src/handler.rs:42:5
++ goroutine 1 [running]:
 +   (+ 2 framework frames hidden)
-+   → ./src/handler.rs:42  myapp::handler::process()
-+   → ./src/main.rs:15     myapp::main()
-+   (+ 2 framework frames hidden)
++   → main.handler()  /app/handler.go:42
++   → main.main()     /app/main.go:15
++   (+ 1 framework frames hidden)
 ```
-
-**80%削減。**
 
 </details>
 
 ---
 
-## 📊 ベンチマーク（102テスト）
+## 📊 数字が証明する
 
-本番相当の入力でテスト。[全結果 →](benchmark-results.md)
+> **102件の実戦テスト。チェリーピッキングなし。**
 
-| カテゴリ | 件数 | 平均削減 | 最高 | 最低 |
-|:---------|------:|------------:|-----:|------:|
-| Dockerビルドログ | 10 | **88.2%** | 97% | 77% |
-| ANSI/スピナー | 15 | **82.5%** | 98% | 41% |
-| エラースタックトレース | 20 | **58.7%** | 97% | 2%* |
-| ビルドエラー | 15 | **55.6%** | 90% | -10%* |
-| Webページ | 15 | **42.5%** | 64% | 5% |
-| CLIコマンド | 12 | **42.0%** | 78% | -56%* |
-| パッケージインストール | 15 | **39.2%** | 99% | 2% |
-| **全体** | **102** | **57.4%** | | |
+| カテゴリ | テスト | 平均削減 | 🏆 最高 | 💀 最低 |
+|:---------|------:|:----------:|:-------:|:-------:|
+| 🐳 Dockerビルド | 10 | **88%** | 97% | 77% |
+| 🎨 ANSI/スピナー | 15 | **83%** | 98% | 41% |
+| 💥 エラートレース | 20 | **59%** | 97% | 2% |
+| 🔨 ビルドエラー | 15 | **56%** | 90% | -10% |
+| 🌐 Webページ | 15 | **43%** | 64% | 5% |
+| 💻 CLIコマンド | 12 | **42%** | 78% | -56% |
+| 📦 パッケージインストール | 15 | **39%** | 99% | 2% |
 
-> **加重平均: 61.1%** 削減 (326K chars in → 127K chars out)
+**加重平均: 61%削減** → 326K chars in, 127K chars out
 
-\* マイナス = 出力が増加。極小入力でフォーマットのオーバーヘッドがノイズを超える場合に発生。
-
----
-
-## 🔄 ContextZip vs RTK
-
-[RTK](https://github.com/rtk-ai/rtk)ベース。RTKの全34コマンドを含み、さらに：
-
-| ノイズソース | RTK | ContextZip |
-|:-------------|:---:|:----------:|
-| CLI出力 (git, test, ls) | ✓ | ✓ |
-| エラースタックトレース（5言語） | ✗ | **✓** |
-| Webページ取得 | ✗ | **✓** |
-| ANSI/スピナー/装飾 | partial | **✓ enhanced** |
-| ビルドエラーグルーピング | partial | **✓ enhanced** |
-| パッケージインストールログ | ✗ | **✓** |
-| Dockerビルドログ | partial | **✓ enhanced** |
-| コマンド別削減量表示 | ✗ | **✓** |
+> [!NOTE]
+> マイナス = 出力が増加。極小入力で発生する。最低値も隠さず公開している。[全ベンチマーク →](benchmark-results.md)
 
 ---
 
-## ⚙️ 仕組み
+## 🏎️ 仕組み
 
 ```
-Claude Code hook intercepts bash command
-       ↓
-contextzip binary
-  ├── [1] ANSI preprocessor ──→ strip escape codes, spinners
-  ├── [2] Command router ──→ 40+ specialized filters
-  ├── [3] Error post-processor ──→ compress stacktraces
-  └── [4] SQLite tracking ──→ record savings
-       ↓
-Compressed output → Claude's context
-💾 contextzip: 2,000 → 200 tokens (saved 90%)
+  ┌─────────────────────────────────────────────┐
+  │  Claude Code runs: git status               │
+  │                         ↓                   │
+  │  Hook rewrites → contextzip git status      │
+  │                         ↓                   │
+  │  ┌──────────────────────────────────────┐   │
+  │  │ [1] ANSI preprocessor    strip junk  │   │
+  │  │ [2] Command router    40+ filters    │   │
+  │  │ [3] Error post-proc   compress stack │   │
+  │  │ [4] SQLite tracker    record savings │   │
+  │  └──────────────────────────────────────┘   │
+  │                         ↓                   │
+  │  Compressed output → Claude's context       │
+  │  💾 contextzip: 200 → 40 tokens (80%)       │
+  └─────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📈 削減量トラッキング
+## 🆚 なぜRTKだけでは不十分か？
+
+[RTK](https://github.com/rtk-ai/rtk)（28k⭐）ベース。RTKの全34コマンドを含む。**さらに：**
+
+| | RTK | ContextZip |
+|:---|:---:|:---:|
+| CLI圧縮 (git, test, ls) | ✅ | ✅ |
+| エラースタックトレース (Node/Python/Rust/Go/Java) | ❌ | ✅ |
+| Webページコンテンツ抽出 | ❌ | ✅ |
+| ANSI / スピナー / デコレーション除去 | 🟡 | ✅ |
+| ビルドエラーグルーピング (tsc/eslint/cargo) | 🟡 | ✅ |
+| パッケージインストールノイズ (npm/pip/cargo) | ❌ | ✅ |
+| Dockerビルド圧縮 | 🟡 | ✅ |
+| コマンド別削減量表示 | ❌ | ✅ |
+
+---
+
+## 📈 すべてを追跡する
 
 ```bash
 $ contextzip gain
 📊 ContextZip Token Savings
-════════════════════════════════════
+════════════════════════════════════════
 Total commands:    2,927
 Tokens saved:      10.3M (89.2%)
+Efficiency meter: █████████████████████░░░ 89%
 
 $ contextzip gain --by-feature
 Feature        Commands  Saved     Avg%
@@ -284,73 +545,86 @@ pkg            34        0.3M     95%
 docker         22        0.2M     85%
 ```
 
-```bash
-contextzip gain --graph      # 日別削減チャート
-contextzip gain --history    # 最近のコマンド詳細
-```
+<p align="center">
+  <code>--graph</code> 日別チャート &nbsp;•&nbsp; <code>--history</code> 最近のコマンド
+</p>
 
 ---
 
-## 🛡️ 安全保証
+## 🛡️ 重要な情報は決して失わない
 
-| 対象 | ルール |
-|:-----|:-----|
-| エラーメッセージ | **常に**保持（最初の行 + ユーザーコードフレーム） |
-| ファイル:行の位置 | ビルドエラーから**絶対に**除去しない |
-| セキュリティ警告 | **常に**保持（CVE, GHSA, vulnerability） |
-| Docker失敗コンテキスト | **常に**保持（失敗ステップ + 前2ステップ + 終了コード） |
-| 終了コード | **常に**伝播（CI/CDセーフ） |
+| | |
+|:---|:---|
+| 🔴 エラーメッセージ | **常に**保持 |
+| 📍 ビルドエラーのファイル:行番号 | **絶対に**除去しない |
+| 🔒 セキュリティ警告 (CVE, GHSA) | **常に**保持 |
+| 🐳 Docker失敗コンテキスト | **常に**保持 |
+| ⏎ 終了コード | **常に**伝播 |
 
 > [!IMPORTANT]
 > ContextZipは**確認済みのノイズのみ**除去する。判断に迷う場合、元の出力をそのまま通す。
 
 ---
 
-## 🔧 CLIリファレンス
+## 🔧 コマンド
 
 ```bash
-# 自動（フック経由 — プレフィックス不要）：
-git status          # → contextzip git status
-cargo test          # → contextzip cargo test
-npm install         # → contextzip npm install
+# 自動（フックが変換 — プレフィックス不要）：
+git status              npm install             cargo test
+docker build .          pip install flask        go test ./...
 
-# 手動コマンド：
-contextzip web https://docs.example.com    # ページコンテンツ抽出
+# 手動：
+contextzip web https://docs.example.com    # ページ → コンテンツのみ
 contextzip err node server.js              # エラー特化出力
 
 # 分析：
-contextzip gain                  # 削減量ダッシュボード
-contextzip gain --by-feature     # フィルター種別ごと
+contextzip gain                  # ダッシュボード
+contextzip gain --by-feature     # フィルター別統計
 contextzip gain --graph          # 日別チャート
 contextzip gain --history        # 最近のコマンド
 
-# セットアップ：
-contextzip init --show           # インストール状態確認
+# 管理：
+contextzip init --show           # セットアップ確認
 contextzip update                # セルフアップデート
 contextzip uninstall             # クリーンアンインストール
 ```
 
 ---
 
-## 🤝 Contributing
-
-コントリビューション歓迎！ContextZipはRustプロジェクトです。
+## 🤝 コントリビュート
 
 ```bash
-git clone https://github.com/jee599/contextzip.git
-cd contextzip
-cargo test         # 1056 tests
-cargo clippy       # Lint check
+git clone https://github.com/jee599/contextzip.git && cd contextzip
+cargo test         # 1,056 tests
+cargo clippy       # lint
 ```
 
-## 📜 License
+## 📡 テレメトリ
 
-MIT — Based on [RTK](https://github.com/rtk-ai/rtk) by rtk-ai.
+ContextZipは匿名の使用統計（コマンド数、削減率）を収集し、ツールの改善に活用する。個人情報やコマンド内容は送信しない。
+
+**無効化：**
+```bash
+export CONTEXTZIP_TELEMETRY_DISABLED=1
+# または ~/.config/contextzip/config.toml:
+# [telemetry]
+# enabled = false
+```
+
+## 📜 ライセンス
+
+MIT — [RTK](https://github.com/rtk-ai/rtk) by rtk-aiのフォーク。
 
 ---
 
 <p align="center">
-  <sub>⚡ トークンを節約。もっと速くシップ。</sub>
+  <b>⚡ ノイズを減らし、コードに集中し、もっと速くシップ。</b>
+</p>
+
+<p align="center">
+  <a href="https://github.com/jee599/contextzip">
+    <img src="https://img.shields.io/badge/GitHub-⭐_Star_this_repo-yellow?style=for-the-badge&logo=github" alt="Star" />
+  </a>
 </p>
 
 [![Star History Chart](https://api.star-history.com/svg?repos=jee599/contextzip&type=Date)](https://star-history.com/#jee599/contextzip&Date)

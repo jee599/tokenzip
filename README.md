@@ -6,7 +6,7 @@
 
 <h3 align="center">
   Claude's output is full of noise you don't need.<br>
-  ContextZip compresses it by 60-90%. <code>npx contextzip</code> → 5 seconds.
+  ContextZip compresses it by 60-90%. <code>npx contextzip</code> → 5 seconds (first run downloads binary).
 </h3>
 
 <p align="center">
