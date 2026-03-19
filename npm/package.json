@@ -1,0 +1,19 @@
+{
+  "name": "contextzip",
+  "version": "0.1.2",
+  "description": "Claude Code context optimizer. Compress CLI output by 60-90%.",
+  "bin": {
+    "contextzip": "./bin/install.js"
+  },
+  "keywords": ["claude", "claude-code", "context", "compression", "llm", "tokens", "ai", "cli", "rtk"],
+  "author": "jee599",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jee599/contextzip"
+  },
+  "homepage": "https://github.com/jee599/contextzip",
+  "engines": {
+    "node": ">=16"
+  }
+}

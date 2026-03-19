@@ -62,7 +62,7 @@ pub fn run(
         println!("{}", "─".repeat(72));
         for rec in &recent {
             let time = rec.timestamp.format("%Y-%m-%d %H:%M:%S");
-            let cmd_short = truncate_for_column(&rec.rtk_cmd, 16);
+            let cmd_short = truncate_for_column(&rec.contextzip_cmd, 16);
             println!(
                 "{:<20} {:<16} {:>8} {:>8} {:>5.0}%",
                 time,
@@ -307,7 +307,7 @@ pub fn run(
                 println!("{}", "─".repeat(72));
                 for rec in &recent {
                     let time = rec.timestamp.format("%Y-%m-%d %H:%M:%S");
-                    let cmd_short = truncate_for_column(&rec.rtk_cmd, 16);
+                    let cmd_short = truncate_for_column(&rec.contextzip_cmd, 16);
                     println!(
                         "{:<20} {:<16} {:>8} {:>8} {:>5.0}%",
                         time,

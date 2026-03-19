@@ -21,7 +21,7 @@ lazy_static! {
 
     /// Decoration lines: same character repeated 5+ times
     static ref DECORATION_RE: Regex =
-        Regex::new(r"^[\s]*([═─━━\-\*=~]{5,})[\s]*$").unwrap();
+        Regex::new(r"^[\s]*([═─━\-\*=~]{5,})[\s]*$").unwrap();
 
     /// Braille spinner characters (U+2800 block)
     static ref SPINNER_RE: Regex =

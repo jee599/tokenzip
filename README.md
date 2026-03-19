@@ -598,6 +598,18 @@ cargo test         # 1,056 tests
 cargo clippy       # lint
 ```
 
+## 📡 Telemetry
+
+ContextZip collects anonymous usage statistics (command count, savings percentage) to improve the tool. No personal data or command content is transmitted.
+
+**Disable:**
+```bash
+export CONTEXTZIP_TELEMETRY_DISABLED=1
+# or in ~/.config/contextzip/config.toml:
+# [telemetry]
+# enabled = false
+```
+
 ## 📜 License
 
 MIT — Fork of [RTK](https://github.com/rtk-ai/rtk) by rtk-ai.

@@ -1,19 +1,19 @@
 //! Token savings tracking and analytics system.
 //!
-//! This module provides comprehensive tracking of RTK command executions,
+//! This module provides comprehensive tracking of ContextZip command executions,
 //! recording token savings, execution times, and providing aggregation APIs
 //! for daily/weekly/monthly statistics.
 //!
 //! # Architecture
 //!
-//! - Storage: SQLite database (~/.local/share/rtk/tracking.db)
+//! - Storage: SQLite database (~/.local/share/contextzip/tracking.db)
 //! - Retention: 90-day automatic cleanup
 //! - Metrics: Input/output tokens, savings %, execution time
 //!
 //! # Quick Start
 //!
 //! ```no_run
-//! use rtk::tracking::{TimedExecution, Tracker};
+//! use contextzip::tracking::{TimedExecution, Tracker};
 //!
 //! // Track a command execution
 //! let timer = TimedExecution::start();
@@ -73,14 +73,14 @@ const HISTORY_DAYS: i64 = 90;
 ///
 /// # Database Location
 ///
-/// - Linux: `~/.local/share/rtk/tracking.db`
-/// - macOS: `~/Library/Application Support/rtk/tracking.db`
-/// - Windows: `%APPDATA%\rtk\tracking.db`
+/// - Linux: `~/.local/share/contextzip/tracking.db`
+/// - macOS: `~/Library/Application Support/contextzip/tracking.db`
+/// - Windows: `%APPDATA%\contextzip\tracking.db`
 ///
 /// # Examples
 ///
 /// ```no_run
-/// use rtk::tracking::Tracker;
+/// use contextzip::tracking::Tracker;
 ///
 /// let tracker = Tracker::new()?;
 /// tracker.record("ls -la", "contextzip ls", 1000, 200, 50)?;
@@ -100,8 +100,8 @@ pub struct Tracker {
 pub struct CommandRecord {
     /// UTC timestamp when command was executed
     pub timestamp: DateTime<Utc>,
-    /// RTK command that was executed (e.g., "contextzip ls")
-    pub rtk_cmd: String,
+    /// ContextZip command that was executed (e.g., "contextzip ls")
+    pub contextzip_cmd: String,
     /// Input tokens (raw command output size)
     pub input_tokens: usize,
     /// Output tokens (filtered command output size)
@@ -262,7 +262,7 @@ impl Tracker {
     /// # Examples
     ///
     /// ```no_run
-    /// use rtk::tracking::Tracker;
+    /// use contextzip::tracking::Tracker;
     ///
     /// let tracker = Tracker::new()?;
     /// # Ok::<(), anyhow::Error>(())
@@ -285,7 +285,7 @@ impl Tracker {
                 id INTEGER PRIMARY KEY,
                 timestamp TEXT NOT NULL,
                 original_cmd TEXT NOT NULL,
-                rtk_cmd TEXT NOT NULL,
+                contextzip_cmd TEXT NOT NULL,
                 input_tokens INTEGER NOT NULL,
                 output_tokens INTEGER NOT NULL,
                 saved_tokens INTEGER NOT NULL,
@@ -348,6 +348,14 @@ impl Tracker {
             [],
         );
 
+        // Migration: rename rtk_cmd → contextzip_cmd column
+        let has_rtk_col: bool = conn
+            .prepare("SELECT rtk_cmd FROM commands LIMIT 0")
+            .is_ok();
+        if has_rtk_col {
+            let _ = conn.execute("ALTER TABLE commands RENAME COLUMN rtk_cmd TO contextzip_cmd", []);
+        }
+
         conn.execute(
             "CREATE TABLE IF NOT EXISTS parse_failures (
                 id INTEGER PRIMARY KEY,
@@ -374,15 +382,15 @@ impl Tracker {
     /// # Arguments
     ///
     /// - `original_cmd`: The standard command (e.g., "ls -la")
-    /// - `rtk_cmd`: The RTK command used (e.g., "contextzip ls")
+    /// - `contextzip_cmd`: The ContextZip command used (e.g., "contextzip ls")
     /// - `input_tokens`: Estimated tokens from standard command output
-    /// - `output_tokens`: Actual tokens from RTK output
+    /// - `output_tokens`: Actual tokens from ContextZip output
     /// - `exec_time_ms`: Execution time in milliseconds
     ///
     /// # Examples
     ///
     /// ```no_run
-    /// use rtk::tracking::Tracker;
+    /// use contextzip::tracking::Tracker;
     ///
     /// let tracker = Tracker::new()?;
     /// tracker.record("ls -la", "contextzip ls", 1000, 200, 50)?;
@@ -391,14 +399,14 @@ impl Tracker {
     pub fn record(
         &self,
         original_cmd: &str,
-        rtk_cmd: &str,
+        contextzip_cmd: &str,
         input_tokens: usize,
         output_tokens: usize,
         exec_time_ms: u64,
     ) -> Result<()> {
         self.record_with_feature(
             original_cmd,
-            rtk_cmd,
+            contextzip_cmd,
             input_tokens,
             output_tokens,
             exec_time_ms,
@@ -413,7 +421,7 @@ impl Tracker {
     pub fn record_with_feature(
         &self,
         original_cmd: &str,
-        rtk_cmd: &str,
+        contextzip_cmd: &str,
         input_tokens: usize,
         output_tokens: usize,
         exec_time_ms: u64,
@@ -429,12 +437,12 @@ impl Tracker {
         let project_path = current_project_path_string();
 
         self.conn.execute(
-            "INSERT INTO commands (timestamp, original_cmd, rtk_cmd, project_path, input_tokens, output_tokens, saved_tokens, savings_pct, exec_time_ms, feature)
+            "INSERT INTO commands (timestamp, original_cmd, contextzip_cmd, project_path, input_tokens, output_tokens, saved_tokens, savings_pct, exec_time_ms, feature)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
             params![
                 Utc::now().to_rfc3339(),
                 original_cmd,
-                rtk_cmd,
+                contextzip_cmd,
                 project_path,
                 input_tokens as i64,
                 output_tokens as i64,
@@ -552,7 +560,7 @@ impl Tracker {
     /// # Examples
     ///
     /// ```no_run
-    /// use rtk::tracking::Tracker;
+    /// use contextzip::tracking::Tracker;
     ///
     /// let tracker = Tracker::new()?;
     /// let summary = tracker.get_summary()?;
@@ -636,10 +644,10 @@ impl Tracker {
     ) -> Result<Vec<CommandStats>> {
         let (project_exact, project_glob) = project_filter_params(project_path); // added
         let mut stmt = self.conn.prepare(
-            "SELECT rtk_cmd, COUNT(*), SUM(saved_tokens), AVG(savings_pct), AVG(exec_time_ms)
+            "SELECT contextzip_cmd, COUNT(*), SUM(saved_tokens), AVG(savings_pct), AVG(exec_time_ms)
              FROM commands
              WHERE (?1 IS NULL OR project_path = ?1 OR project_path GLOB ?2)
-             GROUP BY rtk_cmd
+             GROUP BY contextzip_cmd
              ORDER BY SUM(saved_tokens) DESC
              LIMIT 10", // added: project filter in WHERE
         )?;
@@ -716,7 +724,7 @@ impl Tracker {
     /// # Examples
     ///
     /// ```no_run
-    /// use rtk::tracking::Tracker;
+    /// use contextzip::tracking::Tracker;
     ///
     /// let tracker = Tracker::new()?;
     /// let days = tracker.get_all_days()?;
@@ -789,7 +797,7 @@ impl Tracker {
     /// # Examples
     ///
     /// ```no_run
-    /// use rtk::tracking::Tracker;
+    /// use contextzip::tracking::Tracker;
     ///
     /// let tracker = Tracker::new()?;
     /// let weeks = tracker.get_by_week()?;
@@ -864,7 +872,7 @@ impl Tracker {
     /// # Examples
     ///
     /// ```no_run
-    /// use rtk::tracking::Tracker;
+    /// use contextzip::tracking::Tracker;
     ///
     /// let tracker = Tracker::new()?;
     /// let months = tracker.get_by_month()?;
@@ -940,13 +948,13 @@ impl Tracker {
     /// # Examples
     ///
     /// ```no_run
-    /// use rtk::tracking::Tracker;
+    /// use contextzip::tracking::Tracker;
     ///
     /// let tracker = Tracker::new()?;
     /// let recent = tracker.get_recent(10)?;
     /// for cmd in recent {
     ///     println!("{}: {} saved {:.1}%",
-    ///         cmd.timestamp, cmd.rtk_cmd, cmd.savings_pct);
+    ///         cmd.timestamp, cmd.contextzip_cmd, cmd.savings_pct);
     /// }
     /// # Ok::<(), anyhow::Error>(())
     /// ```
@@ -963,7 +971,7 @@ impl Tracker {
     ) -> Result<Vec<CommandRecord>> {
         let (project_exact, project_glob) = project_filter_params(project_path);
         let mut stmt = self.conn.prepare(
-            "SELECT timestamp, rtk_cmd, input_tokens, output_tokens, saved_tokens, savings_pct
+            "SELECT timestamp, contextzip_cmd, input_tokens, output_tokens, saved_tokens, savings_pct
              FROM commands
              WHERE (?1 IS NULL OR project_path = ?1 OR project_path GLOB ?2)
              ORDER BY timestamp DESC
@@ -975,7 +983,7 @@ impl Tracker {
                 timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(0)?)
                     .map(|dt| dt.with_timezone(&Utc))
                     .unwrap_or_else(|_| Utc::now()),
-                rtk_cmd: row.get(1)?,
+                contextzip_cmd: row.get(1)?,
                 input_tokens: row.get::<_, i64>(2)? as usize,
                 output_tokens: row.get::<_, i64>(3)? as usize,
                 saved_tokens: row.get::<_, i64>(4)? as usize,
@@ -1000,8 +1008,8 @@ impl Tracker {
     /// Get top N commands by frequency (for telemetry).
     pub fn top_commands(&self, limit: usize) -> Result<Vec<String>> {
         let mut stmt = self.conn.prepare(
-            "SELECT rtk_cmd, COUNT(*) as cnt FROM commands
-             GROUP BY rtk_cmd ORDER BY cnt DESC LIMIT ?1",
+            "SELECT contextzip_cmd, COUNT(*) as cnt FROM commands
+             GROUP BY contextzip_cmd ORDER BY cnt DESC LIMIT ?1",
         )?;
         let rows = stmt.query_map(params![limit as i64], |row| {
             let cmd: String = row.get(0)?;
@@ -1104,7 +1112,7 @@ pub fn record_parse_failure_silent(raw_command: &str, error_message: &str, succe
 /// # Examples
 ///
 /// ```
-/// use rtk::tracking::estimate_tokens;
+/// use contextzip::tracking::estimate_tokens;
 ///
 /// assert_eq!(estimate_tokens(""), 0);
 /// assert_eq!(estimate_tokens("abcd"), 1);  // 4 chars = 1 token
@@ -1169,7 +1177,7 @@ fn print_savings(input_tokens: usize, output_tokens: usize) {
 /// # Examples
 ///
 /// ```no_run
-/// use rtk::tracking::TimedExecution;
+/// use contextzip::tracking::TimedExecution;
 ///
 /// let timer = TimedExecution::start();
 /// let input = execute_standard_command()?;
@@ -1191,7 +1199,7 @@ impl TimedExecution {
     /// # Examples
     ///
     /// ```no_run
-    /// use rtk::tracking::TimedExecution;
+    /// use contextzip::tracking::TimedExecution;
     ///
     /// let timer = TimedExecution::start();
     /// // ... execute command ...
@@ -1213,29 +1221,29 @@ impl TimedExecution {
     /// # Arguments
     ///
     /// - `original_cmd`: Standard command (e.g., "ls -la")
-    /// - `rtk_cmd`: RTK command used (e.g., "contextzip ls")
+    /// - `contextzip_cmd`: ContextZip command used (e.g., "contextzip ls")
     /// - `input`: Standard command output (for token estimation)
-    /// - `output`: RTK command output (for token estimation)
+    /// - `output`: ContextZip command output (for token estimation)
     ///
     /// # Examples
     ///
     /// ```no_run
-    /// use rtk::tracking::TimedExecution;
+    /// use contextzip::tracking::TimedExecution;
     ///
     /// let timer = TimedExecution::start();
     /// let input = "long output...";
     /// let output = "short output";
     /// timer.track("ls -la", "contextzip ls", input, output);
     /// ```
-    pub fn track(&self, original_cmd: &str, rtk_cmd: &str, input: &str, output: &str) {
-        self.track_with_feature(original_cmd, rtk_cmd, input, output, "cli");
+    pub fn track(&self, original_cmd: &str, contextzip_cmd: &str, input: &str, output: &str) {
+        self.track_with_feature(original_cmd, contextzip_cmd, input, output, "cli");
     }
 
     /// Track a command execution tagged with a specific feature module.
     pub fn track_with_feature(
         &self,
         original_cmd: &str,
-        rtk_cmd: &str,
+        contextzip_cmd: &str,
         input: &str,
         output: &str,
         feature: &str,
@@ -1247,7 +1255,7 @@ impl TimedExecution {
         if let Ok(tracker) = Tracker::new() {
             let _ = tracker.record_with_feature(
                 original_cmd,
-                rtk_cmd,
+                contextzip_cmd,
                 input_tokens,
                 output_tokens,
                 elapsed_ms,
@@ -1268,22 +1276,22 @@ impl TimedExecution {
     /// # Arguments
     ///
     /// - `original_cmd`: Standard command (e.g., "git tag --list")
-    /// - `rtk_cmd`: RTK command used (e.g., "contextzip git tag --list")
+    /// - `contextzip_cmd`: ContextZip command used (e.g., "contextzip git tag --list")
     ///
     /// # Examples
     ///
     /// ```no_run
-    /// use rtk::tracking::TimedExecution;
+    /// use contextzip::tracking::TimedExecution;
     ///
     /// let timer = TimedExecution::start();
     /// // ... execute streaming command ...
     /// timer.track_passthrough("git tag", "contextzip git tag");
     /// ```
-    pub fn track_passthrough(&self, original_cmd: &str, rtk_cmd: &str) {
+    pub fn track_passthrough(&self, original_cmd: &str, contextzip_cmd: &str) {
         let elapsed_ms = self.start.elapsed().as_millis() as u64;
         // input_tokens=0, output_tokens=0 won't dilute savings statistics
         if let Ok(tracker) = Tracker::new() {
-            let _ = tracker.record(original_cmd, rtk_cmd, 0, 0, elapsed_ms);
+            let _ = tracker.record(original_cmd, contextzip_cmd, 0, 0, elapsed_ms);
         }
     }
 }
@@ -1297,7 +1305,7 @@ impl TimedExecution {
 ///
 /// ```
 /// use std::ffi::OsString;
-/// use rtk::tracking::args_display;
+/// use contextzip::tracking::args_display;
 ///
 /// let args = vec![OsString::from("status"), OsString::from("--short")];
 /// assert_eq!(args_display(&args), "status --short");
@@ -1319,14 +1327,14 @@ pub fn args_display(args: &[OsString]) -> String {
 /// # Arguments
 ///
 /// - `original_cmd`: Standard command (e.g., "ls -la")
-/// - `rtk_cmd`: RTK command used (e.g., "contextzip ls")
+/// - `contextzip_cmd`: ContextZip command used (e.g., "contextzip ls")
 /// - `input`: Standard command output (for token estimation)
-/// - `output`: RTK command output (for token estimation)
+/// - `output`: ContextZip command output (for token estimation)
 ///
 /// # Migration
 ///
 /// ```no_run
-/// # use rtk::tracking::{track, TimedExecution};
+/// # use contextzip::tracking::{track, TimedExecution};
 /// // Old (deprecated)
 /// track("ls -la", "contextzip ls", "input", "output");
 ///
@@ -1336,12 +1344,12 @@ pub fn args_display(args: &[OsString]) -> String {
 /// ```
 #[deprecated(note = "Use TimedExecution instead")]
 #[allow(dead_code)]
-pub fn track(original_cmd: &str, rtk_cmd: &str, input: &str, output: &str) {
+pub fn track(original_cmd: &str, contextzip_cmd: &str, input: &str, output: &str) {
     let input_tokens = estimate_tokens(input);
     let output_tokens = estimate_tokens(output);
 
     if let Ok(tracker) = Tracker::new() {
-        let _ = tracker.record(original_cmd, rtk_cmd, input_tokens, output_tokens, 0);
+        let _ = tracker.record(original_cmd, contextzip_cmd, input_tokens, output_tokens, 0);
     }
 }
 
@@ -1387,7 +1395,7 @@ mod tests {
         // Find our specific test record
         let test_record = recent
             .iter()
-            .find(|r| r.rtk_cmd == test_cmd)
+            .find(|r| r.contextzip_cmd == test_cmd)
             .expect("Test record not found in recent commands");
 
         assert_eq!(test_record.saved_tokens, 80);
@@ -1419,11 +1427,11 @@ mod tests {
 
         let record1 = recent
             .iter()
-            .find(|r| r.rtk_cmd == cmd1)
+            .find(|r| r.contextzip_cmd == cmd1)
             .expect("cmd1 record not found");
         let record2 = recent
             .iter()
-            .find(|r| r.rtk_cmd == cmd2)
+            .find(|r| r.contextzip_cmd == cmd2)
             .expect("passthrough record not found");
 
         // Verify cmd1 has 80% savings
@@ -1448,7 +1456,7 @@ mod tests {
         // Verify via DB that record exists
         let tracker = Tracker::new().expect("Failed to create tracker");
         let recent = tracker.get_recent(5).expect("Failed to get recent");
-        assert!(recent.iter().any(|r| r.rtk_cmd == "contextzip test"));
+        assert!(recent.iter().any(|r| r.contextzip_cmd == "contextzip test"));
     }
 
     // 6. TimedExecution::track_passthrough records with 0 tokens
@@ -1462,7 +1470,7 @@ mod tests {
 
         let pt = recent
             .iter()
-            .find(|r| r.rtk_cmd.contains("passthrough"))
+            .find(|r| r.contextzip_cmd.contains("passthrough"))
             .expect("Passthrough record not found");
 
         // savings_pct should be 0 for passthrough
