@@ -1,22 +1,26 @@
-<p align="center">
-  <h1 align="center">⚡ ContextZip</h1>
-</p>
+<h1 align="center">
+  <br>
+  ⚡ ContextZip
+  <br>
+</h1>
+
+<h3 align="center">
+  Your Claude Code burns tokens on garbage.<br>
+  <code>curl | bash</code> → restart → done. 5 seconds.
+</h3>
 
 <p align="center">
-  <strong>Compress Claude Code context by 60-90%. Six noise filters RTK doesn't have.</strong>
-</p>
-
-<p align="center">
-  <a href="https://github.com/jee599/contextzip/releases"><img src="https://img.shields.io/github/v/release/jee599/contextzip?style=flat-square" alt="Release" /></a>
+  <a href="https://github.com/jee599/contextzip/releases"><img src="https://img.shields.io/github/v/release/jee599/contextzip?style=flat-square&color=blue" alt="Release" /></a>
   <a href="https://github.com/jee599/contextzip/actions"><img src="https://img.shields.io/github/actions/workflow/status/jee599/contextzip/ci.yml?style=flat-square" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/tests-1%2C056_passing-brightgreen?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/benchmarks-102_cases-orange?style=flat-square" alt="Benchmarks" />
   <a href="LICENSE"><img src="https://img.shields.io/github/license/jee599/contextzip?style=flat-square" alt="License" /></a>
-  <a href="https://github.com/jee599/contextzip/stargazers"><img src="https://img.shields.io/github/stars/jee599/contextzip?style=flat-square" alt="Stars" /></a>
 </p>
 
 <p align="center">
-  <a href="#-5-second-setup">Install</a> •
-  <a href="#-before--after">Examples</a> •
-  <a href="#-benchmark-102-tests">Benchmark</a> •
+  <a href="#-install-it-now">Install</a> •
+  <a href="#-see-the-difference">Before/After</a> •
+  <a href="#-the-numbers-dont-lie">Benchmark</a> •
   <a href="docs/README.ko.md">한국어</a> •
   <a href="docs/README.ja.md">日本語</a> •
   <a href="docs/README.zh.md">中文</a>
@@ -24,98 +28,90 @@
 
 ---
 
-## 🔥 The Problem
-
-Claude Code runs `git status`, `npm install`, `cargo test` — and dumps **raw output** into your context window.
-
-- 30 lines of `node_modules` stacktrace. Only 3 matter.
-- 150 lines of `npm warn deprecated`. None matter.
-- ANSI color codes, spinners, progress bars. Zero information.
-
-**Result:** Context limit hit faster. Claude forgets your code. You pay more.
-
-## ⚡ The Fix
-
-ContextZip intercepts CLI output and strips noise. Zero config. <10ms overhead.
-
 ```
-Without ContextZip:          With ContextZip:
-─────────────────────        ─────────────────────
-Input: 2,000 tokens          Input: 2,000 tokens
-       ↓                            ↓
-Claude reads all 2,000       ContextZip filters
-       ↓                            ↓
-Context: 2,000 tokens        Context: 200 tokens
-                              (saved 90%)
+  30 lines of node_modules stacktrace    →    3 lines
+  150 lines of npm deprecated warnings   →    3 lines
+  50 lines of Docker build hashes        →    1 line
+  ANSI colors, spinners, progress bars   →    gone
 ```
 
----
-
-## 📦 5-Second Setup
+<h3 align="center">⬇️ One line. That's it.</h3>
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jee599/contextzip/main/install.sh | bash
 ```
 
-Restart Claude Code. Done.
+<p align="center">Restart Claude Code. Every command is now compressed. Zero config.</p>
 
 <details>
-<summary><b>Other install methods</b></summary>
+<summary>brew / cargo install</summary>
 
 ```bash
-# Homebrew (macOS/Linux)
-brew install jee599/tap/contextzip
-
-# Cargo (Rust developers)
-cargo install --git https://github.com/jee599/contextzip
+brew install jee599/tap/contextzip          # Homebrew
+cargo install --git https://github.com/jee599/contextzip   # Cargo
 ```
 
 </details>
 
-> [!TIP]
-> Verify: `contextzip --version` → `contextzip 0.1.0 (based on rtk 0.30.1)`
-
 ---
 
-## 🚀 Quickstart
+## 👀 See the Difference
 
-After install, every command is compressed automatically via hook:
+<table>
+<tr>
+<td width="50%">
 
-```bash
-$ git status
-* main...origin/main
-M src/api/users.ts
-💾 contextzip: 200 → 40 tokens (saved 80%)
+**❌ Without ContextZip**
+```
+TypeError: Cannot read properties
+  of undefined (reading 'id')
+    at getUserProfile (users.ts:47)
+    at processAuth (auth.ts:12)
+    at Layer.handle (node_modules/
+      express/lib/router/layer.js:95)
+    at next (node_modules/express/
+      lib/router/route.js:144)
+    at Route.dispatch (node_modules/
+      express/lib/router/route.js:114)
+    ... 25 more lines
+
+
+
+
+~1,500 tokens eaten
 ```
 
-No prefix needed. The hook rewrites `git status` → `contextzip git status` transparently.
+</td>
+<td width="50%">
 
----
+**✅ With ContextZip**
+```
+TypeError: Cannot read properties
+  of undefined (reading 'id')
+  → users.ts:47    getUserProfile()
+  → auth.ts:12     processAuth()
+  (+ 27 framework frames hidden)
 
-## 🔬 Before / After
 
-**Node.js Error** — 30 lines → 3 lines
 
-```diff
-- TypeError: Cannot read properties of undefined (reading 'id')
--     at getUserProfile (/app/src/api/users.ts:47:23)
--     at processAuth (/app/src/middleware/auth.ts:12:5)
--     at Layer.handle (/app/node_modules/express/lib/router/layer.js:95:5)
--     at next (/app/node_modules/express/lib/router/route.js:144:13)
--     ... 25 more node_modules frames
 
-+ TypeError: Cannot read properties of undefined (reading 'id')
-+   → src/api/users.ts:47         getUserProfile()
-+   → src/middleware/auth.ts:12   processAuth()
-+   (+ 27 framework frames hidden)
+
+
+~100 tokens. Done.
+
+💾 contextzip: 1,500 → 100 (93% saved)
 ```
 
-**93% saved.** Error message + your code. Not Express internals.
+</td>
+</tr>
+</table>
 
 <details>
-<summary><b>📦 More examples</b></summary>
+<summary><b>📦 More before/after examples</b></summary>
 
-**`npm install`** — 150 lines → 3 lines
+<br>
+
+### npm install — 150 lines → 3 lines
 
 ```diff
 - npm warn deprecated inflight@1.0.6: This module is not supported
@@ -129,12 +125,9 @@ No prefix needed. The hook rewrites `git status` → `contextzip git status` tra
 + ⚠ 8 vulnerabilities (6 high, 2 moderate)
 + ⚠ deprecated bcrypt@3.0.0: security vulnerability (CVE-2023-31484)
 ```
+> 95% saved. Security warnings kept. Noise deleted.
 
-**95% saved.** Security warnings kept. Noise deleted.
-
----
-
-**Docker Build (Success)** — 50 lines → 1 line
+### Docker build (success) — 50 lines → 1 line
 
 ```diff
 - Step 1/12 : FROM node:20-alpine
@@ -147,12 +140,9 @@ No prefix needed. The hook rewrites `git status` → `contextzip git status` tra
 
 + ✓ built my-app:latest (12 steps, 8 cached)
 ```
+> 96% saved.
 
-**96% saved.**
-
----
-
-**Docker Build (Failure)** — Keeps what matters:
+### Docker build (failure) — keeps context
 
 ```
 ✗ Docker build failed at step 7/12
@@ -164,16 +154,13 @@ Step 7/12 : RUN npm run build        ← FAILED
   Exit code: 1
 ```
 
----
-
-**Python Traceback** — Framework frames hidden:
+### Python traceback
 
 ```diff
 - Traceback (most recent call last):
 -   File "/app/main.py", line 10, in handler
--     process(data)
--   File "/usr/lib/python3.11/importlib/__init__.py", line 126, in import_module
--   File "/app/venv/lib/python3.11/site-packages/flask/app.py", line 1498, in __call__
+-   File "/usr/lib/python3.11/importlib/__init__.py", line 126
+-   File "/app/venv/lib/site-packages/flask/app.py", line 1498
 - ValueError: invalid literal for int()
 
 + Traceback (most recent call last):
@@ -182,9 +169,7 @@ Step 7/12 : RUN npm run build        ← FAILED
 + ValueError: invalid literal for int()
 ```
 
----
-
-**Rust Panic** — std/tokio frames removed:
+### Rust panic
 
 ```diff
 - thread 'main' panicked at 'index out of bounds', src/handler.rs:42:5
@@ -202,76 +187,81 @@ Step 7/12 : RUN npm run build        ← FAILED
 +   → ./src/main.rs:15     myapp::main()
 +   (+ 2 framework frames hidden)
 ```
-
-**80% saved.**
+> 80% saved.
 
 </details>
 
 ---
 
-## 📊 Benchmark (102 Tests)
+## 📊 The Numbers Don't Lie
 
-Tested with production-like inputs. [Full results →](docs/benchmark-results.md)
+> **102 real-world tests. No cherry-picking.**
 
-| Category | Cases | Avg Savings | Best | Worst |
-|:---------|------:|------------:|-----:|------:|
-| Docker build logs | 10 | **88.2%** | 97% | 77% |
-| ANSI/spinners | 15 | **82.5%** | 98% | 41% |
-| Error stacktraces | 20 | **58.7%** | 97% | 2%* |
-| Build errors | 15 | **55.6%** | 90% | -10%* |
-| Web pages | 15 | **42.5%** | 64% | 5% |
-| CLI commands | 12 | **42.0%** | 78% | -56%* |
-| Package install | 15 | **39.2%** | 99% | 2% |
-| **Overall** | **102** | **57.4%** | | |
+| Category | Tests | Avg Savings | 🏆 Best | 💀 Worst |
+|:---------|------:|:----------:|:-------:|:-------:|
+| 🐳 Docker build | 10 | **88%** | 97% | 77% |
+| 🎨 ANSI/spinners | 15 | **83%** | 98% | 41% |
+| 💥 Error traces | 20 | **59%** | 97% | 2% |
+| 🔨 Build errors | 15 | **56%** | 90% | -10% |
+| 🌐 Web pages | 15 | **43%** | 64% | 5% |
+| 💻 CLI commands | 12 | **42%** | 78% | -56% |
+| 📦 Package install | 15 | **39%** | 99% | 2% |
 
-> **Weighted: 61.1%** savings (326K chars in → 127K chars out)
+**Weighted total: 61% savings** → 326K chars in, 127K chars out
 
-\* Negative = output grew. Happens with tiny inputs where formatting overhead exceeds noise.
-
----
-
-## 🔄 ContextZip vs RTK
-
-Built on [RTK](https://github.com/rtk-ai/rtk). All 34 RTK commands included, plus:
-
-| Noise Source | RTK | ContextZip |
-|:-------------|:---:|:----------:|
-| CLI output (git, test, ls) | ✓ | ✓ |
-| Error stacktraces (5 languages) | ✗ | **✓** |
-| Web page fetch | ✗ | **✓** |
-| ANSI/spinner/decoration | partial | **✓ enhanced** |
-| Build error grouping | partial | **✓ enhanced** |
-| Package install logs | ✗ | **✓** |
-| Docker build logs | partial | **✓ enhanced** |
-| Per-command savings display | ✗ | **✓** |
+> [!NOTE]
+> Negative = output grew. Happens on tiny inputs. We put the worst numbers in the table because hiding them would be dishonest. [Full benchmark →](docs/benchmark-results.md)
 
 ---
 
-## ⚙️ How It Works
+## 🏎️ How It Works
 
 ```
-Claude Code hook intercepts bash command
-       ↓
-contextzip binary
-  ├── [1] ANSI preprocessor ──→ strip escape codes, spinners
-  ├── [2] Command router ──→ 40+ specialized filters
-  ├── [3] Error post-processor ──→ compress stacktraces
-  └── [4] SQLite tracking ──→ record savings
-       ↓
-Compressed output → Claude's context
-💾 contextzip: 2,000 → 200 tokens (saved 90%)
+  ┌─────────────────────────────────────────────┐
+  │  Claude Code runs: git status               │
+  │                         ↓                   │
+  │  Hook rewrites → contextzip git status      │
+  │                         ↓                   │
+  │  ┌──────────────────────────────────────┐   │
+  │  │ [1] ANSI preprocessor    strip junk  │   │
+  │  │ [2] Command router    40+ filters    │   │
+  │  │ [3] Error post-proc   compress stack │   │
+  │  │ [4] SQLite tracker    record savings │   │
+  │  └──────────────────────────────────────┘   │
+  │                         ↓                   │
+  │  Compressed output → Claude's context       │
+  │  💾 contextzip: 200 → 40 tokens (80%)       │
+  └─────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📈 Track Your Savings
+## 🆚 Why Not Just RTK?
+
+Built on [RTK](https://github.com/rtk-ai/rtk) (28k⭐). All 34 RTK commands included. **Plus:**
+
+| | RTK | ContextZip |
+|:---|:---:|:---:|
+| CLI compression (git, test, ls) | ✅ | ✅ |
+| Error stacktraces (Node/Python/Rust/Go/Java) | ❌ | ✅ |
+| Web page content extraction | ❌ | ✅ |
+| ANSI / spinner / decoration removal | 🟡 | ✅ |
+| Build error grouping (tsc/eslint/cargo) | 🟡 | ✅ |
+| Package install noise (npm/pip/cargo) | ❌ | ✅ |
+| Docker build compression | 🟡 | ✅ |
+| Per-command savings display | ❌ | ✅ |
+
+---
+
+## 📈 Track Everything
 
 ```bash
 $ contextzip gain
 📊 ContextZip Token Savings
-════════════════════════════════════
+════════════════════════════════════════
 Total commands:    2,927
 Tokens saved:      10.3M (89.2%)
+Efficiency meter: █████████████████████░░░ 89%
 
 $ contextzip gain --by-feature
 Feature        Commands  Saved     Avg%
@@ -283,73 +273,74 @@ pkg            34        0.3M     95%
 docker         22        0.2M     85%
 ```
 
-```bash
-contextzip gain --graph      # Daily savings chart
-contextzip gain --history    # Recent command details
-```
+<p align="center">
+  <code>--graph</code> daily chart &nbsp;•&nbsp; <code>--history</code> recent commands
+</p>
 
 ---
 
-## 🛡️ Safety Guarantees
+## 🛡️ Nothing Important Gets Lost
 
-| What | Rule |
-|:-----|:-----|
-| Error messages | **ALWAYS** preserved (first line + user code frames) |
-| File:line locations | **NEVER** removed from build errors |
-| Security warnings | **ALWAYS** kept (CVE, GHSA, vulnerability) |
-| Docker failure context | **ALWAYS** preserved (failed step + 2 prior + exit code) |
-| Exit codes | **ALWAYS** propagated (CI/CD safe) |
+| | |
+|:---|:---|
+| 🔴 Error messages | **ALWAYS** preserved |
+| 📍 File:line in build errors | **NEVER** removed |
+| 🔒 Security warnings (CVE, GHSA) | **ALWAYS** kept |
+| 🐳 Docker failure context | **ALWAYS** preserved |
+| ⏎ Exit codes | **ALWAYS** propagated |
 
 > [!IMPORTANT]
-> ContextZip only removes **confirmed noise**. If in doubt, the original output passes through unchanged.
+> ContextZip only removes **confirmed noise**. When in doubt → passthrough.
 
 ---
 
-## 🔧 CLI Reference
+## 🔧 Commands
 
 ```bash
-# Automatic (via hook — no prefix needed):
-git status          # → contextzip git status
-cargo test          # → contextzip cargo test
-npm install         # → contextzip npm install
+# Automatic (hook rewrites these — no prefix needed):
+git status              npm install             cargo test
+docker build .          pip install flask        go test ./...
 
-# Manual commands:
-contextzip web https://docs.example.com    # Extract page content
-contextzip err node server.js              # Error-focused output
+# Manual:
+contextzip web https://docs.example.com    # page → content only
+contextzip err node server.js              # error-focused output
 
 # Analytics:
-contextzip gain                  # Savings dashboard
-contextzip gain --by-feature     # By filter type
-contextzip gain --graph          # Daily chart
-contextzip gain --history        # Recent commands
+contextzip gain                  # dashboard
+contextzip gain --by-feature     # per-filter stats
+contextzip gain --graph          # daily chart
+contextzip gain --history        # recent commands
 
-# Setup:
-contextzip init --show           # Check installation
-contextzip update                # Self-update
-contextzip uninstall             # Clean removal
+# Manage:
+contextzip init --show           # check setup
+contextzip update                # self-update
+contextzip uninstall             # clean removal
 ```
 
 ---
 
-## 🤝 Contributing
-
-Contributions welcome! ContextZip is a Rust project.
+## 🤝 Contribute
 
 ```bash
-git clone https://github.com/jee599/contextzip.git
-cd contextzip
-cargo test         # 1056 tests
-cargo clippy       # Lint check
+git clone https://github.com/jee599/contextzip.git && cd contextzip
+cargo test         # 1,056 tests
+cargo clippy       # lint
 ```
 
 ## 📜 License
 
-MIT — Based on [RTK](https://github.com/rtk-ai/rtk) by rtk-ai.
+MIT — Fork of [RTK](https://github.com/rtk-ai/rtk) by rtk-ai.
 
 ---
 
 <p align="center">
-  <sub>⚡ Save tokens. Ship faster.</sub>
+  <b>⚡ Less noise. More code. Ship faster.</b>
+</p>
+
+<p align="center">
+  <a href="https://github.com/jee599/contextzip">
+    <img src="https://img.shields.io/badge/GitHub-⭐_Star_this_repo-yellow?style=for-the-badge&logo=github" alt="Star" />
+  </a>
 </p>
 
 [![Star History Chart](https://api.star-history.com/svg?repos=jee599/contextzip&type=Date)](https://star-history.com/#jee599/contextzip&Date)
