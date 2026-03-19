@@ -268,8 +268,8 @@ fn compress_rust(input: &str) -> String {
 
             // Determine if this is a framework frame
             let is_framework = RUST_FRAMEWORK_RE.is_match(line)
-                || at_line.map_or(false, |l| RUST_RUSTC_PATH_RE.is_match(l))
-                || at_line.map_or(false, |l| RUST_FRAMEWORK_RE.is_match(l));
+                || at_line.is_some_and(|l| RUST_RUSTC_PATH_RE.is_match(l))
+                || at_line.is_some_and(|l| RUST_FRAMEWORK_RE.is_match(l));
 
             if is_framework {
                 hidden_count += 1;
@@ -288,10 +288,7 @@ fn compress_rust(input: &str) -> String {
                 });
 
                 if let Some(loc) = location {
-                    result.push(format!(
-                        "  \u{2192} {:<16} {}()",
-                        loc, func_name
-                    ));
+                    result.push(format!("  \u{2192} {:<16} {}()", loc, func_name));
                 } else {
                     result.push(format!("  \u{2192} {}", func_name));
                 }
@@ -490,24 +487,22 @@ stack backtrace:
 
     #[test]
     fn test_rust_panic_multiline_frames() {
-        let input = "thread 'main' panicked at 'index out of bounds', src/handler.rs:42:5\n\
-stack backtrace:\n\
-   0: std::panicking::begin_panic\n\
-             at /rustc/abc123/library/std/src/panicking.rs:616:12\n\
-   1: std::rt::lang_start_internal\n\
-             at /rustc/abc123/library/std/src/rt.rs:148:20\n\
-   2: tokio::runtime::enter\n\
-             at /home/user/.cargo/registry/src/tokio-1.0/runtime/enter.rs:55:8\n\
-   3: myapp::handler::process\n\
-             at ./src/handler.rs:42:5\n\
-   4: myapp::main\n\
-             at ./src/main.rs:15:3\n\
-   5: std::rt::lang_start\n\
-             at /rustc/abc123/library/std/src/rt.rs:166:17";
+        let input = r#"thread 'main' panicked at 'index out of bounds', src/handler.rs:42:5
+stack backtrace:
+   0: std::panicking::begin_panic
+             at /rustc/abc123/library/std/src/panicking.rs:616:12
+   1: std::rt::lang_start_internal
+             at /rustc/abc123/library/std/src/rt.rs:148:20
+   2: tokio::runtime::enter
+             at /home/user/.cargo/registry/src/tokio-1.0/runtime/enter.rs:55:8
+   3: myapp::handler::process
+             at ./src/handler.rs:42:5
+   4: myapp::main
+             at ./src/main.rs:15:3
+   5: std::rt::lang_start
+             at /rustc/abc123/library/std/src/rt.rs:166:17"#;
 
         let result = compress_errors(input);
-
-        eprintln!("=== MULTILINE RESULT ===\n{}\n=== END ===", result);
 
         // Must preserve panic message
         assert!(result.contains("panicked at"));
@@ -529,12 +524,12 @@ stack backtrace:\n\
 
     #[test]
     fn test_rust_panic_with_short_backtrace_markers() {
-        let input = "thread 'main' panicked at 'error', src/main.rs:10:5\n\
-stack backtrace:\n\
-   0: __rust_begin_short_backtrace\n\
-   1: myapp::run\n\
-   2: __rust_end_short_backtrace\n\
-   3: std::sys::backtrace::__rust_begin_short_backtrace";
+        let input = r#"thread 'main' panicked at 'error', src/main.rs:10:5
+stack backtrace:
+   0: __rust_begin_short_backtrace
+   1: myapp::run
+   2: __rust_end_short_backtrace
+   3: std::sys::backtrace::__rust_begin_short_backtrace"#;
 
         let result = compress_errors(input);
 
