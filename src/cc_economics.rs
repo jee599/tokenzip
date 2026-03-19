@@ -507,7 +507,7 @@ fn display_summary(tracker: &Tracker, verbose: u8) -> Result<()> {
     println!();
 
     println!("  How it works:");
-    println!("  RTK compresses CLI outputs before they enter Claude's context.");
+    println!("  ContextZip compresses CLI outputs before they enter Claude's context.");
     println!("  Savings derived using API price ratios (out=5x, cache_w=1.25x, cache_r=0.1x).");
     println!();
 

@@ -1068,7 +1068,7 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
     // Start timer before execution to capture actual command runtime
     let timer = tracking::TimedExecution::start();
 
-    // TOML filter lookup — bypass with RTK_NO_TOML=1
+    // TOML filter lookup — bypass with CONTEXTZIP_NO_TOML=1 (or legacy RTK_NO_TOML=1)
     // Use basename of args[0] so absolute paths (/usr/bin/make) still match "^make\b".
     let lookup_cmd = {
         let base = std::path::Path::new(&args[0])
@@ -1080,7 +1080,12 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
             .collect::<Vec<_>>()
             .join(" ")
     };
-    let toml_match = if std::env::var("RTK_NO_TOML").ok().as_deref() == Some("1") {
+    let toml_match = if std::env::var("CONTEXTZIP_NO_TOML")
+        .or_else(|_| std::env::var("RTK_NO_TOML"))
+        .ok()
+        .as_deref()
+        == Some("1")
+    {
         None
     } else {
         toml_filter::find_matching_filter(&lookup_cmd)

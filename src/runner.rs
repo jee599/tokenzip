@@ -131,6 +131,8 @@ fn filter_errors(output: &str) -> String {
             Regex::new(r"^\s*at .*:\d+:\d+.*$").unwrap(),
             // Go
             Regex::new(r"^.*\.go:\d+:.*$").unwrap(),
+            // Go goroutine stack traces
+            Regex::new(r"^goroutine \d+").unwrap(),
         ];
     }
 

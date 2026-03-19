@@ -66,7 +66,7 @@ cargo install --git https://github.com/jee599/contextzip
 
 ## 👀 違いを見よ
 
-### 💥 Node.jsエラー — 30行 → 3行（93%削減）
+### 💥 Node.jsエラー — 30行 → 3行（92%削減）
 
 <table>
 <tr>
@@ -100,14 +100,14 @@ TypeError: Cannot read properties
 
 
 
-💾 saved 93%
+💾 saved 92%
 ```
 
 </td>
 </tr>
 </table>
 
-### 📦 npm install — 150行 → 3行（95%削減）
+### 📦 npm install — 150行 → 3行（58-95%削減、警告数により変動）
 
 <table>
 <tr>
@@ -233,7 +233,7 @@ ValueError: invalid literal for int()
 </tr>
 </table>
 
-### 🦀 Rust Panic — std/tokioを除去（80%削減）
+### 🦀 Rust Panic — std/tokioを除去（errフィルターで2-7%削減）
 
 <table>
 <tr>
@@ -269,7 +269,7 @@ thread 'main' panicked at
   (+ 2 framework frames hidden)
 
 
-💾 saved 80%
+💾 saved 2-7% (errフィルター; Rust panicフォーマット未最適化)
 ```
 
 </td>
@@ -472,11 +472,11 @@ Step 7/12 : RUN npm run build        ← FAILED
 | カテゴリ | テスト | 平均削減 | 🏆 最高 | 💀 最低 |
 |:---------|------:|:----------:|:-------:|:-------:|
 | 🐳 Dockerビルド | 10 | **88%** | 97% | 77% |
-| 🎨 ANSI/スピナー | 15 | **83%** | 98% | 41% |
-| 💥 エラートレース | 20 | **59%** | 97% | 2% |
+| 🎨 ANSI/スピナー | 15 | **83%** | 98% | 0% |
+| 💥 エラートレース | 20 | **59%** | 97% | -12% |
 | 🔨 ビルドエラー | 15 | **56%** | 90% | -10% |
 | 🌐 Webページ | 15 | **43%** | 64% | 5% |
-| 💻 CLIコマンド | 12 | **42%** | 78% | -56% |
+| 💻 CLIコマンド | 12 | **42%** | 99% | -56% |
 | 📦 パッケージインストール | 15 | **39%** | 99% | 2% |
 
 **加重平均: 61%削減** → 326K chars in, 127K chars out

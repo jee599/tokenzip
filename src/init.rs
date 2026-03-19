@@ -595,7 +595,7 @@ fn patch_settings_json(
     }
 
     // Deep-merge hook
-    insert_hook_entry(&mut root, hook_command);
+    insert_hook_entry(&mut root, hook_command)?;
 
     // Backup original
     if settings_path.exists() {
@@ -660,14 +660,14 @@ fn clean_double_blanks(content: &str) -> String {
 
 /// Deep-merge ContextZip hook entry into settings.json
 /// Creates hooks.PreToolUse structure if missing, preserves existing hooks
-fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) {
+fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) -> anyhow::Result<()> {
     // Ensure root is an object
     let root_obj = match root.as_object_mut() {
         Some(obj) => obj,
         None => {
             *root = serde_json::json!({});
             root.as_object_mut()
-                .expect("Just created object, must succeed")
+                .ok_or_else(|| anyhow::anyhow!("Failed to create root JSON object"))?
         }
     };
 
@@ -676,13 +676,13 @@ fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) {
         .entry("hooks")
         .or_insert_with(|| serde_json::json!({}))
         .as_object_mut()
-        .expect("hooks must be an object");
+        .ok_or_else(|| anyhow::anyhow!("'hooks' field in settings.json is not an object"))?;
 
     let pre_tool_use = hooks
         .entry("PreToolUse")
         .or_insert_with(|| serde_json::json!([]))
         .as_array_mut()
-        .expect("PreToolUse must be an array");
+        .ok_or_else(|| anyhow::anyhow!("'PreToolUse' field in settings.json is not an array"))?;
 
     // Append ContextZip hook entry
     pre_tool_use.push(serde_json::json!({
@@ -692,6 +692,8 @@ fn insert_hook_entry(root: &mut serde_json::Value, hook_command: &str) {
             "command": hook_command
         }]
     }));
+
+    Ok(())
 }
 
 /// Check if ContextZip hook is already present in settings.json
@@ -1968,7 +1970,7 @@ More notes
         let mut json_content = serde_json::json!({});
         let hook_command = "/Users/test/.claude/hooks/contextzip-rewrite.sh";
 
-        insert_hook_entry(&mut json_content, hook_command);
+        insert_hook_entry(&mut json_content, hook_command).unwrap();
 
         // Should create full structure
         assert!(json_content.get("hooks").is_some());
@@ -2000,7 +2002,7 @@ More notes
         });
 
         let hook_command = "/Users/test/.claude/hooks/contextzip-rewrite.sh";
-        insert_hook_entry(&mut json_content, hook_command);
+        insert_hook_entry(&mut json_content, hook_command).unwrap();
 
         let pre_tool_use = json_content["hooks"]["PreToolUse"].as_array().unwrap();
         assert_eq!(pre_tool_use.len(), 2); // Should have both hooks
@@ -2023,7 +2025,7 @@ More notes
         });
 
         let hook_command = "/Users/test/.claude/hooks/contextzip-rewrite.sh";
-        insert_hook_entry(&mut json_content, hook_command);
+        insert_hook_entry(&mut json_content, hook_command).unwrap();
 
         // Should preserve all other keys
         assert_eq!(json_content["env"]["PATH"], "/custom/path");

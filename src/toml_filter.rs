@@ -10,8 +10,8 @@
 /// `contextzip init` generates a commented template for both levels (project or global).
 ///
 /// Environment variables:
-///   - `RTK_NO_TOML=1`     — bypass TOML engine entirely
-///   - `RTK_TOML_DEBUG=1`  — print which filter matched and line counts to stderr
+///   - `CONTEXTZIP_NO_TOML=1`  — bypass TOML engine entirely (legacy: `RTK_NO_TOML=1`)
+///   - `CONTEXTZIP_TOML_DEBUG=1` — print which filter matched and line counts to stderr (legacy: `RTK_TOML_DEBUG=1`)
 ///
 /// Pipeline stages (applied in order):
 ///   1. strip_ansi           — remove ANSI escape codes
@@ -673,7 +673,10 @@ fn collect_test_outcomes(
 /// Find a matching filter from the global registry. Initialises the registry
 /// lazily on first call. Returns `None` if no filter matches.
 pub fn find_matching_filter(command: &str) -> Option<&'static CompiledFilter> {
-    if std::env::var("RTK_TOML_DEBUG").is_ok() {
+    if std::env::var("CONTEXTZIP_TOML_DEBUG")
+        .or_else(|_| std::env::var("RTK_TOML_DEBUG"))
+        .is_ok()
+    {
         eprintln!(
             "[contextzip:toml] looking up filter for: {:?} ({} filters loaded)",
             command,
@@ -681,7 +684,10 @@ pub fn find_matching_filter(command: &str) -> Option<&'static CompiledFilter> {
         );
     }
     let result = find_filter_in(command, &REGISTRY.filters);
-    if std::env::var("RTK_TOML_DEBUG").is_ok() {
+    if std::env::var("CONTEXTZIP_TOML_DEBUG")
+        .or_else(|_| std::env::var("RTK_TOML_DEBUG"))
+        .is_ok()
+    {
         match result {
             Some(f) => eprintln!("[contextzip:toml] matched filter: '{}'", f.name),
             None => eprintln!("[contextzip:toml] no filter matched — passthrough"),

@@ -66,7 +66,7 @@ cargo install --git https://github.com/jee599/contextzip
 
 ## 👀 看看区别
 
-### 💥 Node.js 报错 — 30 行 → 3 行（节省 93%）
+### 💥 Node.js 报错 — 30 行 → 3 行（节省 92%）
 
 <table>
 <tr>
@@ -100,14 +100,14 @@ TypeError: Cannot read properties
 
 
 
-💾 saved 93%
+💾 saved 92%
 ```
 
 </td>
 </tr>
 </table>
 
-### 📦 npm install — 150 行 → 3 行（节省 95%）
+### 📦 npm install — 150 行 → 3 行（节省 58-95%，因警告数量而异）
 
 <table>
 <tr>
@@ -233,7 +233,7 @@ ValueError: invalid literal for int()
 </tr>
 </table>
 
-### 🦀 Rust Panic — 移除 std/tokio（节省 80%）
+### 🦀 Rust Panic — 移除 std/tokio（err 过滤器节省 2-7%）
 
 <table>
 <tr>
@@ -269,7 +269,7 @@ thread 'main' panicked at
   (+ 2 framework frames hidden)
 
 
-💾 saved 80%
+💾 saved 2-7% (err 过滤器; Rust panic 格式尚未优化)
 ```
 
 </td>
@@ -472,11 +472,11 @@ Step 7/12 : RUN npm run build        ← FAILED
 | 类别 | 测试 | 平均节省 | 🏆 最高 | 💀 最低 |
 |:---------|------:|:----------:|:-------:|:-------:|
 | 🐳 Docker 构建 | 10 | **88%** | 97% | 77% |
-| 🎨 ANSI/加载动画 | 15 | **83%** | 98% | 41% |
-| 💥 错误堆栈 | 20 | **59%** | 97% | 2% |
+| 🎨 ANSI/加载动画 | 15 | **83%** | 98% | 0% |
+| 💥 错误堆栈 | 20 | **59%** | 97% | -12% |
 | 🔨 构建错误 | 15 | **56%** | 90% | -10% |
 | 🌐 网页 | 15 | **43%** | 64% | 5% |
-| 💻 CLI 命令 | 12 | **42%** | 78% | -56% |
+| 💻 CLI 命令 | 12 | **42%** | 99% | -56% |
 | 📦 包安装 | 15 | **39%** | 99% | 2% |
 
 **加权平均: 61% 节省** → 326K chars in, 127K chars out

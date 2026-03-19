@@ -65,7 +65,7 @@ cargo install --git https://github.com/jee599/contextzip
 
 ## 👀 See the Difference
 
-### 💥 Node.js Error — 30 lines → 3 lines (93% saved)
+### 💥 Node.js Error — 30 lines → 3 lines (92% saved)
 
 <table>
 <tr>
@@ -99,14 +99,14 @@ TypeError: Cannot read properties
 
 
 
-💾 saved 93%
+💾 saved 92%
 ```
 
 </td>
 </tr>
 </table>
 
-### 📦 npm install — 150 lines → 3 lines (95% saved)
+### 📦 npm install — 150 lines → 3 lines (58-95% saved, varies by warning count)
 
 <table>
 <tr>
@@ -232,7 +232,7 @@ ValueError: invalid literal for int()
 </tr>
 </table>
 
-### 🦀 Rust Panic — std/tokio removed (80% saved)
+### 🦀 Rust Panic — std/tokio removed (2-7% saved via err filter)
 
 <table>
 <tr>
@@ -268,7 +268,7 @@ thread 'main' panicked at
   (+ 2 framework frames hidden)
 
 
-💾 saved 80%
+💾 saved 2-7% (err filter; Rust panic format not yet optimized)
 ```
 
 </td>
@@ -471,11 +471,11 @@ Step 7/12 : RUN npm run build        ← FAILED
 | Category | Tests | Avg Savings | 🏆 Best | 💀 Worst |
 |:---------|------:|:----------:|:-------:|:-------:|
 | 🐳 Docker build | 10 | **88%** | 97% | 77% |
-| 🎨 ANSI/spinners | 15 | **83%** | 98% | 41% |
-| 💥 Error traces | 20 | **59%** | 97% | 2% |
+| 🎨 ANSI/spinners | 15 | **83%** | 98% | 0% |
+| 💥 Error traces | 20 | **59%** | 97% | -12% |
 | 🔨 Build errors | 15 | **56%** | 90% | -10% |
 | 🌐 Web pages | 15 | **43%** | 64% | 5% |
-| 💻 CLI commands | 12 | **42%** | 78% | -56% |
+| 💻 CLI commands | 12 | **42%** | 99% | -56% |
 | 📦 Package install | 15 | **39%** | 99% | 2% |
 
 **Weighted total: 61% savings** → 326K chars in, 127K chars out
