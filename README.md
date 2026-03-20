@@ -36,6 +36,12 @@
 
 ---
 
+<p align="center">
+  <img src="docs/demo.gif" alt="ContextZip demo — before vs after" width="640" />
+</p>
+
+---
+
 ## ⬇️ Install
 
 ```bash
