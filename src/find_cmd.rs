@@ -208,9 +208,13 @@ pub fn run(
 
     let want_dirs = file_type == "d";
 
+    // If the user is searching for dotfiles (pattern begins with '.'), include
+    // hidden entries so `find .env*` actually returns `.env`, `.envrc`, etc.
+    let pattern_targets_dotfiles = effective_pattern.trim_start_matches('*').starts_with('.');
+
     let mut builder = WalkBuilder::new(path);
     builder
-        .hidden(true) // skip hidden files/dirs
+        .hidden(!pattern_targets_dotfiles)
         .git_ignore(true) // respect .gitignore
         .git_global(true)
         .git_exclude(true);

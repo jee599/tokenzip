@@ -32,8 +32,14 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     let raw = stdout.to_string();
 
-    // Auto-detect JSON and pipe through filter
-    let filtered = filter_curl_output(&stdout);
+    // Internal/localhost requests (health checks, dev servers) usually want
+    // the raw response — running them through JSON-schema collapse breaks
+    // status checks and assertion-based tests. Pass through unchanged.
+    let filtered = if targets_localhost(args) {
+        raw.clone()
+    } else {
+        filter_curl_output(&stdout)
+    };
     println!("{}", filtered);
 
     timer.track(
@@ -44,6 +50,44 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
     );
 
     Ok(())
+}
+
+fn targets_localhost(args: &[String]) -> bool {
+    args.iter().any(|a| {
+        let lower = a.to_lowercase();
+        is_loopback_host(&lower, "localhost")
+            || is_loopback_host(&lower, "127.0.0.1")
+            || is_loopback_host(&lower, "[::1]")
+            || is_loopback_host(&lower, "0.0.0.0")
+            || has_internal_tld(&lower)
+    })
+}
+
+/// True if `url` has `//<host>` followed immediately by `:`, `/`, `?`, `#`, or end-of-string —
+/// i.e. matches the host exactly, not a prefix like `localhost.example.com`.
+fn is_loopback_host(url: &str, host: &str) -> bool {
+    let needle = format!("//{}", host);
+    let Some(idx) = url.find(&needle) else {
+        return false;
+    };
+    let rest = &url[idx + needle.len()..];
+    rest.is_empty()
+        || rest.starts_with(':')
+        || rest.starts_with('/')
+        || rest.starts_with('?')
+        || rest.starts_with('#')
+}
+
+fn has_internal_tld(url: &str) -> bool {
+    // Looking for hostname ending in `.internal` or `.local` *as a TLD*, e.g.
+    // `https://service.internal/x` or `https://api.svc.local`.
+    // Skip the scheme then check hostname boundary.
+    let after_scheme = url.split("://").nth(1).unwrap_or(url);
+    let host = after_scheme
+        .split(['/', '?', '#', ':'])
+        .next()
+        .unwrap_or(after_scheme);
+    host.ends_with(".internal") || host.ends_with(".local")
 }
 
 fn filter_curl_output(output: &str) -> String {
@@ -129,5 +173,38 @@ mod tests {
         assert!(result.contains("Line 0"));
         assert!(result.contains("Line 29"));
         assert!(result.contains("more lines"));
+    }
+
+    #[test]
+    fn targets_localhost_recognises_loopback_hosts() {
+        for url in [
+            "http://localhost:3000/api",
+            "http://127.0.0.1/health",
+            "https://[::1]/x",
+            "http://0.0.0.0:8080",
+            "https://api.svc.local/v1",
+            "https://service.internal/check",
+        ] {
+            assert!(
+                targets_localhost(&[url.to_string()]),
+                "expected localhost match for {}",
+                url
+            );
+        }
+    }
+
+    #[test]
+    fn targets_localhost_does_not_match_public_urls() {
+        for url in [
+            "https://example.com/api",
+            "https://github.com/jee599/contextzip",
+            "https://localhost.example.com/x",
+        ] {
+            assert!(
+                !targets_localhost(&[url.to_string()]),
+                "did not expect localhost match for {}",
+                url
+            );
+        }
     }
 }
