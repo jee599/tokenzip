@@ -133,6 +133,8 @@ fn filter_errors(output: &str) -> String {
             Regex::new(r"^.*\.go:\d+:.*$").unwrap(),
             // Go goroutine stack traces
             Regex::new(r"^goroutine \d+").unwrap(),
+            // Go stack frame function lines (e.g. "main.handler()", "runtime/debug.Stack()")
+            Regex::new(r"^[\w./]+\(.*\)$").unwrap(),
         ];
     }
 
