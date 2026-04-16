@@ -394,8 +394,17 @@ enum Commands {
     /// collapse to a reference) and BashHistoryCompact (re-apply text filters
     /// to past Bash results, idempotent).
     Compact {
-        /// Session id (looked up under ~/.claude/projects/) or full .jsonl path
-        target: String,
+        /// Session id (looked up under ~/.claude/projects/) or full .jsonl path.
+        /// Optional when --all-sessions is set.
+        #[arg(required_unless_present = "all_sessions")]
+        target: Option<String>,
+        /// Print stats without writing the sidecar (preview compression effect)
+        #[arg(long)]
+        dry_run: bool,
+        /// Compact every session under ~/.claude/projects/. Skips files that
+        /// already have a .compressed sidecar.
+        #[arg(long = "all-sessions")]
+        all_sessions: bool,
     },
 
     /// Atomic-swap a previously-compacted sidecar into place as the active session.
@@ -1729,8 +1738,17 @@ fn main() -> Result<()> {
             wc_cmd::run(&args, cli.verbose)?;
         }
 
-        Commands::Compact { target } => {
-            compact_cmd::run(&target, cli.verbose)?;
+        Commands::Compact {
+            target,
+            dry_run,
+            all_sessions,
+        } => {
+            if all_sessions {
+                compact_cmd::run_all_sessions(dry_run, cli.verbose)?;
+            } else {
+                let target = target.expect("clap required_unless_present guards this");
+                compact_cmd::run_with_options(&target, dry_run, cli.verbose)?;
+            }
         }
 
         Commands::Apply { target } => {

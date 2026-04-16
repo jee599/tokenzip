@@ -12,20 +12,110 @@ use std::path::{Path, PathBuf};
 
 use crate::jsonl_rewriter;
 
-pub fn run(target: &str, verbose: u8) -> Result<()> {
+pub fn run_with_options(target: &str, dry_run: bool, verbose: u8) -> Result<()> {
     let session_path = resolve_session_path(target)?;
 
     if verbose > 0 {
-        eprintln!("contextzip compact: {}", session_path.display());
+        eprintln!(
+            "contextzip compact{}: {}",
+            if dry_run { " (dry-run)" } else { "" },
+            session_path.display()
+        );
     }
 
-    let (sidecar, stats) = jsonl_rewriter::compact_session_file(&session_path)
-        .with_context(|| format!("Failed to compact session: {}", session_path.display()))?;
+    let stats = if dry_run {
+        let raw = std::fs::read_to_string(&session_path)
+            .with_context(|| format!("Failed to read session: {}", session_path.display()))?;
+        jsonl_rewriter::compact_session_str(&raw).1
+    } else {
+        let (_sidecar, stats) = jsonl_rewriter::compact_session_file(&session_path)
+            .with_context(|| format!("Failed to compact session: {}", session_path.display()))?;
+        stats
+    };
 
+    print_stats_line(&session_path, &stats, dry_run);
+    Ok(())
+}
+
+/// Compact every `.jsonl` under `~/.claude/projects/<project>/`. Skips files
+/// that already have a sidecar so re-running is idempotent. Reports per-session
+/// progress on stderr and aggregates totals at the end.
+pub fn run_all_sessions(dry_run: bool, verbose: u8) -> Result<()> {
+    let root = projects_root()?;
+    if !root.is_dir() {
+        bail!(
+            "No Claude Code projects directory at {} — nothing to do.",
+            root.display()
+        );
+    }
+
+    let mut total_in = 0usize;
+    let mut total_out = 0usize;
+    let mut total_dedup = 0usize;
+    let mut total_bash = 0usize;
+    let mut sessions_done = 0usize;
+    let mut sessions_skipped = 0usize;
+
+    for project in std::fs::read_dir(&root)
+        .with_context(|| format!("Failed to read {}", root.display()))?
+    {
+        let Ok(project) = project else { continue };
+        if !project.path().is_dir() {
+            continue;
+        }
+        for file in std::fs::read_dir(project.path())? {
+            let Ok(file) = file else { continue };
+            let path = file.path();
+            if path.extension().and_then(|e| e.to_str()) != Some("jsonl") {
+                continue;
+            }
+            // Skip if a sidecar already exists — assume the user wants to apply
+            // it before re-compacting. Avoids silently overwriting prior runs.
+            let sidecar = sidecar_path(&path);
+            if !dry_run && sidecar.exists() {
+                sessions_skipped += 1;
+                if verbose > 0 {
+                    eprintln!("skip {} (sidecar exists)", path.display());
+                }
+                continue;
+            }
+
+            match run_with_options(path.to_string_lossy().as_ref(), dry_run, verbose.max(1)) {
+                Ok(()) => {
+                    sessions_done += 1;
+                    // We re-read the file just so the aggregate stats are correct;
+                    // good enough for an analytics summary, and acceptable for
+                    // batch runs (most sessions are <10 MB).
+                    if let Ok(raw) = std::fs::read_to_string(&path) {
+                        let s = jsonl_rewriter::compact_session_str(&raw).1;
+                        total_in += s.bytes_in;
+                        total_out += s.bytes_out;
+                        total_dedup += s.read_results_deduped;
+                        total_bash += s.bash_results_recompressed;
+                    }
+                }
+                Err(e) => eprintln!("FAIL {}: {}", path.display(), e),
+            }
+        }
+    }
+
+    let pct = if total_in > 0 {
+        ((total_in - total_out.min(total_in)) as f64 / total_in as f64) * 100.0
+    } else {
+        0.0
+    };
     println!(
-        "compact: {} → {}\n  records: {}, bytes: {} → {} ({:.1}% saved)\n  axes: ReadDedup={}, BashHistoryCompact={}",
-        session_path.display(),
-        sidecar.display(),
+        "all-sessions: {} compacted, {} skipped\n  bytes: {} → {} ({:.1}% saved)\n  axes: ReadDedup={}, BashHistoryCompact={}",
+        sessions_done, sessions_skipped, total_in, total_out, pct, total_dedup, total_bash
+    );
+    Ok(())
+}
+
+fn print_stats_line(path: &Path, stats: &jsonl_rewriter::CompactStats, dry_run: bool) {
+    println!(
+        "{}: {}\n  records: {}, bytes: {} → {} ({:.1}% saved)\n  axes: ReadDedup={}, BashHistoryCompact={}",
+        if dry_run { "compact (dry-run)" } else { "compact" },
+        path.display(),
         stats.records_written,
         stats.bytes_in,
         stats.bytes_out,
@@ -33,8 +123,6 @@ pub fn run(target: &str, verbose: u8) -> Result<()> {
         stats.read_results_deduped,
         stats.bash_results_recompressed,
     );
-
-    Ok(())
 }
 
 /// Atomic swap: backup `<session>.jsonl` → `<session>.jsonl.bak`, then
@@ -250,9 +338,24 @@ mod tests {
         drop(f);
 
         // Should not panic, should produce a sidecar.
-        run(session.to_str().unwrap(), 0)?;
+        run_with_options(session.to_str().unwrap(), false, 0)?;
         let sidecar = dir.path().join("session.jsonl.compressed");
         assert!(sidecar.exists(), "expected sidecar at {}", sidecar.display());
+        Ok(())
+    }
+
+    #[test]
+    fn dry_run_does_not_write_sidecar() -> Result<()> {
+        let dir = TempDir::new()?;
+        let session = dir.path().join("session.jsonl");
+        fs::write(&session, "{}\n")?;
+        run_with_options(session.to_str().unwrap(), true, 0)?;
+        let sidecar = dir.path().join("session.jsonl.compressed");
+        assert!(
+            !sidecar.exists(),
+            "dry-run must NOT write sidecar (found one at {})",
+            sidecar.display()
+        );
         Ok(())
     }
 
@@ -271,7 +374,7 @@ mod tests {
     fn apply_swaps_sidecar_into_place_and_creates_backup() -> Result<()> {
         let dir = TempDir::new()?;
         let session = make_repeatable_session(dir.path())?;
-        run(session.to_str().unwrap(), 0)?;
+        run_with_options(session.to_str().unwrap(), false, 0)?;
         let original_bytes = fs::read(&session)?;
 
         run_apply(session.to_str().unwrap(), 0)?;
@@ -304,7 +407,7 @@ mod tests {
     fn apply_refuses_when_backup_already_present() -> Result<()> {
         let dir = TempDir::new()?;
         let session = make_repeatable_session(dir.path())?;
-        run(session.to_str().unwrap(), 0)?;
+        run_with_options(session.to_str().unwrap(), false, 0)?;
         // Pre-create a backup to simulate a prior apply.
         fs::write(dir.path().join("session.jsonl.bak"), "old backup")?;
         let r = run_apply(session.to_str().unwrap(), 0);
@@ -319,7 +422,7 @@ mod tests {
         let session = make_repeatable_session(dir.path())?;
         let original_bytes = fs::read(&session)?;
 
-        run(session.to_str().unwrap(), 0)?;
+        run_with_options(session.to_str().unwrap(), false, 0)?;
         run_apply(session.to_str().unwrap(), 0)?;
         run_expand(session.to_str().unwrap(), 0)?;
 

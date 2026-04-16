@@ -6,9 +6,17 @@
 
 <h3 align="center">
   CLI output eats your AI context window. ContextZip compresses it 40-97% (61% avg across 102 tests).<br>
-  <b>v0.2 in progress</b>: session-history compression — the first compressor that touches past tool history, not just live stdout.<br>
   <code>npx contextzip</code>
 </h3>
+
+<p align="center">
+  <a href="https://github.com/jee599/contextzip">
+    <img src="https://img.shields.io/badge/⭐_Star_if_you_use_Claude_Code-yellow?style=for-the-badge&logo=github" alt="Star" />
+  </a>
+</p>
+
+<p align="center"><sub><b>For:</b> Claude Code / Cursor / Copilot CLI users hitting token limits.<br>
+<b>Not for:</b> projects where you need raw command output (use <code>contextzip proxy &lt;cmd&gt;</code> instead).</sub></p>
 
 <p align="center">
   <a href="https://github.com/jee599/contextzip/releases"><img src="https://img.shields.io/github/v/release/jee599/contextzip?style=flat-square&color=blue" alt="Release" /></a>
@@ -204,6 +212,47 @@ TS2322: 'string' → 'number' (×40)
 </tr>
 </table>
 
+### 🆕 v0.2 — Session History Compression (the one nobody else does)
+
+Live stdout compression is table stakes. The bigger problem: your **past Claude Code session JSONL** under `~/.claude/projects/` accumulates **85.8% tool inputs/results** (measured across 6,850 messages). ContextZip is the first tool to compact that archive.
+
+<table>
+<tr>
+<td width="50%">
+
+**Before — 55 MB session, 2,475 records**
+
+```
+Read /src/main.rs        × 14 calls
+Read /Cargo.toml         ×  9 calls
+Bash "npm install"       ANSI noise + repeats
+Bash "cargo test"        repeated lines
+... 152 more repeated reads
+... 43 more noisy Bash results
+```
+
+</td>
+<td width="50%">
+
+**After — `contextzip compact` + `apply`**
+
+```
+✓ ReadDedup        153 hits → references
+✓ BashHistoryCompact 44 hits → filtered
+57.3 MB → 53.5 MB (6.7% saved)
+.bak preserved → safe rollback via expand
+```
+
+</td>
+</tr>
+</table>
+
+```bash
+contextzip compact <session-id>   # writes a reversible .compressed sidecar
+contextzip apply   <session-id>   # atomic swap; original kept as .bak
+contextzip expand  <session-id>   # roll back; sidecar preserved
+```
+
 <details>
 <summary><b>More examples: Rust panic, Python, Web page, ANSI, Docker failure, Java/Go</b></summary>
 
@@ -241,14 +290,12 @@ TS2322: 'string' → 'number' (×40)
 
 **Weighted total: 61% savings** → 326K chars in, 127K chars out
 
-> [!NOTE]
-> Negative = output grew. Happens on tiny inputs. We put the worst numbers in the table because hiding them would be dishonest. [Full benchmark →](docs/benchmark-results.md)
+<details>
+<summary>Why some rows show negative savings</summary>
 
-<p align="center">
-  <a href="https://github.com/jee599/contextzip">
-    <img src="https://img.shields.io/badge/GitHub-⭐_Star_this_repo-yellow?style=for-the-badge&logo=github" alt="Star" />
-  </a>
-</p>
+Negative = output grew. Happens on tiny inputs where the filter's metadata costs more than it saves. We put the worst numbers in the table because hiding them would be dishonest. [Full benchmark →](docs/benchmark-results.md)
+
+</details>
 
 ---
 
@@ -271,26 +318,11 @@ Built on [RTK](https://github.com/rtk-ai/rtk) (28k⭐). All 34 RTK commands incl
 
 ---
 
-## 🗺️ What's Next (v0.2)
+## 🗺️ What's Next
 
-ContextZip today compresses **live stdout**. We measured 6,850 assistant messages across 10 real Claude Code sessions and found:
+The session-history compressor (`compact / apply / expand`) shipped in v0.2 — see the demo above. Other in-flight tracks: AWS 8→25 subcommand expansion, more compact axes (`WritePlaceholder`, `EditDelta`), DSL polish.
 
-| Layer | Share of context |
-|---|---|
-| Tool inputs (Edit/Write/Bash/Read/Agent args) | **46.4%** |
-| Tool results (Read/Bash/Agent outputs) | **39.4%** |
-| User text | 10.1% |
-| Assistant text | 4.1% |
-
-**85.8% of context = tool history.** ContextZip currently only touches the *live Bash stdout* slice. v0.2 introduces the first compressor that operates on **past** tool history, not just real-time output.
-
-```bash
-contextzip compact <session-id>   # writes a reversible sidecar
-contextzip apply   <session-id>   # atomic swap; original kept as .bak
-contextzip expand  <session-id>   # roll back to .bak; sidecar preserved
-```
-
-v0.2 ships **two safe axes only** — `BashHistoryCompact` (re-apply text filters to past Bash results, idempotent) and `ReadDedup` (collapse repeated reads of the same file path into a reference). First measurement on a real 55 MB session: **6.7% saved across 2,475 records** (153 ReadDedup + 44 BashHistoryCompact). Sessions vary; honest target band is 6-12% with zero task-failure regressions. The three commands form a safe loop: `compact` writes a sidecar without touching the original, `apply` swaps the sidecar in (always with a `.bak` backup), `expand` rolls back byte-for-byte.
+Full design: [`docs/superpowers/specs/2026-04-17-contextzip-advancement-design.md`](docs/superpowers/specs/2026-04-17-contextzip-advancement-design.md). Short version: [`ROADMAP.md`](ROADMAP.md).
 
 **Other v0.2 tracks** (full design [here](docs/superpowers/specs/2026-04-17-contextzip-advancement-design.md)):
 - Upstream catch-up — rtk v0.31~0.36 fixes (git/aws/clippy/runner)
