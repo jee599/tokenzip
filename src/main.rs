@@ -5,6 +5,7 @@ mod build_cmd;
 mod cargo_cmd;
 mod cc_economics;
 mod ccusage;
+mod compact_cmd;
 mod config;
 mod container;
 mod curl_cmd;
@@ -33,6 +34,7 @@ mod hook_check;
 mod init;
 mod integrity;
 mod json_cmd;
+mod jsonl_rewriter;
 mod learn;
 mod lint_cmd;
 mod local_llm;
@@ -382,6 +384,18 @@ enum Commands {
         /// Arguments passed to wc (files, flags like -l, -w, -c)
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         args: Vec<String>,
+    },
+
+    /// Compress a Claude Code session JSONL into a reversible sidecar (.compressed).
+    ///
+    /// Operates on past tool history — the layer that lives behind live stdout
+    /// compression. Original JSONL is never modified; rollback is `rm <sidecar>`.
+    /// Two safe axes ship in v0.2: ReadDedup (repeated reads of the same file
+    /// collapse to a reference) and BashHistoryCompact (re-apply text filters
+    /// to past Bash results, idempotent).
+    Compact {
+        /// Session id (looked up under ~/.claude/projects/) or full .jsonl path
+        target: String,
     },
 
     /// Show token savings summary and history
@@ -1696,6 +1710,10 @@ fn main() -> Result<()> {
 
         Commands::Wc { args } => {
             wc_cmd::run(&args, cli.verbose)?;
+        }
+
+        Commands::Compact { target } => {
+            compact_cmd::run(&target, cli.verbose)?;
         }
 
         Commands::Gain {

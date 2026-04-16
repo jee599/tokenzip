@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://github.com/jee599/contextzip/releases"><img src="https://img.shields.io/github/v/release/jee599/contextzip?style=flat-square&color=blue" alt="Release" /></a>
   <a href="https://github.com/jee599/contextzip/actions"><img src="https://img.shields.io/github/actions/workflow/status/jee599/contextzip/ci.yml?style=flat-square" alt="CI" /></a>
-  <img src="https://img.shields.io/badge/tests-1%2C083_passing-brightgreen?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/tests-1%2C098_passing-brightgreen?style=flat-square" alt="Tests" />
   <img src="https://img.shields.io/badge/benchmarks-102_cases-orange?style=flat-square" alt="Benchmarks" />
   <a href="LICENSE"><img src="https://img.shields.io/github/license/jee599/contextzip?style=flat-square" alt="License" /></a>
 </p>
@@ -286,11 +286,11 @@ ContextZip today compresses **live stdout**. We measured 6,850 assistant message
 
 ```bash
 contextzip compact <session-id>   # writes a reversible sidecar
-contextzip apply   <session-id>   # atomic swap with .bak backup
-contextzip expand  <session-id>   # rollback
+# (apply / expand commands ship in a follow-up — for now the sidecar is opt-in,
+#  the original .jsonl is never touched, rollback is `rm <sidecar>`)
 ```
 
-v0.2 ships **two safe axes only** — `BashHistoryCompact` (re-apply filters to past Bash results, idempotent) and `ReadDedup` (dedup repeated file reads with hash validation, expand on mismatch). Honest target: **8-10% additional token reduction** on real resumed sessions, original JSONL never modified.
+v0.2 ships **two safe axes only** — `BashHistoryCompact` (re-apply text filters to past Bash results, idempotent) and `ReadDedup` (collapse repeated reads of the same file path into a reference). First measurement on a real 55 MB session: **6.7% saved across 2,475 records** (153 ReadDedup + 44 BashHistoryCompact). Sessions vary; honest target band is 6-12% with zero task-failure regressions. Original JSONL never modified.
 
 **Other v0.2 tracks** (full design [here](docs/superpowers/specs/2026-04-17-contextzip-advancement-design.md)):
 - Upstream catch-up — rtk v0.31~0.36 fixes (git/aws/clippy/runner)
@@ -386,7 +386,7 @@ build          112       0.4M     81%
 
 ```bash
 git clone https://github.com/jee599/contextzip.git && cd contextzip
-cargo test         # 1,083 tests
+cargo test         # 1,098 tests
 cargo clippy       # lint
 ```
 
