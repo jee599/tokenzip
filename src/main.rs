@@ -398,6 +398,23 @@ enum Commands {
         target: String,
     },
 
+    /// Atomic-swap a previously-compacted sidecar into place as the active session.
+    ///
+    /// Backs up the original to `<session>.jsonl.bak` first, then promotes
+    /// `<session>.jsonl.compressed` to `<session>.jsonl`. Use `expand` to roll
+    /// back. Refuses to run if a `.bak` already exists.
+    Apply {
+        /// Session id or full .jsonl path
+        target: String,
+    },
+
+    /// Roll back an `apply`: restore `<session>.jsonl.bak` and preserve the
+    /// compressed copy as `.compressed` so a future `apply` can re-promote it.
+    Expand {
+        /// Session id or full .jsonl path
+        target: String,
+    },
+
     /// Show token savings summary and history
     Gain {
         /// Filter statistics to current project (current working directory)
@@ -1714,6 +1731,14 @@ fn main() -> Result<()> {
 
         Commands::Compact { target } => {
             compact_cmd::run(&target, cli.verbose)?;
+        }
+
+        Commands::Apply { target } => {
+            compact_cmd::run_apply(&target, cli.verbose)?;
+        }
+
+        Commands::Expand { target } => {
+            compact_cmd::run_expand(&target, cli.verbose)?;
         }
 
         Commands::Gain {
